@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+@theme {
+  /* surfaces */
+  --color-base: #0a0c0f;
+  --color-panel: #12151b;
+  --color-panel-2: #181c23;
+  --color-hover: #1e232b;
+
+  /* lines */
+  --color-line: #242a33;
+  --color-line-soft: #1a1f27;
+
+  /* text */
+  --color-hi: #e8edf2;
+  --color-lo: #8b96a3;
+  --color-dim: #535d69;
+
+  /* status / accent */
+  --color-accent: #4c8dff;
+  --color-green: #3ddc84;
+  --color-amber: #f5a623;
+  --color-red: #ff5c5c;
+  --color-gray: #5b6572;
+
+  /* type */
+  --font-display: "Space Grotesk", sans-serif;
+  --font-sans: "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background: var(--color-base);
+  color: var(--color-hi);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--color-accent) 20%, transparent);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #262c36;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #313944;
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+.animate-pulse-dot {
+  animation: pulse-dot 2s infinite;
+}
