@@ -9,10 +9,10 @@ export default function VehicleTable({ limit }) {
 
   return (
     <div className="flex-1 overflow-auto">
-      <table className="w-full min-w-[1320px] border-collapse">
+      <table className="w-full min-w-[1400px] border-collapse">
         <thead>
           <tr>
-            {['Vehicle', 'Model', 'Driver', 'Status', 'Device ID', 'Firmware', 'Battery', 'Health', 'Signal', 'Speed', 'Range', 'Location', 'Coordinates', 'Last seen'].map(
+            {['Vehicle', 'Type', 'Model', 'Driver', 'Status', 'Device ID', 'Firmware', 'Battery', 'Health', 'Signal', 'Speed', 'Range', 'Location', 'Coordinates', 'Last seen'].map(
               (h) => (
                 <th
                   key={h}
@@ -27,7 +27,7 @@ export default function VehicleTable({ limit }) {
         <tbody>
           {filteredVehicles.length === 0 && (
             <tr>
-              <td colSpan={14} className="px-4 py-8 text-center text-dim">
+              <td colSpan={15} className="px-4 py-8 text-center text-dim">
                 No vehicles match this view.
               </td>
             </tr>
@@ -51,6 +51,11 @@ export default function VehicleTable({ limit }) {
                   <div className="text-[12.5px] font-semibold">{v.name}</div>
                   <div className="mt-0.5 font-mono text-[10.5px] text-dim">{v.plate}</div>
                 </td>
+                <td className="border-b border-line-soft px-4 py-2.5">
+                  <span className="inline-flex items-center rounded-md border border-line bg-panel-2 px-2 py-0.5 font-mono text-[10.5px] font-medium text-hi whitespace-nowrap">
+                    {v.type || '4 Wheeler'}
+                  </span>
+                </td>
                 <td className="border-b border-line-soft px-4 py-2.5 text-[12px] text-lo">{v.model}</td>
                 <td className="border-b border-line-soft px-4 py-2.5 text-[12px] text-lo">{v.driver}</td>
                 <td className="border-b border-line-soft px-4 py-2.5">
@@ -67,7 +72,7 @@ export default function VehicleTable({ limit }) {
                 </td>
                 <td className="border-b border-line-soft px-4 py-2.5">
                   <div className="flex items-center gap-1.5">
-                     <div className="h-1.5 w-11 overflow-hidden rounded-full border border-line-soft bg-panel-2">
+                    <div className="h-1.5 w-11 overflow-hidden rounded-full border border-line-soft bg-panel-2">
                       <div className={`h-full rounded-full ${battColor(v.battery)}`} style={{ width: `${v.battery}%` }} />
                     </div>
                     <span className="font-mono text-[11.5px] text-lo">{v.battery}%</span>

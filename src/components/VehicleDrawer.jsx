@@ -117,7 +117,7 @@ export default function VehicleDrawer() {
               <div>
                 <div className="font-display text-[16px] font-bold">{selectedVehicle.name}</div>
                 <div className="mt-0.75 font-mono text-[11px] text-lo">
-                  {selectedVehicle.plate} - {selectedVehicle.model}
+                  {selectedVehicle.type || '4 Wheeler'} • {selectedVehicle.plate} • {selectedVehicle.model}
                 </div>
               </div>
               <div className="flex items-center gap-1.5">

@@ -1,11 +1,12 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutGrid, Truck, Cpu, TriangleAlert, MapPin, UploadCloud, Settings, Users, Bell } from './icons'
+import { LayoutGrid, Truck, Cpu, TriangleAlert, MapPin, UploadCloud, Settings, Users, Bell, Leaf } from './icons'
 import { useFleet } from '../context/FleetContext'
 
 const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: LayoutGrid, end: true },
   { to: '/vehicles', label: 'Vehicles', icon: Truck, countKey: 'total' },
   { to: '/devices', label: 'Devices', icon: Cpu },
+  { to: '/esg', label: 'ESG Savings', icon: Leaf },
   { to: '/alerts', label: 'Alerts', icon: TriangleAlert, countKey: 'critical' },
   { to: '/geofences', label: 'Geofences', icon: MapPin },
   { to: '/firmware', label: 'Firmware', icon: UploadCloud },
@@ -19,14 +20,11 @@ export default function Sidebar() {
   return (
     <>
       <aside className="hidden h-screen w-54 shrink-0 flex-col border-r border-line bg-panel p-3 md:flex">
-        <div className="flex items-center gap-2.5 px-2 pb-5 pt-1">
-          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-accent to-blue-700">
-            <Truck className="h-4 w-4 text-white" strokeWidth={2.2} />
+        <div className="px-2 pb-5 pt-1">
+          <div className="font-display text-[25px] font-bold leading-none tracking-tight">
+            Electri<span className="text-accent">E</span>
           </div>
-          <div>
-            <div className="font-display text-[14.5px] font-bold leading-none">Fleet Control</div>
-            <div className="mt-1 font-mono text-[9.5px] uppercase tracking-wide text-dim">IoT Admin</div>
-          </div>
+          <div className="mt-1.5 font-mono text-[12px] uppercase tracking-wider text-dim">Fleet Monitor</div>
         </div>
 
         <nav className="mt-2 flex flex-col gap-0.5">

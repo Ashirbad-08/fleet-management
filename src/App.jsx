@@ -12,6 +12,7 @@ import Settings from './pages/Settings'
 import Admins from './pages/Admins'
 import NotificationsPage from './pages/NotificationsPage'
 import Profile from './pages/Profile'
+import EsgPage from './pages/EsgPage'
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
         <Route path="/" element={<Dashboard />} />
         <Route path="/vehicles" element={<Vehicles />} />
         <Route path="/devices" element={<Devices />} />
+        <Route path="/esg" element={<EsgPage />} />
         <Route path="/alerts" element={<AlertsPage />} />
         <Route path="/geofences" element={<Geofences />} />
         <Route path="/firmware" element={<Firmware />} />

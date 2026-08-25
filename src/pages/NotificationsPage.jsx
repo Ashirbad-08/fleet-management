@@ -107,9 +107,7 @@ export default function NotificationsPage() {
                 return (
                   <div
                     key={n.id}
-                    className={`group flex items-start justify-between gap-3 px-4 py-4.5 transition-colors hover:bg-hover sm:gap-4 sm:px-6 ${
-                      !n.read ? 'bg-accent/5' : ''
-                    }`}
+                    className="group flex items-start justify-between gap-3 px-4 py-4.5 transition-colors hover:bg-hover sm:gap-4 sm:px-6"
                   >
                     <div className="flex items-start gap-4 min-w-0">
                       <div className={`mt-0.5 flex h-7.5 w-7.5 shrink-0 items-center justify-center rounded-lg ${cls}`}>
@@ -126,7 +124,7 @@ export default function NotificationsPage() {
                           </span>
                           <span className="font-mono text-[10.5px] text-dim">{n.time}</span>
                           {!n.read && (
-                            <span className="inline-flex items-center gap-1 rounded bg-accent/15 px-1.5 py-0.5 text-[9.5px] font-semibold text-accent uppercase tracking-wider">
+                            <span className="inline-flex items-center gap-1 rounded bg-panel-2 border border-line-soft px-1.5 py-0.5 text-[9.5px] font-semibold text-hi uppercase tracking-wider">
                               Unread
                             </span>
                           )}

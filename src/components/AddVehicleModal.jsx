@@ -8,6 +8,7 @@ export default function AddVehicleModal({ open, onClose }) {
     name: '',
     plate: '',
     model: '',
+    type: '4 Wheeler',
     driver: '',
     status: 'online',
     battery: 100,
@@ -24,6 +25,7 @@ export default function AddVehicleModal({ open, onClose }) {
     if (!formData.name || !formData.plate || !formData.model) return
     addVehicle({
       ...formData,
+      type: formData.type || '4 Wheeler',
       battery: Number(formData.battery),
       rangeKm: Number(formData.rangeKm),
       lat: Number(formData.lat) || 12.9716,
@@ -34,6 +36,7 @@ export default function AddVehicleModal({ open, onClose }) {
       name: '',
       plate: '',
       model: '',
+      type: '4 Wheeler',
       driver: '',
       status: 'online',
       battery: 100,
@@ -93,7 +96,19 @@ export default function AddVehicleModal({ open, onClose }) {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div>
+              <label className="mb-1 block text-[10.5px] font-semibold uppercase tracking-wide text-dim">Vehicle Type</label>
+              <select
+                value={formData.type}
+                onChange={(e) => setFormData((f) => ({ ...f, type: e.target.value }))}
+                className={inputCls + ' cursor-pointer'}
+              >
+                <option value="2 Wheeler">2 Wheeler</option>
+                <option value="3 Wheeler">3 Wheeler</option>
+                <option value="4 Wheeler">4 Wheeler</option>
+              </select>
+            </div>
             <div>
               <label className="mb-1 block text-[10.5px] font-semibold uppercase tracking-wide text-dim">Model</label>
               <input

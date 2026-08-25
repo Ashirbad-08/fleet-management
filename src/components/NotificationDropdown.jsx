@@ -85,12 +85,10 @@ export default function NotificationDropdown({ open, onClose }) {
               <div
                 key={n.id}
                 onClick={() => markNotificationRead(n.id)}
-                className={`relative flex cursor-pointer items-start gap-3 border-b border-line-soft px-4 py-3 hover:bg-hover transition-colors ${
-                  !n.read ? 'bg-accent/5' : ''
-                }`}
+                className="group relative flex cursor-pointer items-start gap-3 border-b border-line-soft px-4 py-3 hover:bg-hover transition-colors"
               >
                 {!n.read && (
-                  <span className="absolute right-3 top-3.5 h-1.5 w-1.5 rounded-full bg-accent" />
+                  <span className="absolute right-3 top-3.5 h-1.5 w-1.5 rounded-full bg-amber" />
                 )}
                 <div className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md ${cls}`}>
                   <Icon className="h-3 w-3" strokeWidth={2.2} />
@@ -121,7 +119,7 @@ export default function NotificationDropdown({ open, onClose }) {
         <div className="flex items-center justify-between border-t border-line-soft px-4 py-2.5">
           <button
             onClick={() => { onClose(); navigate('/notifications') }}
-            className="text-[11.5px] font-medium text-accent hover:underline"
+            className="text-[11.5px] font-medium text-hi hover:underline"
           >
             View all ({notifications.length})
           </button>

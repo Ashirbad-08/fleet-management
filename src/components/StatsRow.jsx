@@ -42,7 +42,7 @@ export default function StatsRow() {
   return (
     <div className="mb-4.5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
       {cards.map((c) => (
-        <div key={c.label} className="rounded-xl border border-line bg-panel p-4">
+        <div key={c.label} className="rounded-xl border border-line bg-panel p-4 hover:border-accent/40 ease-in-out">
           <div className="flex items-center justify-between">
             <div className="text-[11px] font-medium text-lo">{c.label}</div>
             <div className={`flex h-6.5 w-6.5 items-center justify-center rounded-md ${c.bg} ${c.color}`}>
