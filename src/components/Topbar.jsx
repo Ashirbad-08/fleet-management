@@ -20,7 +20,7 @@ export default function Topbar({ title, subtitle }) {
   }, [])
 
   return (
-    <header className="flex flex-col gap-3 border-b border-line px-4 py-3.5 sm:px-6 lg:flex-row lg:items-center lg:gap-4">
+    <header className="flex flex-col gap-3 border-b border-line px-4 py-1 sm:px-6 lg:flex-row lg:items-center lg:gap-4">
       <div className="min-w-0">
         <div className="truncate font-display text-[16px] font-bold sm:text-[17px]">{title}</div>
         {subtitle && <div className="mt-0.5 text-[11.5px] text-dim">{subtitle}</div>}

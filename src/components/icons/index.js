@@ -38,4 +38,6 @@ export {
   DollarSign,
   TrendingUp,
   BarChart3,
+  Maximize2,
+  Minimize2,
 } from 'lucide-react'

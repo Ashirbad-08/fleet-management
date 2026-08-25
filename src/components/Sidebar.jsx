@@ -20,11 +20,11 @@ export default function Sidebar() {
   return (
     <>
       <aside className="hidden h-screen w-54 shrink-0 flex-col border-r border-line bg-panel p-3 md:flex">
-        <div className="px-2 pb-5 pt-1">
-          <div className="font-display text-[25px] font-bold leading-none tracking-tight">
+        <div className="px-2 pb-4 pt-1">
+          <div className="font-display text-[17.5px] font-bold leading-none tracking-tight">
             Electri<span className="text-accent">E</span>
           </div>
-          <div className="mt-1.5 font-mono text-[12px] uppercase tracking-wider text-dim">Fleet Monitor</div>
+          <div className="mt-1 font-mono text-[9.5px] uppercase tracking-wider text-dim">Fleet Monitor</div>
         </div>
 
         <nav className="mt-2 flex flex-col gap-0.5">
