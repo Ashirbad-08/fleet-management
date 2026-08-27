@@ -21,7 +21,7 @@ export default function Sidebar() {
     <>
       <aside className="hidden h-screen w-54 shrink-0 flex-col border-r border-line bg-panel p-3 md:flex">
         <div className="px-2 pb-4 pt-1">
-          <div className="font-display text-[17.5px] font-bold leading-none tracking-tight">
+          <div className="font-display text-[30.5px] font-bold leading-none tracking-tight">
             Electri<span className="text-accent">E</span>
           </div>
           <div className="mt-1 font-mono text-[9.5px] uppercase tracking-wider text-dim">Fleet Monitor</div>

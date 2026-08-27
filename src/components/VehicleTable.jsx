@@ -1,75 +1,84 @@
+import { useState } from 'react'
 import { useFleet } from '../context/FleetContext'
 import { STATUS_META } from '../data/statusMeta'
+import { Edit2, Trash2 } from './icons'
+import EditVehicleModal from './EditVehicleModal'
 
 const battColor = (b) => (b > 50 ? 'bg-green' : b > 20 ? 'bg-amber' : 'bg-red')
 
 export default function VehicleTable({ limit }) {
-  const { filteredVehicles, selectedVehicleId, setSelectedVehicleId, settings } = useFleet()
+  const { filteredVehicles, selectedVehicleId, setSelectedVehicleId, settings, deleteVehicle } = useFleet()
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null)
+  const [editingVehicle, setEditingVehicle] = useState(null)
+
   const visibleVehicles = typeof limit === 'number' ? filteredVehicles.slice(0, limit) : filteredVehicles
+
+  const headers = ['Vehicle', 'Type', 'Model', 'Status', 'Battery', 'Speed', 'Location', 'Last seen', 'Action']
 
   return (
     <div className="flex-1 overflow-auto">
-      <table className="w-full min-w-[1400px] border-collapse">
+      <table className="w-full min-w-[900px] border-collapse">
         <thead>
           <tr>
-            {['Vehicle', 'Type', 'Model', 'Driver', 'Status', 'Device ID', 'Firmware', 'Battery', 'Health', 'Signal', 'Speed', 'Range', 'Location', 'Coordinates', 'Last seen'].map(
-              (h) => (
-                <th
-                  key={h}
-                  className="sticky top-0 z-10 border-b border-line-soft bg-panel px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wide text-dim"
-                >
-                  {h}
-                </th>
-              ),
-            )}
+            {headers.map((h, i) => (
+              <th
+                key={h}
+                className={`sticky top-0 z-10 border-b border-line-soft bg-panel px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wide text-dim ${
+                  i === headers.length - 1 ? 'text-right' : 'text-left'
+                }`}
+              >
+                {h}
+              </th>
+            ))}
           </tr>
         </thead>
         <tbody>
           {filteredVehicles.length === 0 && (
             <tr>
-              <td colSpan={15} className="px-4 py-8 text-center text-dim">
+              <td colSpan={9} className="px-4 py-8 text-center text-dim">
                 No vehicles match this view.
               </td>
             </tr>
           )}
           {visibleVehicles.map((v) => {
-            const meta = STATUS_META[v.status]
+            const meta = STATUS_META[v.status] || STATUS_META.offline
             const selected = selectedVehicleId === v.id
             const displaySpeed = settings?.speedUnit === 'mph'
               ? `${Math.round(v.speed * 0.621371)} mph`
               : `${v.speed} km/h`
-            const displayRange = settings?.distanceUnit === 'miles'
-              ? `${Math.round(v.rangeKm * 0.621371)} mi`
-              : `${v.rangeKm} km`
+            const isPendingDelete = confirmDeleteId === v.id
+
             return (
               <tr
                 key={v.id}
                 onClick={() => setSelectedVehicleId(v.id)}
                 className={`cursor-pointer transition-colors ${selected ? 'bg-accent/15' : 'hover:bg-hover'}`}
               >
+                {/* 1. Vehicle */}
                 <td className="border-b border-line-soft px-4 py-2.5">
                   <div className="text-[12.5px] font-semibold">{v.name}</div>
                   <div className="mt-0.5 font-mono text-[10.5px] text-dim">{v.plate}</div>
                 </td>
+
+                {/* 2. Type */}
                 <td className="border-b border-line-soft px-4 py-2.5">
                   <span className="inline-flex items-center rounded-md border border-line bg-panel-2 px-2 py-0.5 font-mono text-[10.5px] font-medium text-hi whitespace-nowrap">
                     {v.type || '4 Wheeler'}
                   </span>
                 </td>
+
+                {/* 3. Model */}
                 <td className="border-b border-line-soft px-4 py-2.5 text-[12px] text-lo">{v.model}</td>
-                <td className="border-b border-line-soft px-4 py-2.5 text-[12px] text-lo">{v.driver}</td>
+
+                {/* 4. Status */}
                 <td className="border-b border-line-soft px-4 py-2.5">
                   <span className={`inline-flex items-center gap-1.5 rounded-full py-0.5 pl-1.5 pr-2.5 text-[10.5px] font-semibold capitalize ${meta.pill}`}>
                     <span className="h-1.5 w-1.5 rounded-full" style={{ background: meta.color }} />
                     {meta.label}
                   </span>
                 </td>
-                <td className="border-b border-line-soft px-4 py-2.5 font-mono text-[11.5px] text-lo">
-                  {v.deviceId}
-                </td>
-                <td className="border-b border-line-soft px-4 py-2.5 font-mono text-[11.5px] text-lo">
-                  {v.firmware}
-                </td>
+
+                {/* 5. Battery */}
                 <td className="border-b border-line-soft px-4 py-2.5">
                   <div className="flex items-center gap-1.5">
                     <div className="h-1.5 w-11 overflow-hidden rounded-full border border-line-soft bg-panel-2">
@@ -78,43 +87,89 @@ export default function VehicleTable({ limit }) {
                     <span className="font-mono text-[11.5px] text-lo">{v.battery}%</span>
                   </div>
                 </td>
-                <td className="border-b border-line-soft px-4 py-2.5">
-                  <div className="flex items-center gap-1.5">
-                    <div className="h-1.5 w-11 overflow-hidden rounded-full border border-line-soft bg-panel-2">
-                      <div className={`h-full rounded-full ${battColor(v.health)}`} style={{ width: `${v.health}%` }} />
-                    </div>
-                    <span className="font-mono text-[11.5px] text-lo">{v.health}%</span>
-                  </div>
-                </td>
-                <td className="border-b border-line-soft px-4 py-2.5">
-                  <div className="flex h-3 items-end gap-0.5">
-                    {[1, 2, 3, 4].map((i) => (
-                      <span
-                        key={i}
-                        className={`w-0.75 rounded-[1px] ${i <= v.signal ? 'bg-accent' : 'bg-line'}`}
-                        style={{ height: `${i * 3}px` }}
-                      />
-                    ))}
-                  </div>
-                </td>
+
+                {/* 6. Speed */}
                 <td className="border-b border-line-soft px-4 py-2.5 font-mono text-[11.5px] text-lo">
                   {displaySpeed}
                 </td>
-                <td className="border-b border-line-soft px-4 py-2.5 font-mono text-[11.5px] text-lo">
-                  {displayRange}
-                </td>
+
+                {/* 7. Location */}
                 <td className="border-b border-line-soft px-4 py-2.5 text-[12px] text-lo">{v.location}</td>
-                <td className="border-b border-line-soft px-4 py-2.5 font-mono text-[10.5px] text-dim">
-                  {v.lat.toFixed(4)}, {v.lon.toFixed(4)}
-                </td>
+
+                {/* 8. Last seen */}
                 <td className="border-b border-line-soft px-4 py-2.5 font-mono text-[11.5px] text-dim">
                   {v.lastSeen}
+                </td>
+
+                {/* 9. Action */}
+                <td className="border-b border-line-soft px-4 py-2.5 text-right">
+                  {isPendingDelete ? (
+                    <div
+                      className="flex items-center justify-end gap-1.5"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <span className="text-[10px] font-medium text-red">Confirm?</span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          deleteVehicle(v.id)
+                          setConfirmDeleteId(null)
+                        }}
+                        className="rounded bg-red/10 px-1.5 py-0.5 text-[10.5px] font-semibold text-red hover:bg-red/20"
+                      >
+                        Yes
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setConfirmDeleteId(null)
+                        }}
+                        className="rounded border border-line bg-panel-2 px-1.5 py-0.5 text-[10.5px] text-lo hover:bg-hover"
+                      >
+                        No
+                      </button>
+                    </div>
+                  ) : (
+                    <div
+                      className="flex items-center justify-end gap-2"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setEditingVehicle(v)
+                        }}
+                        className="flex h-6.5 w-6.5 items-center justify-center rounded-md border border-line bg-panel-2 text-dim hover:text-accent hover:border-accent/30 transition-colors"
+                        title="Edit Vehicle"
+                      >
+                        <Edit2 className="h-3 w-3" strokeWidth={2} />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setConfirmDeleteId(v.id)
+                        }}
+                        className="flex h-6.5 w-6.5 items-center justify-center rounded-md border border-line bg-panel-2 text-dim hover:text-red hover:border-red/30 transition-colors"
+                        title="Delete Vehicle"
+                      >
+                        <Trash2 className="h-3 w-3" strokeWidth={2} />
+                      </button>
+                    </div>
+                  )}
                 </td>
               </tr>
             )
           })}
         </tbody>
       </table>
+
+      {editingVehicle && (
+        <EditVehicleModal
+          vehicle={editingVehicle}
+          open={Boolean(editingVehicle)}
+          onClose={() => setEditingVehicle(null)}
+        />
+      )}
     </div>
   )
 }
