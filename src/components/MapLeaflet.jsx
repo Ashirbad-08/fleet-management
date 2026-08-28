@@ -239,14 +239,18 @@ export default function MapLeaflet({ vehicles = [], height = '100%', zoom = 5, c
 
   if (!leafletReady) {
     return (
-      <div style={{ height }} className="flex items-center justify-center rounded-xl border border-line bg-panel-2 text-dim text-[12px]">
-        <span className="animate-pulse">Loading map telemetry…</span>
+      <div style={{ height }} className="flex flex-col items-center justify-center gap-3 rounded-xl border border-line bg-panel-2 p-6 animate-pulse">
+        <div className="h-8 w-8 rounded-full border-2 border-accent border-t-transparent animate-spin" />
+        <div className="flex flex-col items-center gap-1">
+          <span className="font-display text-[13px] font-semibold text-hi">Initializing Map Engine</span>
+          <span className="text-[11px] text-dim">Fetching live IoT coordinates & geofences…</span>
+        </div>
       </div>
     )
   }
 
   return (
-    <div ref={overlayRef} style={{ height, position: 'relative' }} onClick={() => setActive(true)}>
+    <div ref={overlayRef} style={{ height, position: 'relative' }} className="w-full" onClick={() => setActive(true)}>
       <style>{`
         @keyframes leaflet-ping {
           0%, 100% { transform: scale(1); opacity: 0.22; }
@@ -254,42 +258,45 @@ export default function MapLeaflet({ vehicles = [], height = '100%', zoom = 5, c
         }
         .leaflet-tooltip { background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; }
         .leaflet-tooltip-top::before { display: none !important; }
-        .leaflet-container { background: #0a0c0f !important; font-family: Inter, sans-serif !important; }
+        .leaflet-container { background: #080a0d !important; font-family: Inter, sans-serif !important; }
         .leaflet-bar { border: 1px solid #242a33 !important; border-radius: 8px !important; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important; }
-        .leaflet-bar a { background: #12151b !important; color: #e8edf2 !important; border-bottom: 1px solid #242a33 !important; }
-        .leaflet-bar a:hover { background: #1e232b !important; color: #00ff66 !important; }
+        .leaflet-bar a { background: #0f1217 !important; color: #f0f4f8 !important; border-bottom: 1px solid #242a33 !important; }
+        .leaflet-bar a:hover { background: #1f2530 !important; color: #00ff66 !important; }
       `}</style>
       
       <div
         ref={containerRef}
+        role="region"
+        aria-label="Interactive Fleet Tracking Map"
         style={{ width: '100%', height: '100%', zIndex: 1 }}
         className="rounded-xl overflow-hidden"
       />
 
       {/* Floating Bottom Fleet Status Legend Overlay */}
-      <div className="absolute bottom-3 left-3 z-[1000] flex items-center gap-3 rounded-lg border border-line/80 bg-panel/90 px-3 py-1.5 backdrop-blur-md shadow-md">
+      <div className="absolute bottom-3 left-3 z-10 flex flex-wrap items-center gap-3 rounded-xl border border-line/80 bg-panel-2/85 px-3.5 py-2 backdrop-blur-md shadow-lg">
         <div className="flex items-center gap-1.5 text-[11px] font-medium text-hi">
           <span className="h-2 w-2 rounded-full bg-accent" />
-          <span>Online ({statusCounts.online})</span>
+          <span>Online (<strong className="font-mono tabular-nums">{statusCounts.online}</strong>)</span>
         </div>
         <div className="flex items-center gap-1.5 text-[11px] font-medium text-hi">
           <span className="h-2 w-2 rounded-full bg-amber" />
-          <span>Idle ({statusCounts.idle})</span>
+          <span>Idle (<strong className="font-mono tabular-nums">{statusCounts.idle}</strong>)</span>
         </div>
         <div className="flex items-center gap-1.5 text-[11px] font-medium text-hi">
           <span className="h-2 w-2 rounded-full bg-red" />
-          <span>Alert ({statusCounts.alert})</span>
+          <span>Alert (<strong className="font-mono tabular-nums">{statusCounts.alert}</strong>)</span>
         </div>
         <div className="flex items-center gap-1.5 text-[11px] font-medium text-hi">
           <span className="h-2 w-2 rounded-full bg-gray" />
-          <span>Offline ({statusCounts.offline})</span>
+          <span>Offline (<strong className="font-mono tabular-nums">{statusCounts.offline}</strong>)</span>
         </div>
       </div>
 
       {!active && (
         <div
+          aria-label="Activate map scroll zoom"
           style={{
-            position: 'absolute', inset: 0, zIndex: 999,
+            position: 'absolute', inset: 0, zIndex: 5,
             background: 'transparent', cursor: 'pointer',
           }}
         />

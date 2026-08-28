@@ -87,6 +87,22 @@ export function FleetProvider({ children }) {
     toastTimer.current = setTimeout(() => setToast(null), 2600)
   }, [])
 
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return localStorage.getItem('fc_auth') === 'true'
+  })
+
+  const login = useCallback((email, password) => {
+    setIsAuthenticated(true)
+    localStorage.setItem('fc_auth', 'true')
+    showToast('Authenticated successfully. Welcome to ElectriE!')
+  }, [showToast])
+
+  const logout = useCallback(() => {
+    setIsAuthenticated(false)
+    localStorage.setItem('fc_auth', 'false')
+    showToast('Logged out of fleet monitor session')
+  }, [showToast])
+
   // Persist states to localStorage
   useEffect(() => {
     localStorage.setItem('fc_vehicles', JSON.stringify(vehicles))
@@ -478,6 +494,10 @@ export function FleetProvider({ children }) {
     markAllNotificationsRead,
     deleteNotification,
     clearAllNotifications,
+    // Auth
+    isAuthenticated,
+    login,
+    logout,
     // Commands
     sendDeviceCommand,
     updateSettings,

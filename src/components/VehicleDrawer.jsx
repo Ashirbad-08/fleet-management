@@ -107,31 +107,35 @@ export default function VehicleDrawer() {
       />
 
       <aside
+        role="dialog"
+        aria-label="Vehicle Details & Controls"
         className={`fixed right-0 top-0 z-50 h-dvh w-full overflow-y-auto border-l border-line bg-panel transition-transform duration-200 sm:w-105 ${
           open ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
         {selectedVehicle && (
           <>
-            <div className="flex items-start justify-between border-b border-line-soft px-5 py-4.5">
+            <div className="sticky top-0 z-20 flex items-start justify-between border-b border-line-soft bg-panel/90 px-5 py-4.5 backdrop-blur-md">
               <div>
                 <div className="font-display text-[16px] font-bold">{selectedVehicle.name}</div>
-                <div className="mt-0.75 font-mono text-[11px] text-lo">
+                <div className="mt-0.75 font-mono text-[11px] text-lo tabular-nums">
                   {selectedVehicle.type || '4 Wheeler'} • {selectedVehicle.plate} • {selectedVehicle.model}
                 </div>
               </div>
               <div className="flex items-center gap-1.5">
                 <button
                   onClick={startEdit}
+                  aria-label="Edit vehicle telemetry"
                   title="Edit vehicle"
-                  className="flex h-6.5 w-6.5 items-center justify-center rounded-md border border-line bg-panel-2 text-lo hover:bg-hover hover:text-accent"
+                  className="flex h-6.5 w-6.5 items-center justify-center rounded-md border border-line bg-panel-2 text-lo hover:bg-hover hover:text-accent cursor-pointer"
                 >
                   <Edit2 className="h-3 w-3" strokeWidth={2} />
                 </button>
                 <button
                   onClick={close}
+                  aria-label="Close drawer"
                   title="Close"
-                  className="flex h-6.5 w-6.5 items-center justify-center rounded-md border border-line bg-panel-2 text-lo hover:bg-hover hover:text-hi"
+                  className="flex h-6.5 w-6.5 items-center justify-center rounded-md border border-line bg-panel-2 text-lo hover:bg-hover hover:text-hi cursor-pointer"
                 >
                   <X className="h-3 w-3" strokeWidth={2.2} />
                 </button>
@@ -150,7 +154,7 @@ export default function VehicleDrawer() {
               <div className="border-b border-line-soft px-5 py-3.5 bg-accent/5">
                 <div className="flex justify-between text-[11.5px] font-semibold text-accent mb-1.5">
                   <span>Flashing Firmware...</span>
-                  <span>{updatingVehicles[selectedVehicle.id]}%</span>
+                  <span className="font-mono tabular-nums">{updatingVehicles[selectedVehicle.id]}%</span>
                 </div>
                 <div className="h-2 w-full overflow-hidden rounded-full border border-accent/20 bg-panel-2">
                   <div
@@ -279,14 +283,14 @@ export default function VehicleDrawer() {
                 <div className="flex gap-2 pt-1">
                   <button
                     onClick={saveEdit}
-                    className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-accent/15 px-3 py-2 text-[12.5px] font-medium text-accent hover:bg-accent/25"
+                    className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-accent/15 px-3 py-2 text-[12.5px] font-medium text-accent hover:bg-accent/25 cursor-pointer"
                   >
                     <Save className="h-3.5 w-3.5" strokeWidth={2} />
                     Save changes
                   </button>
                   <button
                     onClick={() => setEditing(false)}
-                    className="flex flex-1 items-center justify-center rounded-lg border border-line bg-panel-2 px-3 py-2 text-[12.5px] font-medium text-lo hover:bg-hover"
+                    className="flex flex-1 items-center justify-center rounded-lg border border-line bg-panel-2 px-3 py-2 text-[12.5px] font-medium text-lo hover:bg-hover cursor-pointer"
                   >
                     Cancel
                   </button>
@@ -309,7 +313,7 @@ export default function VehicleDrawer() {
                 ].map(([label, value]) => (
                   <div key={label} className="bg-panel px-4.5 py-3">
                     <div className="text-[10px] font-semibold uppercase tracking-wide text-dim">{label}</div>
-                    <div className="mt-1 font-mono text-[13px] text-hi">{value}</div>
+                    <div className="mt-1 font-mono text-[13px] text-hi tabular-nums">{value}</div>
                   </div>
                 ))}
               </div>

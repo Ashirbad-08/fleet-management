@@ -4,7 +4,7 @@ import Topbar from '../components/Topbar'
 import StatsRow from '../components/StatsRow'
 import MapLeaflet from '../components/MapLeaflet'
 import AlertsFeed from '../components/AlertsFeed'
-import { RotateCw, Filter, ChevronDown, Check, ChevronRight, Maximize2, Minimize2, X } from '../components/icons'
+import { RotateCw, Filter, ChevronDown, Check, ChevronRight, Maximize2, Minimize2 } from '../components/icons'
 import { useFleet } from '../context/FleetContext'
 
 const FILTER_OPTIONS = [
@@ -59,13 +59,13 @@ export default function Dashboard() {
   const currentFilterObj = FILTER_OPTIONS.find((o) => o.key === statusFilter) || FILTER_OPTIONS[0]
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+    <div className="flex min-h-0 flex-1 flex-col xl:overflow-hidden">
       <Topbar title="Fleet overview" subtitle="Connected vehicle telemetry & live location tracking" />
 
-      <div className="flex flex-1 flex-col overflow-y-auto px-4 pb-24 pt-5 sm:px-6 md:overflow-hidden md:pb-0">
+      <div className="flex-1 overflow-y-auto px-4 pb-24 pt-5 sm:px-6 xl:flex xl:flex-col xl:overflow-hidden xl:pb-0">
         <StatsRow />
 
-        <div className="grid flex-1 grid-cols-1 gap-4 pb-5 md:min-h-0 xl:grid-cols-[minmax(0,1fr)_320px] xl:overflow-hidden">
+        <div className="grid grid-cols-1 gap-4 pb-5 xl:flex-1 xl:min-h-0 xl:grid-cols-[minmax(0,1fr)_320px] xl:overflow-hidden">
           
           {/* Aesthetic Fleet Tracking Map Container */}
           <div className="flex min-h-[36rem] flex-col overflow-hidden rounded-xl border border-line bg-panel xl:min-h-0 relative shadow-sm">
@@ -75,13 +75,14 @@ export default function Dashboard() {
               <div className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
                 <div className="font-display text-[13.5px] font-semibold text-hi">Fleet tracking map</div>
-                <span className="ml-1.5 rounded-full border border-line-soft bg-panel-2 px-2 py-0.5 font-mono text-[10px] text-dim">
+                <span className="ml-1.5 rounded-full border border-line-soft bg-panel-2 px-2 py-0.5 font-mono text-[10px] text-dim tabular-nums">
                   {filteredVehicles.length} / {vehicles.length} Active
                 </span>
               </div>
 
               <Link
                 to="/vehicles"
+                aria-label="View full fleet roster"
                 className="inline-flex items-center gap-1 rounded-lg border border-line bg-panel-2 px-2.5 py-1 text-[11px] font-medium text-lo transition-colors hover:bg-hover hover:text-hi"
               >
                 <span>View roster</span>
@@ -94,12 +95,13 @@ export default function Dashboard() {
               
               {/* Top-Left Floating Controls Toolbar (Icon only by default, expands on hover) */}
               <div
-                className="absolute left-3 top-3 z-[1000] flex flex-col items-start gap-1.5"
+                className="absolute left-3 top-3 z-20 flex flex-col items-start gap-1.5"
                 onClick={(e) => e.stopPropagation()}
               >
                 {/* 1. View Full Map Button */}
                 <button
                   onClick={() => setFullScreenMap(true)}
+                  aria-label="View map in full screen mode"
                   className="group flex h-7 items-center gap-1.5 overflow-hidden rounded-lg border border-line bg-panel/90 px-1.75 text-[11px] font-medium text-hi backdrop-blur-md shadow-md transition-all duration-300 ease-out hover:pr-2.5 hover:border-accent/40 hover:bg-hover cursor-pointer"
                   title="View full map"
                 >
@@ -112,6 +114,7 @@ export default function Dashboard() {
                 {/* 2. Refresh Button */}
                 <button
                   onClick={handleRefresh}
+                  aria-label="Refresh map telemetry"
                   className="group flex h-7 items-center gap-1.5 overflow-hidden rounded-lg border border-line bg-panel/90 px-1.75 text-[11px] font-medium text-hi backdrop-blur-md shadow-md transition-all duration-300 ease-out hover:pr-2.5 hover:border-accent/40 hover:bg-hover cursor-pointer"
                   title="Refresh map telemetry"
                 >
@@ -125,6 +128,8 @@ export default function Dashboard() {
                 <div className="relative" ref={filterRef}>
                   <button
                     onClick={() => setFilterOpen((prev) => !prev)}
+                    aria-label="Filter map by vehicle status"
+                    aria-expanded={filterOpen}
                     className="group flex h-7 items-center gap-1.5 overflow-hidden rounded-lg border border-line bg-panel/90 px-1.75 text-[11px] font-medium text-hi backdrop-blur-md shadow-md transition-all duration-300 ease-out hover:pr-2.5 hover:border-accent/40 hover:bg-hover cursor-pointer"
                     title="Filter status"
                   >
@@ -139,7 +144,7 @@ export default function Dashboard() {
                   </button>
 
                   {filterOpen && (
-                    <div className="absolute left-0 top-full mt-1 w-40 rounded-xl border border-line bg-panel-2 py-1 shadow-xl z-[1001] backdrop-blur">
+                    <div className="absolute left-0 top-full mt-1 w-40 rounded-xl border border-line bg-panel-2 py-1 shadow-xl z-30 backdrop-blur">
                       <div className="px-3 py-1 font-mono text-[9.5px] uppercase tracking-wider text-dim">
                         Filter Status
                       </div>
@@ -180,7 +185,7 @@ export default function Dashboard() {
           </div>
 
           {/* Aesthetic Live Event Feed Widget */}
-          <div className="flex min-h-[36rem] flex-col overflow-hidden rounded-xl border border-line bg-panel xl:min-h-0">
+          <div className="flex min-h-[36rem] flex-col rounded-xl border border-line bg-panel xl:min-h-0 xl:overflow-hidden">
             <div className="flex items-center gap-2 border-b border-line-soft px-4 py-3 shrink-0">
               <span className="h-1.5 w-1.5 rounded-full bg-red-600 animate-pulse" />
               <div className="font-display text-[13.5px] font-semibold text-hi">Live event feed</div>

@@ -6,7 +6,9 @@ export default function Toast() {
 
   return (
     <div
-      className={`fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-lg border border-line bg-panel-2 px-4.5 py-2.75 text-[12.5px] font-medium text-hi shadow-[0_10px_30px_rgba(0,0,0,0.4)] transition-all duration-250 ${
+      role="status"
+      aria-live="polite"
+      className={`fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-xl border border-line/80 bg-panel-2/90 px-4.5 py-2.75 text-[12.5px] font-medium text-hi backdrop-blur-md shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all duration-250 ${
         toast ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-5 opacity-0'
       }`}
     >

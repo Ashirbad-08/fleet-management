@@ -131,7 +131,7 @@ export default function Settings() {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+    <div className="flex min-h-0 flex-1 flex-col md:overflow-hidden">
       <Topbar title="Settings" subtitle="Manage organization settings, fleet policies, and security preferences" />
 
       {/* Tabs Selector */}

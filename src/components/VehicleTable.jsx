@@ -35,8 +35,16 @@ export default function VehicleTable({ limit }) {
         <tbody>
           {filteredVehicles.length === 0 && (
             <tr>
-              <td colSpan={9} className="px-4 py-8 text-center text-dim">
-                No vehicles match this view.
+              <td colSpan={9} className="px-4 py-12 text-center text-dim">
+                <div className="flex flex-col items-center justify-center gap-3">
+                  <svg className="h-12 w-12 text-dim/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677a2.056 2.056 0 00-1.58-.86H9.75" />
+                  </svg>
+                  <div className="flex flex-col gap-1">
+                    <span className="font-display text-[14px] font-semibold text-hi">No vehicles found</span>
+                    <span className="text-[11.5px] text-dim">Try adjusting your filter status or search term.</span>
+                  </div>
+                </div>
               </td>
             </tr>
           )}
@@ -52,12 +60,14 @@ export default function VehicleTable({ limit }) {
               <tr
                 key={v.id}
                 onClick={() => setSelectedVehicleId(v.id)}
+                tabIndex={0}
+                aria-label={`Vehicle ${v.name}, status ${v.status}`}
                 className={`cursor-pointer transition-colors ${selected ? 'bg-accent/15' : 'hover:bg-hover'}`}
               >
                 {/* 1. Vehicle */}
                 <td className="border-b border-line-soft px-4 py-2.5">
                   <div className="text-[12.5px] font-semibold">{v.name}</div>
-                  <div className="mt-0.5 font-mono text-[10.5px] text-dim">{v.plate}</div>
+                  <div className="mt-0.5 font-mono text-[10.5px] text-dim tabular-nums">{v.plate}</div>
                 </td>
 
                 {/* 2. Type */}
@@ -84,12 +94,12 @@ export default function VehicleTable({ limit }) {
                     <div className="h-1.5 w-11 overflow-hidden rounded-full border border-line-soft bg-panel-2">
                       <div className={`h-full rounded-full ${battColor(v.battery)}`} style={{ width: `${v.battery}%` }} />
                     </div>
-                    <span className="font-mono text-[11.5px] text-lo">{v.battery}%</span>
+                    <span className="font-mono text-[11.5px] text-lo tabular-nums">{v.battery}%</span>
                   </div>
                 </td>
 
                 {/* 6. Speed */}
-                <td className="border-b border-line-soft px-4 py-2.5 font-mono text-[11.5px] text-lo">
+                <td className="border-b border-line-soft px-4 py-2.5 font-mono text-[11.5px] text-lo tabular-nums">
                   {displaySpeed}
                 </td>
 
@@ -97,7 +107,7 @@ export default function VehicleTable({ limit }) {
                 <td className="border-b border-line-soft px-4 py-2.5 text-[12px] text-lo">{v.location}</td>
 
                 {/* 8. Last seen */}
-                <td className="border-b border-line-soft px-4 py-2.5 font-mono text-[11.5px] text-dim">
+                <td className="border-b border-line-soft px-4 py-2.5 font-mono text-[11.5px] text-dim tabular-nums">
                   {v.lastSeen}
                 </td>
 
@@ -115,7 +125,8 @@ export default function VehicleTable({ limit }) {
                           deleteVehicle(v.id)
                           setConfirmDeleteId(null)
                         }}
-                        className="rounded bg-red/10 px-1.5 py-0.5 text-[10.5px] font-semibold text-red hover:bg-red/20"
+                        aria-label={`Confirm delete vehicle ${v.name}`}
+                        className="rounded bg-red/10 px-1.5 py-0.5 text-[10.5px] font-semibold text-red hover:bg-red/20 cursor-pointer"
                       >
                         Yes
                       </button>
@@ -124,7 +135,8 @@ export default function VehicleTable({ limit }) {
                           e.stopPropagation()
                           setConfirmDeleteId(null)
                         }}
-                        className="rounded border border-line bg-panel-2 px-1.5 py-0.5 text-[10.5px] text-lo hover:bg-hover"
+                        aria-label="Cancel delete"
+                        className="rounded border border-line bg-panel-2 px-1.5 py-0.5 text-[10.5px] text-lo hover:bg-hover cursor-pointer"
                       >
                         No
                       </button>
@@ -139,7 +151,8 @@ export default function VehicleTable({ limit }) {
                           e.stopPropagation()
                           setEditingVehicle(v)
                         }}
-                        className="flex h-6.5 w-6.5 items-center justify-center rounded-md border border-line bg-panel-2 text-dim hover:text-accent hover:border-accent/30 transition-colors"
+                        aria-label={`Edit vehicle ${v.name}`}
+                        className="flex h-6.5 w-6.5 items-center justify-center rounded-md border border-line bg-panel-2 text-dim hover:text-accent hover:border-accent/30 transition-colors cursor-pointer"
                         title="Edit Vehicle"
                       >
                         <Edit2 className="h-3 w-3" strokeWidth={2} />
@@ -149,7 +162,8 @@ export default function VehicleTable({ limit }) {
                           e.stopPropagation()
                           setConfirmDeleteId(v.id)
                         }}
-                        className="flex h-6.5 w-6.5 items-center justify-center rounded-md border border-line bg-panel-2 text-dim hover:text-red hover:border-red/30 transition-colors"
+                        aria-label={`Delete vehicle ${v.name}`}
+                        className="flex h-6.5 w-6.5 items-center justify-center rounded-md border border-line bg-panel-2 text-dim hover:text-red hover:border-red/30 transition-colors cursor-pointer"
                         title="Delete Vehicle"
                       >
                         <Trash2 className="h-3 w-3" strokeWidth={2} />

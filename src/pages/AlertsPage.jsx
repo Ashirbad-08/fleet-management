@@ -3,7 +3,7 @@ import AlertsFeed from '../components/AlertsFeed'
 
 export default function AlertsPage() {
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+    <div className="flex min-h-0 flex-1 flex-col md:overflow-hidden">
       <Topbar title="Alerts" subtitle="All device and vehicle events, most recent first" />
 
       <div className="flex-1 overflow-hidden px-4 pb-24 py-5 sm:px-6 md:pb-5">

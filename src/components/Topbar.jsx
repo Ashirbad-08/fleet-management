@@ -7,7 +7,8 @@ import { useNavigate } from 'react-router-dom'
 export default function Topbar({ title, subtitle }) {
   const { searchQuery, setSearchQuery, unreadCount, admins } = useFleet()
   const [clock, setClock] = useState('')
-  const [notifOpen, setNotifOpen] = useState(false)
+  const [notifOpenMobile, setNotifOpenMobile] = useState(false)
+  const [notifOpenDesktop, setNotifOpenDesktop] = useState(false)
   const bellRef = useRef(null)
   const navigate = useNavigate()
   const currentAdmin = admins[0]
@@ -20,7 +21,7 @@ export default function Topbar({ title, subtitle }) {
   }, [])
 
   return (
-    <header className="flex flex-col gap-2.5 border-b border-line px-4 py-2.5 sm:px-6 lg:flex-row lg:items-center lg:gap-4 lg:py-1">
+    <header className="relative z-40 flex flex-col gap-2.5 border-b border-line px-4 py-2.5 sm:px-6 lg:flex-row lg:items-center lg:gap-4 lg:py-1">
       
       {/* Title & Subtitle + Mobile/Tablet Action Controls Header */}
       <div className="flex items-center justify-between gap-3 lg:justify-start">
@@ -31,23 +32,26 @@ export default function Topbar({ title, subtitle }) {
 
         {/* Mobile/Tablet Action Icons */}
         <div className="flex items-center gap-2 lg:hidden">
-          <div className="relative" ref={bellRef}>
+          <div className="relative">
             <button
-              onClick={() => setNotifOpen((o) => !o)}
+              onClick={() => setNotifOpenMobile((o) => !o)}
+              aria-label="Toggle notifications menu"
+              aria-expanded={notifOpenMobile}
               className="relative flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-panel text-lo hover:bg-hover hover:text-hi transition-colors cursor-pointer"
             >
               {unreadCount > 0 && (
-                <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red px-0.5 text-[9px] font-bold text-white">
+                <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red px-0.5 font-mono text-[9px] font-bold text-white tabular-nums">
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
               )}
               <Bell className="h-3.5 w-3.5" strokeWidth={2} />
             </button>
-            <NotificationDropdown open={notifOpen} onClose={() => setNotifOpen(false)} />
+            <NotificationDropdown open={notifOpenMobile} onClose={() => setNotifOpenMobile(false)} />
           </div>
 
           <button
             onClick={() => navigate('/settings')}
+            aria-label="Open settings"
             className="flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-panel text-lo hover:bg-hover hover:text-hi transition-colors cursor-pointer"
           >
             <SettingsIcon className="h-3.5 w-3.5" strokeWidth={2} />
@@ -55,6 +59,7 @@ export default function Topbar({ title, subtitle }) {
 
           <button
             onClick={() => navigate('/profile')}
+            aria-label="View user profile"
             title="View profile"
             className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-line bg-panel-2 font-display text-[11px] font-bold text-lo hover:bg-hover hover:text-hi transition-colors cursor-pointer"
           >
@@ -70,6 +75,7 @@ export default function Topbar({ title, subtitle }) {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           type="text"
+          aria-label="Search vehicles by name, plate, or device ID"
           placeholder="Search vehicle, plate or device ID…"
           className="w-full bg-transparent text-[12.5px] text-hi outline-none placeholder:text-dim"
         />
@@ -77,26 +83,29 @@ export default function Topbar({ title, subtitle }) {
 
       {/* Laptop View Controls (Clock + Bell + Settings + Profile) */}
       <div className="hidden items-center gap-3 lg:flex lg:ml-auto lg:w-auto lg:justify-start">
-        <div className="font-mono text-[11.5px] tracking-wide text-lo">{clock}</div>
+        <div className="font-mono text-[11.5px] tracking-wide text-lo tabular-nums">{clock}</div>
 
         {/* Bell with dropdown for Laptop View */}
-        <div className="relative" ref={bellRef}>
+        <div className="relative">
           <button
-            onClick={() => setNotifOpen((o) => !o)}
+            onClick={() => setNotifOpenDesktop((o) => !o)}
+            aria-label="Toggle notifications menu"
+            aria-expanded={notifOpenDesktop}
             className="relative flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-panel text-lo hover:bg-hover hover:text-hi transition-colors cursor-pointer"
           >
             {unreadCount > 0 && (
-              <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red px-0.5 text-[9px] font-bold text-white">
+              <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red px-0.5 font-mono text-[9px] font-bold text-white tabular-nums">
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}
             <Bell className="h-3.5 w-3.5" strokeWidth={2} />
           </button>
-          <NotificationDropdown open={notifOpen} onClose={() => setNotifOpen(false)} />
+          <NotificationDropdown open={notifOpenDesktop} onClose={() => setNotifOpenDesktop(false)} />
         </div>
 
         <button
           onClick={() => navigate('/settings')}
+          aria-label="Open settings"
           className="flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-panel text-lo hover:bg-hover hover:text-hi transition-colors cursor-pointer"
         >
           <SettingsIcon className="h-3.5 w-3.5" strokeWidth={2} />
@@ -104,6 +113,7 @@ export default function Topbar({ title, subtitle }) {
 
         <button
           onClick={() => navigate('/profile')}
+          aria-label="View user profile"
           title="View profile"
           className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-line bg-panel-2 font-display text-[11px] font-bold text-lo hover:bg-hover hover:text-hi transition-colors cursor-pointer"
         >

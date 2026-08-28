@@ -13,7 +13,7 @@ export default function Profile() {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+    <div className="flex min-h-0 flex-1 flex-col md:overflow-hidden">
       <Topbar title="Profile" subtitle="Your account details" />
 
       <div className="flex-1 overflow-y-auto px-4 pb-24 py-5 sm:px-6 md:pb-5">

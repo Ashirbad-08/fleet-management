@@ -7,7 +7,7 @@ export default function Firmware() {
   const updatingList = vehicles.filter((v) => updatingVehicles[v.id] !== undefined)
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+    <div className="flex min-h-0 flex-1 flex-col md:overflow-hidden">
       <Topbar title="Firmware" subtitle="Manage and roll out device firmware versions" />
 
       <div className="flex-1 overflow-y-auto px-4 pb-24 py-5 sm:px-6 md:pb-5">

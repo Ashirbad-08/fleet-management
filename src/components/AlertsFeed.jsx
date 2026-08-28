@@ -27,18 +27,20 @@ export default function AlertsFeed({ limit, showSearchFilter = true, showSeeAll 
             <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-dim" />
             <input
               type="text"
+              aria-label="Search events by vehicle or keyword"
               placeholder="Search by vehicle or keyword..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full rounded-lg border border-line bg-panel-2 pl-9 pr-3.5 py-1.5 text-[12px] text-hi focus:border-accent focus:outline-hidden placeholder:text-dim"
             />
           </div>
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filter events by severity">
             {['all', 'critical', 'warning', 'info'].map((sev) => (
               <button
                 key={sev}
                 onClick={() => setSevFilter(sev)}
-                className={`rounded-full px-2.5 py-0.75 text-[10.5px] font-medium capitalize transition-all border ${
+                aria-label={`Filter by ${sev} priority`}
+                className={`rounded-full px-2.5 py-0.75 text-[10.5px] font-medium capitalize transition-all border cursor-pointer ${
                   sevFilter === sev
                     ? 'bg-accent/15 border-accent text-accent'
                     : 'bg-panel-2 border-line text-lo hover:text-hi hover:border-line-soft'
@@ -54,7 +56,13 @@ export default function AlertsFeed({ limit, showSearchFilter = true, showSeeAll 
       {/* Events List + Scrolling See All Button */}
       <div className="flex-1 overflow-y-auto px-3 py-2 space-y-1.5">
         {filtered.length === 0 ? (
-          <div className="p-6 text-center text-[12px] text-dim">No events match.</div>
+          <div className="flex flex-col items-center justify-center p-8 text-center text-dim gap-2">
+            <svg className="h-10 w-10 text-dim/50" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+            </svg>
+            <div className="text-[12.5px] font-semibold text-hi">No alert events match</div>
+            <p className="text-[11px] text-dim max-w-xs">All vehicle telemetry metrics are within safe operational thresholds.</p>
+          </div>
         ) : (
           visibleAlerts.map((a) => {
             const sev = SEV_META[a.sev]
@@ -78,7 +86,7 @@ export default function AlertsFeed({ limit, showSearchFilter = true, showSeeAll 
                     <span className="inline-flex items-center rounded-md border border-line-soft bg-panel-2/80 px-2 py-0.5 text-[10px] font-semibold text-lo">
                       {a.vehicle}
                     </span>
-                    <span className="font-mono text-[10px] text-dim">{a.time}</span>
+                    <span className="font-mono text-[10px] text-dim tabular-nums">{a.time}</span>
                   </div>
                 </div>
               </div>

@@ -60,11 +60,11 @@ export default function Vehicles() {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+    <div className="flex min-h-0 flex-1 flex-col md:overflow-hidden">
       <Topbar title="Vehicles" subtitle="Full fleet roster and live device status" />
 
-      <div className="flex flex-1 flex-col overflow-hidden px-4 pb-24 py-5 sm:px-6 md:pb-5">
-        <div className="flex flex-1 flex-col overflow-hidden rounded-xl border border-line bg-panel">
+      <div className="flex flex-1 flex-col overflow-y-auto px-4 pb-24 py-5 sm:px-6 md:overflow-hidden md:pb-5">
+        <div className="flex flex-1 flex-col md:overflow-hidden rounded-xl border border-line bg-panel">
           <div className="flex flex-col gap-3 border-b border-line-soft px-4 py-3.25 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-wrap items-center gap-3">
               <span className="font-display text-[13.5px] font-semibold">All vehicles</span>

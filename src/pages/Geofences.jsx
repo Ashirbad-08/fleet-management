@@ -94,7 +94,7 @@ export default function Geofences() {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+    <div className="flex min-h-0 flex-1 flex-col md:overflow-hidden">
       <Topbar title="Geofences" subtitle="Define zones and trigger alerts on entry or exit" />
       <div className="grid flex-1 grid-cols-1 gap-4 overflow-y-auto px-4 pb-24 py-5 sm:px-6 md:pb-5 lg:min-h-0 lg:grid-cols-[minmax(0,1fr)_300px] lg:overflow-hidden">
         <div className="min-h-[22rem] overflow-hidden rounded-xl border border-line bg-panel lg:min-h-0">

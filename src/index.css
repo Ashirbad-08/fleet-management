@@ -1,20 +1,26 @@
 @import "tailwindcss";
 
 @theme {
-  /* surfaces */
-  --color-base: #0a0c0f;
-  --color-panel: #12151b;
-  --color-panel-2: #181c23;
-  --color-hover: #1e232b;
+  /* 4-tier surface elevation tokens */
+  --color-surface-0: #080a0d;
+  --color-surface-1: #0f1217;
+  --color-surface-2: #161a22;
+  --color-surface-3: #1f2530;
+
+  /* surfaces (legacy alias compatibility) */
+  --color-base: #080a0d;
+  --color-panel: #0f1217;
+  --color-panel-2: #161a22;
+  --color-hover: #1f2530;
 
   /* lines */
   --color-line: #242a33;
   --color-line-soft: #1a1f27;
 
-  /* text */
-  --color-hi: #e8edf2;
-  --color-lo: #8b96a3;
-  --color-dim: #535d69;
+  /* text (WCAG AA enhanced contrast ratios) */
+  --color-hi: #f0f4f8;
+  --color-lo: #a3b1c2;
+  --color-dim: #6c798a;
 
   /* status / accent */
   --color-accent: #00ff66;
@@ -43,7 +49,7 @@ body {
 }
 
 ::selection {
-  background: color-mix(in oklab, var(--color-accent) 20%, transparent);
+  background: color-mix(in oklab, var(--color-accent) 25%, transparent);
 }
 
 ::-webkit-scrollbar {
@@ -61,6 +67,18 @@ body {
   background: #313944;
 }
 
+/* Accessible focus ring styling */
+*:focus-visible {
+  outline: none !important;
+  box-shadow: 0 0 0 2px var(--color-base), 0 0 0 4px var(--color-accent) !important;
+  border-radius: 6px;
+}
+
+/* Numerical stability for real-time telemetry updates */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
 @keyframes pulse-dot {
   0%,
   100% {
@@ -73,3 +91,4 @@ body {
 .animate-pulse-dot {
   animation: pulse-dot 2s infinite;
 }
+

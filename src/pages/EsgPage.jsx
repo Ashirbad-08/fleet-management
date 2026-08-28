@@ -74,7 +74,7 @@ export default function EsgPage() {
   const maxCo2 = useMemo(() => Math.max(...activeData.chart.map(c => c.co2)), [activeData])
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+    <div className="flex min-h-0 flex-1 flex-col md:overflow-hidden">
       <Topbar title="ESG Savings Calculator" subtitle="Calculate & track environmental impact of your EV fleet" />
 
       <div className="flex flex-1 flex-col overflow-y-auto px-4 pb-24 pt-5 sm:px-6 md:pb-5 space-y-4.5">

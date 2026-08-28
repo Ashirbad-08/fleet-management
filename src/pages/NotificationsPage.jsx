@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import Topbar from '../components/Topbar'
 import { useFleet } from '../context/FleetContext'
 import { Bell, CheckCheck, Trash2, X, AlertCircle, Info, TriangleAlert, Check } from '../components/icons'
+import { useNavigate } from 'react-router-dom'
 
 const TYPE_ICON = {
   warning: TriangleAlert,
@@ -23,7 +24,10 @@ export default function NotificationsPage() {
     markAllNotificationsRead,
     deleteNotification,
     clearAllNotifications,
+    vehicles,
+    setSelectedVehicleId,
   } = useFleet()
+  const navigate = useNavigate()
 
   const [filter, setFilter] = useState('all') // 'all', 'unread', 'read'
 
@@ -35,8 +39,19 @@ export default function NotificationsPage() {
     })
   }, [notifications, filter])
 
+  const handleNotificationClick = (n) => {
+    markNotificationRead(n.id)
+    const targetVehicle = vehicles?.find(
+      (v) => v.name === n.vehicle || v.id === n.vehicle || v.name.toLowerCase().includes(n.vehicle?.toLowerCase() || '')
+    )
+    if (targetVehicle) {
+      setSelectedVehicleId(targetVehicle.id)
+    }
+    navigate('/vehicles')
+  }
+
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+    <div className="flex min-h-0 flex-1 flex-col md:overflow-hidden">
       <Topbar title="Notifications Center" subtitle="Review live event feeds, device diagnostics, and policy warnings" />
 
       <div className="flex flex-1 flex-col overflow-hidden px-4 pb-24 py-5 sm:px-6 md:pb-5">
@@ -107,7 +122,8 @@ export default function NotificationsPage() {
                 return (
                   <div
                     key={n.id}
-                    className="group flex items-start justify-between gap-3 px-4 py-4.5 transition-colors hover:bg-hover sm:gap-4 sm:px-6"
+                    onClick={() => handleNotificationClick(n)}
+                    className="group flex cursor-pointer items-start justify-between gap-3 px-4 py-4.5 transition-colors hover:bg-hover sm:gap-4 sm:px-6"
                   >
                     <div className="flex items-start gap-4 min-w-0">
                       <div className={`mt-0.5 flex h-7.5 w-7.5 shrink-0 items-center justify-center rounded-lg ${cls}`}>
@@ -118,8 +134,8 @@ export default function NotificationsPage() {
                           {n.title}
                         </div>
                         <div className="mt-1.5 flex flex-wrap items-center gap-3">
-                          <span className="inline-flex items-center gap-1 text-[11.5px] text-lo">
-                            <span className="h-1 w-1 rounded-full bg-dim" />
+                          <span className="inline-flex items-center gap-1 text-[11.5px] text-accent hover:underline font-medium">
+                            <span className="h-1 w-1 rounded-full bg-accent" />
                             {n.vehicle}
                           </span>
                           <span className="font-mono text-[10.5px] text-dim">{n.time}</span>
@@ -135,16 +151,16 @@ export default function NotificationsPage() {
                     <div className="flex shrink-0 items-center gap-2 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
                       {!n.read && (
                         <button
-                          onClick={() => markNotificationRead(n.id)}
-                          className="flex h-6.5 w-6.5 items-center justify-center rounded-md border border-line bg-panel-2 text-dim hover:text-green hover:border-green/30"
+                          onClick={(e) => { e.stopPropagation(); markNotificationRead(n.id) }}
+                          className="flex h-6.5 w-6.5 items-center justify-center rounded-md border border-line bg-panel-2 text-dim hover:text-green hover:border-green/30 cursor-pointer"
                           title="Mark read"
                         >
                           <Check className="h-3.5 w-3.5" strokeWidth={2.5} />
                         </button>
                       )}
                       <button
-                        onClick={() => deleteNotification(n.id)}
-                        className="flex h-6.5 w-6.5 items-center justify-center rounded-md border border-line bg-panel-2 text-dim hover:text-red hover:border-red/30"
+                        onClick={(e) => { e.stopPropagation(); deleteNotification(n.id) }}
+                        className="flex h-6.5 w-6.5 items-center justify-center rounded-md border border-line bg-panel-2 text-dim hover:text-red hover:border-red/30 cursor-pointer"
                         title="Delete notification"
                       >
                         <X className="h-3.5 w-3.5" strokeWidth={2} />

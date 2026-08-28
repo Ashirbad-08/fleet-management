@@ -40,4 +40,9 @@ export {
   BarChart3,
   Maximize2,
   Minimize2,
+  EyeOff,
+  ArrowRight,
+  Mail,
+  KeyRound,
+  Sparkles,
 } from 'lucide-react'
