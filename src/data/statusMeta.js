@@ -8,7 +8,7 @@ export const STATUS_META = {
 }
 
 export const SEV_META = {
-  critical: { color: 'var(--color-red)', classes: 'bg-red/15 text-red' },
-  warning: { color: 'var(--color-amber)', classes: 'bg-amber/15 text-amber' },
-  info: { color: 'var(--color-accent)', classes: 'bg-accent/15 text-accent' },
+  critical: { color: 'var(--color-red)', classes: 'bg-red/15 text-red border border-red/20' },
+  warning: { color: 'var(--color-amber)', classes: 'bg-amber/15 text-amber border border-amber/20' },
+  info: { color: 'var(--color-accent)', classes: 'bg-accent/15 text-accent border border-accent/20' },
 }

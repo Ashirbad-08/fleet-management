@@ -122,7 +122,7 @@ export default function Login() {
         <div className="rounded-2xl border border-white/[0.08] bg-panel/80 px-8 py-10 shadow-[0_30px_80px_rgba(0,0,0,0.7)] backdrop-blur-2xl">
           <div className="mb-5 text-center">
             <div className="font-display text-[32px] font-bold leading-none tracking-tight">
-              Electri<span className="text-accent" style={{ filter: 'drop-shadow(0 0 8px rgba(0,255,102,0.95)) drop-shadow(0 0 22px rgba(0,255,102,0.55))' }}>E</span>
+              Electri<span className="text-green-400" style={{ filter: 'drop-shadow(0 0 2px rgba(0,255,102,0.95)) drop-shadow(0 0 22px rgba(0,255,102,0.55))' }}>E</span>
             </div>
             <p className="mt-1 text-[12px] text-dim tracking-wide">Fleet Telemetry & Operations</p>
           </div>
@@ -175,7 +175,7 @@ export default function Login() {
               </span>
             </label>
 
-            <button type="submit" disabled={isSubmitting} className="flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-accent text-[13.5px] font-semibold text-base transition-all hover:bg-accent/85 hover:shadow-[0_0_24px_rgba(0,255,102,0.4)] active:scale-[0.99] disabled:opacity-50 cursor-pointer">
+            <button type="submit" disabled={isSubmitting} className="flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-accent text-[13.5px] font-semibold text-base transition-all active:scale-[0.99] disabled:opacity-50 cursor-pointer">
               {isSubmitting ? (
                 <><div className="h-4 w-4 rounded-full border-2 border-base border-t-transparent animate-spin" /><span>Authenticating…</span></>
               ) : (

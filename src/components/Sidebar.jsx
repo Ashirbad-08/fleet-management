@@ -22,7 +22,7 @@ export default function Sidebar() {
       <aside aria-label="Main Sidebar Navigation" className="hidden md:flex md:sticky md:top-0 md:self-start md:h-dvh w-54 shrink-0 flex-col border-r border-line bg-panel p-3">
         <div className="px-2 pb-4 pt-1">
           <div className="font-display text-[30.5px] font-bold leading-none tracking-tight">
-            Electri<span className="text-accent [filter:drop-shadow(0_0_8px_rgba(0,255,102,0.95))_drop-shadow(0_0_20px_rgba(0,255,102,0.6))]">E</span>
+            Electri<span className="text-green-400 [filter:drop-shadow(0_0_2px_rgba(0,255,102,0.95))_drop-shadow(0_0_20px_rgba(0,255,102,0.6))]">E</span>
           </div>
           <div className="mt-1 font-mono text-[9.5px] uppercase tracking-wider text-dim">Fleet Monitor</div>
         </div>
@@ -105,6 +105,14 @@ export default function Sidebar() {
             )}
           </NavLink>
         ))}
+        <button
+          onClick={logout}
+          aria-label="Sign Out"
+          className="relative flex min-w-17 flex-1 flex-col items-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-medium text-lo hover:text-red transition-colors cursor-pointer"
+        >
+          <Power className="h-4 w-4 shrink-0 text-red/80" strokeWidth={2} />
+          <span className="max-w-full truncate">Sign Out</span>
+        </button>
       </nav>
     </>
   )

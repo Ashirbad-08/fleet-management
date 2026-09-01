@@ -90,7 +90,7 @@ export default function Admins() {
     return matched || { label: r, color: 'text-lo', bg: 'bg-panel-2' }
   }
 
-  const inputCls = 'w-full rounded-md border border-line bg-panel-2 px-3 py-1.75 text-[12.5px] text-hi outline-none focus:border-accent'
+  const inputCls = 'w-full rounded-md border border-line bg-panel-2 px-3 py-1.75 text-[12.5px] text-hi outline-none focus:border-line focus:outline-none'
 
   return (
     <div className="flex min-h-0 flex-1 flex-col md:overflow-hidden">

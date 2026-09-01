@@ -69,7 +69,7 @@ export default function Topbar({ title, subtitle }) {
       </div>
 
       {/* Search Input Bar */}
-      <div className="flex w-full items-center gap-2 rounded-lg border border-line bg-panel px-2.5 py-1.5 lg:ml-2 lg:w-70">
+      <div className="flex w-full items-center gap-2 rounded-lg border border-line bg-panel px-2.5 py-1.5 lg:ml-2 lg:w-70 focus-within:border-line">
         <Search className="h-3.5 w-3.5 shrink-0 text-dim" strokeWidth={2} />
         <input
           value={searchQuery}
@@ -77,7 +77,7 @@ export default function Topbar({ title, subtitle }) {
           type="text"
           aria-label="Search vehicles by name, plate, or device ID"
           placeholder="Search vehicle, plate or device ID…"
-          className="w-full bg-transparent text-[12.5px] text-hi outline-none placeholder:text-dim"
+          className="w-full bg-transparent text-[12.5px] text-hi outline-none focus:outline-none focus:ring-0 placeholder:text-dim"
         />
       </div>
 

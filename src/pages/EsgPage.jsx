@@ -88,7 +88,7 @@ export default function EsgPage() {
                 <select
                   value={period}
                   onChange={(e) => setPeriod(e.target.value)}
-                  className="rounded-lg border border-line bg-panel-2 px-3 py-1.5 pr-8 text-[12px] font-medium text-hi outline-none focus:border-accent cursor-pointer appearance-none"
+                  className="rounded-lg border border-line bg-panel-2 px-3 py-1.5 pr-8 text-[12px] font-medium text-hi outline-none focus:border-line focus:outline-none cursor-pointer appearance-none"
                 >
                   <option value="7d">Last 7 Days</option>
                   <option value="30d">Last 30 Days</option>
@@ -104,7 +104,7 @@ export default function EsgPage() {
                 <select
                   value={depot}
                   onChange={(e) => setDepot(e.target.value)}
-                  className="rounded-lg border border-line bg-panel-2 px-3 py-1.5 pr-8 text-[12px] font-medium text-hi outline-none focus:border-accent cursor-pointer appearance-none"
+                  className="rounded-lg border border-line bg-panel-2 px-3 py-1.5 pr-8 text-[12px] font-medium text-hi outline-none focus:border-line focus:outline-none cursor-pointer appearance-none"
                 >
                   <option value="all">All Depots</option>
                   <option value="pune">Pune Depot</option>

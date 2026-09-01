@@ -67,11 +67,18 @@ body {
   background: #313944;
 }
 
-/* Accessible focus ring styling */
+/* Clean focus ring styling (no green border on click) */
 *:focus-visible {
+  outline: 1px solid var(--color-line) !important;
+  box-shadow: none !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus,
+button:focus {
   outline: none !important;
-  box-shadow: 0 0 0 2px var(--color-base), 0 0 0 4px var(--color-accent) !important;
-  border-radius: 6px;
+  box-shadow: none !important;
 }
 
 /* Numerical stability for real-time telemetry updates */

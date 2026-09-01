@@ -1,10 +1,10 @@
 import Topbar from '../components/Topbar'
-import { ShieldCheck } from '../components/icons'
+import { ShieldCheck, Power } from '../components/icons'
 import { useFleet } from '../context/FleetContext'
 import { ROLES } from '../data/admins'
 
 export default function Profile() {
-  const { admins } = useFleet()
+  const { admins, logout } = useFleet()
   const admin = admins[0]
   const roleMeta = ROLES.find((role) => role.value === admin?.role) ?? {
     label: admin?.role ?? 'Admin',
@@ -32,10 +32,19 @@ export default function Profile() {
                     <p className="text-[13px] text-dim">{admin?.email ?? 'rajesh@fleetcontrol.io'}</p>
                   </div>
                 </div>
-                <span className={`inline-flex self-start items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold sm:self-center ${roleMeta.bg} ${roleMeta.color}`}>
-                  <ShieldCheck className="h-3.5 w-3.5" strokeWidth={2.3} />
-                  {roleMeta.label}
-                </span>
+                <div className="flex flex-wrap items-center gap-3 self-start sm:self-center">
+                  <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold ${roleMeta.bg} ${roleMeta.color}`}>
+                    <ShieldCheck className="h-3.5 w-3.5" strokeWidth={2.3} />
+                    {roleMeta.label}
+                  </span>
+                  <button
+                    onClick={logout}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-red/10 border border-red/20 px-3 py-1.5 text-[12px] font-medium text-red hover:bg-red/20 transition-colors cursor-pointer"
+                  >
+                    <Power className="h-3.5 w-3.5" strokeWidth={2} />
+                    Sign Out
+                  </button>
+                </div>
               </div>
             </div>
           </div>

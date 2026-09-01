@@ -1,19 +1,58 @@
 import { useState, useMemo } from 'react'
 import Topbar from '../components/Topbar'
 import { useFleet } from '../context/FleetContext'
-import { Bell, CheckCheck, Trash2, X, AlertCircle, Info, TriangleAlert, Check } from '../components/icons'
+import {
+  Bell,
+  CheckCheck,
+  Trash2,
+  X,
+  AlertCircle,
+  Info,
+  TriangleAlert,
+  Check,
+  BatteryMedium,
+  ShieldAlert,
+  Thermometer,
+  Cpu,
+  WifiOff,
+  MapPin,
+  Gauge,
+} from '../components/icons'
 import { useNavigate } from 'react-router-dom'
 
-const TYPE_ICON = {
-  warning: TriangleAlert,
-  info: Info,
-  critical: AlertCircle,
+function getNotificationIcon(n) {
+  if (n.icon) return n.icon
+  const text = ((n.title || '') + ' ' + (n.msg || '')).toLowerCase()
+  if (text.includes('battery') || text.includes('charge') || text.includes('power')) {
+    return BatteryMedium
+  }
+  if (text.includes('ignition') || text.includes('unauthorized') || text.includes('security') || text.includes('tamper')) {
+    return ShieldAlert
+  }
+  if (text.includes('temp') || text.includes('temperature') || text.includes('cargo') || text.includes('reefer')) {
+    return Thermometer
+  }
+  if (text.includes('firmware') || text.includes('update') || text.includes('installed')) {
+    return Cpu
+  }
+  if (text.includes('gps') || text.includes('offline') || text.includes('signal') || text.includes('heartbeat') || text.includes('connection')) {
+    return WifiOff
+  }
+  if (text.includes('geofence') || text.includes('entered') || text.includes('exited') || text.includes('hub') || text.includes('zone')) {
+    return MapPin
+  }
+  if (text.includes('braking') || text.includes('speed') || text.includes('harsh') || text.includes('acceleration') || text.includes('overspeed')) {
+    return Gauge
+  }
+  if (n.type === 'critical') return AlertCircle
+  if (n.type === 'warning') return TriangleAlert
+  return Info
 }
 
 const TYPE_CLASSES = {
+  critical: 'bg-red/15 text-red border border-red/20',
   warning: 'bg-amber/15 text-amber border border-amber/20',
   info: 'bg-accent/15 text-accent border border-accent/20',
-  critical: 'bg-red/15 text-red border border-red/20',
 }
 
 export default function NotificationsPage() {
@@ -117,7 +156,7 @@ export default function NotificationsPage() {
               </div>
             ) : (
               filteredNotifications.map((n) => {
-                const Icon = TYPE_ICON[n.type] || Info
+                const Icon = getNotificationIcon(n)
                 const cls = TYPE_CLASSES[n.type] || TYPE_CLASSES.info
                 return (
                   <div

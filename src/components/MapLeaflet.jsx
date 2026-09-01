@@ -61,7 +61,7 @@ function getTileUrl(style) {
 }
 
 export default function MapLeaflet({ vehicles = [], height = '100%', zoom = 5, center = DEFAULT_CENTER, mapStyle, geofences }) {
-  const { settings, geofences: contextGeofences } = useFleet()
+  const { settings, geofences: contextGeofences, setSelectedVehicleId, sendDeviceCommand } = useFleet()
   const activeMapStyle = mapStyle || settings?.mapStyle || 'Dark Mode'
   const activeGeofences = useMemo(() => geofences || contextGeofences || [], [geofences, contextGeofences])
 
@@ -73,6 +73,23 @@ export default function MapLeaflet({ vehicles = [], height = '100%', zoom = 5, c
   const tileLayerRef = useRef(null)
   const [active, setActive] = useState(false)
   const overlayRef = useRef(null)
+
+  // Register window handlers for popup action buttons
+  useEffect(() => {
+    window.__selectMapVehicle = (id) => {
+      setSelectedVehicleId(id)
+    }
+    window.__pingMapVehicle = (id) => {
+      const v = vehicles.find((veh) => veh.id === id)
+      if (v) {
+        sendDeviceCommand(v, 'restart')
+      }
+    }
+    return () => {
+      delete window.__selectMapVehicle
+      delete window.__pingMapVehicle
+    }
+  }, [setSelectedVehicleId, sendDeviceCommand, vehicles])
 
   // Status counts for bottom legend overlay
   const statusCounts = useMemo(() => {
@@ -174,8 +191,25 @@ export default function MapLeaflet({ vehicles = [], height = '100%', zoom = 5, c
     markersRef.current.forEach((m) => m.remove())
     markersRef.current = []
 
+    // Track coordinates to apply slight offset jitter for overlapping markers in depot yards
+    const coordCounts = {}
+
     vehicles.forEach((v) => {
       if (!v.lat || !v.lon) return
+
+      const key = `${v.lat.toFixed(3)},${v.lon.toFixed(3)}`
+      const count = coordCounts[key] || 0
+      coordCounts[key] = count + 1
+
+      let lat = v.lat
+      let lon = v.lon
+      if (count > 0) {
+        const angle = count * (Math.PI / 3)
+        const radius = 0.0008 * Math.ceil(count / 6)
+        lat += Math.sin(angle) * radius
+        lon += Math.cos(angle) * radius
+      }
+
       const meta = STATUS_META[v.status] || STATUS_META.offline
       const color = meta.color.startsWith('var')
         ? { online: '#00ff66', idle: '#f5a623', alert: '#ff5c5c', offline: '#5b6572' }[v.status] || '#5b6572'
@@ -189,7 +223,7 @@ export default function MapLeaflet({ vehicles = [], height = '100%', zoom = 5, c
       })
 
       const tooltipContent = `
-        <div style="padding:6px 10px;background:#12151b;color:#e8edf2;border:1px solid #242a33;border-radius:8px;box-shadow:0 10px 25px rgba(0,0,0,0.5);font-family:Inter,sans-serif;min-w:140px;">
+        <div style="padding:6px 10px;background:#12151b;color:#e8edf2;border:1px solid #242a33;border-radius:8px;box-shadow:0 10px 25px rgba(0,0,0,0.5);font-family:Inter,sans-serif;min-width:140px;">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;font-weight:700;">
             <span>${v.name}</span>
             <span style="font-size:9.5px;font-family:JetBrains Mono,monospace;color:${color};background:${color}15;padding:1px 5px;border-radius:4px;border:1px solid ${color}30;text-transform:uppercase;">
@@ -208,12 +242,48 @@ export default function MapLeaflet({ vehicles = [], height = '100%', zoom = 5, c
         </div>
       `
 
-      const marker = L.marker([v.lat, v.lon], { icon })
+      const popupContent = `
+        <div style="padding:10px 12px;background:#12151b;color:#e8edf2;border:1px solid #242a33;border-radius:10px;box-shadow:0 12px 30px rgba(0,0,0,0.7);font-family:Inter,sans-serif;min-width:190px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+            <span style="font-size:13px;font-weight:700;color:#f0f4f8;">${v.name}</span>
+            <span style="font-size:9.5px;font-family:JetBrains Mono,monospace;color:${color};background:${color}20;padding:2px 6px;border-radius:4px;border:1px solid ${color}40;text-transform:uppercase;font-weight:700;">
+              ${v.status}
+            </span>
+          </div>
+          <div style="margin-top:3px;font-size:11px;color:#8b96a3;font-family:JetBrains Mono,monospace;">
+            ${v.plate} · ${v.model}
+          </div>
+          <div style="margin-top:8px;display:flex;align-items:center;justify-content:space-between;font-size:11px;">
+            <span style="color:#8b96a3;">Speed</span>
+            <span style="font-weight:600;color:#f0f4f8;font-family:JetBrains Mono,monospace;">${v.speed > 0 ? `${v.speed} km/h` : 'Stopped'}</span>
+          </div>
+          <div style="margin-top:6px;display:flex;align-items:center;gap:6px;">
+            <div style="flex:1;height:5px;background:#181c23;border-radius:3px;overflow:hidden;border:1px solid #242a33;">
+              <div style="height:100%;width:${v.battery}%;background:${v.battery > 50 ? '#00ff66' : v.battery > 20 ? '#f5a623' : '#ff5c5c'};"></div>
+            </div>
+            <span style="font-size:10px;font-family:JetBrains Mono,monospace;color:#8b96a3;">${v.battery}%</span>
+          </div>
+          <div style="margin-top:10px;display:flex;gap:6px;padding-top:8px;border-top:1px solid #242a33;">
+            <button onclick="window.__selectMapVehicle('${v.id}')" style="flex:1;padding:5px 8px;font-size:11px;font-weight:600;background:#00ff6620;color:#00ff66;border:1px solid #00ff6640;border-radius:6px;cursor:pointer;transition:all 0.2s;">
+              View Telemetry
+            </button>
+            <button onclick="window.__pingMapVehicle('${v.id}')" style="flex:1;padding:5px 8px;font-size:11px;font-weight:600;background:#1e242d;color:#8b96a3;border:1px solid #242a33;border-radius:6px;cursor:pointer;transition:all 0.2s;">
+              Ping Device
+            </button>
+          </div>
+        </div>
+      `
+
+      const marker = L.marker([lat, lon], { icon })
         .addTo(map)
         .bindTooltip(tooltipContent, {
           direction: 'top',
           offset: [0, -10],
           opacity: 1,
+          className: '',
+        })
+        .bindPopup(popupContent, {
+          offset: [0, -10],
           className: '',
         })
 
@@ -258,6 +328,9 @@ export default function MapLeaflet({ vehicles = [], height = '100%', zoom = 5, c
         }
         .leaflet-tooltip { background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; }
         .leaflet-tooltip-top::before { display: none !important; }
+        .leaflet-popup-content-wrapper { background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; }
+        .leaflet-popup-tip { background: #12151b !important; border: 1px solid #242a33 !important; }
+        .leaflet-popup-content { margin: 0 !important; }
         .leaflet-container { background: #080a0d !important; font-family: Inter, sans-serif !important; }
         .leaflet-bar { border: 1px solid #242a33 !important; border-radius: 8px !important; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important; }
         .leaflet-bar a { background: #0f1217 !important; color: #f0f4f8 !important; border-bottom: 1px solid #242a33 !important; }

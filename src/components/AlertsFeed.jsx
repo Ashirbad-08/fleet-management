@@ -1,8 +1,57 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { TriangleAlert, Search, ChevronRight } from './icons'
+import {
+  TriangleAlert,
+  AlertCircle,
+  Info,
+  Search,
+  ChevronRight,
+  BatteryMedium,
+  ShieldAlert,
+  Thermometer,
+  Cpu,
+  WifiOff,
+  MapPin,
+  Gauge,
+} from './icons'
 import { useFleet } from '../context/FleetContext'
 import { SEV_META } from '../data/statusMeta'
+
+function getAlertIcon(alert) {
+  if (alert.icon) {
+    const IconComp = alert.icon
+    return <IconComp className="h-3 w-3" strokeWidth={2.2} />
+  }
+  const msg = (alert.msg || '').toLowerCase()
+  if (msg.includes('battery') || msg.includes('charge') || msg.includes('power')) {
+    return <BatteryMedium className="h-3 w-3" strokeWidth={2.2} />
+  }
+  if (msg.includes('ignition') || msg.includes('unauthorized') || msg.includes('security') || msg.includes('tamper')) {
+    return <ShieldAlert className="h-3 w-3" strokeWidth={2.2} />
+  }
+  if (msg.includes('temp') || msg.includes('temperature') || msg.includes('cargo') || msg.includes('reefer')) {
+    return <Thermometer className="h-3 w-3" strokeWidth={2.2} />
+  }
+  if (msg.includes('firmware') || msg.includes('update') || msg.includes('installed')) {
+    return <Cpu className="h-3 w-3" strokeWidth={2.2} />
+  }
+  if (msg.includes('gps') || msg.includes('offline') || msg.includes('signal') || msg.includes('heartbeat') || msg.includes('connection')) {
+    return <WifiOff className="h-3 w-3" strokeWidth={2.2} />
+  }
+  if (msg.includes('geofence') || msg.includes('entered') || msg.includes('exited') || msg.includes('hub') || msg.includes('zone')) {
+    return <MapPin className="h-3 w-3" strokeWidth={2.2} />
+  }
+  if (msg.includes('braking') || msg.includes('speed') || msg.includes('harsh') || msg.includes('acceleration') || msg.includes('overspeed')) {
+    return <Gauge className="h-3 w-3" strokeWidth={2.2} />
+  }
+  if (alert.sev === 'critical') {
+    return <AlertCircle className="h-3 w-3" strokeWidth={2.2} />
+  }
+  if (alert.sev === 'warning') {
+    return <TriangleAlert className="h-3 w-3" strokeWidth={2.2} />
+  }
+  return <Info className="h-3 w-3" strokeWidth={2.2} />
+}
 
 export default function AlertsFeed({ limit, showSearchFilter = true, showSeeAll = false }) {
   const { alerts } = useFleet()
@@ -31,7 +80,7 @@ export default function AlertsFeed({ limit, showSearchFilter = true, showSeeAll 
               placeholder="Search by vehicle or keyword..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-lg border border-line bg-panel-2 pl-9 pr-3.5 py-1.5 text-[12px] text-hi focus:border-accent focus:outline-hidden placeholder:text-dim"
+              className="w-full rounded-lg border border-line bg-panel-2 pl-9 pr-3.5 py-1.5 text-[12px] text-hi focus:border-line focus:outline-none placeholder:text-dim"
             />
           </div>
           <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filter events by severity">
@@ -73,10 +122,10 @@ export default function AlertsFeed({ limit, showSearchFilter = true, showSeeAll 
               >
                 <div
                   className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg ${
-                    sev?.classes || 'bg-accent/15 text-accent'
+                    sev?.classes || 'bg-accent/15 text-accent border border-accent/20'
                   }`}
                 >
-                  <TriangleAlert className="h-3 w-3" strokeWidth={2.2} />
+                  {getAlertIcon(a)}
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="text-[12px] font-medium leading-snug text-hi group-hover:text-white transition-colors">

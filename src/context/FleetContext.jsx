@@ -8,7 +8,7 @@ const FleetContext = createContext(null)
 // Convert existing alerts to notification format
 const seedNotifications = seedAlerts.map((a, i) => ({
   id: `n-${a.id}`,
-  type: a.sev === 'critical' ? 'warning' : a.sev === 'warning' ? 'warning' : 'info',
+  type: a.sev,
   title: a.msg,
   vehicle: a.vehicle,
   time: a.time,

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { X, UploadCloud, Power, Lock, Unlock, TriangleAlert, Edit2, Save, Trash2, Map } from './icons'
 import { useFleet } from '../context/FleetContext'
@@ -33,18 +33,29 @@ export default function VehicleDrawer() {
   const [editForm, setEditForm] = useState({})
   const [confirmDelete, setConfirmDelete] = useState(false)
 
+  const close = () => {
+    setSelectedVehicleId(null)
+    setEditing(false)
+    setConfirmDelete(false)
+  }
+
+  // Handle Escape key to close drawer smoothly
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && open) {
+        close()
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [open])
+
   const battData = useMemo(() => {
     if (!selectedVehicle) return []
     const series = genSeries(selectedVehicle.battery, 6, 20)
     series[series.length - 1] = selectedVehicle.battery
     return series
   }, [selectedVehicle])
-
-  const close = () => {
-    setSelectedVehicleId(null)
-    setEditing(false)
-    setConfirmDelete(false)
-  }
 
   const startEdit = () => {
     setEditForm({
@@ -95,13 +106,14 @@ export default function VehicleDrawer() {
       ]
     : []
 
-  const inputCls = 'w-full rounded-md border border-line bg-panel-2 px-2.5 py-1.5 text-[12.5px] text-hi outline-none focus:border-accent'
+  const inputCls = 'w-full rounded-md border border-line bg-panel-2 px-2.5 py-1.5 text-[12.5px] text-hi outline-none focus:border-line focus:outline-none'
 
   return (
     <>
       <div
         onClick={close}
-        className={`fixed inset-0 z-40 bg-black/55 backdrop-blur-[2px] transition-opacity ${
+        aria-hidden="true"
+        className={`fixed inset-0 z-40 bg-black/60 backdrop-blur-xs transition-opacity duration-300 ${
           open ? 'opacity-100' : 'pointer-events-none opacity-0'
         }`}
       />
@@ -109,7 +121,7 @@ export default function VehicleDrawer() {
       <aside
         role="dialog"
         aria-label="Vehicle Details & Controls"
-        className={`fixed right-0 top-0 z-50 h-dvh w-full overflow-y-auto border-l border-line bg-panel transition-transform duration-200 sm:w-105 ${
+        className={`fixed right-0 top-0 z-50 h-dvh w-full overflow-y-auto border-l border-line bg-panel transition-transform duration-300 ease-in-out sm:w-105 ${
           open ? 'translate-x-0' : 'translate-x-full'
         }`}
       >

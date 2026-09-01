@@ -73,7 +73,7 @@ export default function Dashboard() {
             {/* Professional Header Bar */}
             <div className="flex items-center justify-between border-b border-line-soft px-4 py-2.5 shrink-0 bg-panel/40">
               <div className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
+                <span className="h-2 w-2 rounded-full bg-accent animate-pulse" />
                 <div className="font-display text-[13.5px] font-semibold text-hi">Fleet tracking map</div>
                 <span className="ml-1.5 rounded-full border border-line-soft bg-panel-2 px-2 py-0.5 font-mono text-[10px] text-dim tabular-nums">
                   {filteredVehicles.length} / {vehicles.length} Active
@@ -134,7 +134,7 @@ export default function Dashboard() {
                     title="Filter status"
                   >
                     <Filter className="h-3.5 w-3.5 shrink-0 text-accent" strokeWidth={2} />
-                    <div className="flex max-w-0 items-center gap-1.5 opacity-0 whitespace-nowrap transition-all duration-300 ease-out group-hover:max-w-xs group-hover:opacity-100">
+                    <div className="flex max-w-0 overflow-hidden items-center gap-1.5 opacity-0 whitespace-nowrap transition-all duration-300 ease-out group-hover:max-w-xs group-hover:opacity-100">
                       <span>{currentFilterObj.label}</span>
                       {currentFilterObj.color && (
                         <span className={`h-1.5 w-1.5 rounded-full ${currentFilterObj.color}`} />
@@ -187,7 +187,7 @@ export default function Dashboard() {
           {/* Aesthetic Live Event Feed Widget */}
           <div className="flex min-h-[36rem] flex-col rounded-xl border border-line bg-panel xl:min-h-0 xl:overflow-hidden">
             <div className="flex items-center gap-2 border-b border-line-soft px-4 py-3 shrink-0">
-              <span className="h-1.5 w-1.5 rounded-full bg-red-600 animate-pulse" />
+              <span className="h-2 w-2 rounded-full bg-red-600 animate-pulse" />
               <div className="font-display text-[13.5px] font-semibold text-hi">Live event feed</div>
             </div>
             <AlertsFeed limit={7} showSearchFilter={false} showSeeAll={true} />
@@ -240,7 +240,7 @@ export default function Dashboard() {
                   title="Filter status"
                 >
                   <Filter className="h-4 w-4 shrink-0 text-accent" strokeWidth={2} />
-                  <div className="flex max-w-0 items-center gap-1.5 opacity-0 whitespace-nowrap transition-all duration-300 ease-out group-hover:max-w-xs group-hover:opacity-100">
+                  <div className="flex max-w-0 overflow-hidden items-center gap-1.5 opacity-0 whitespace-nowrap transition-all duration-300 ease-out group-hover:max-w-xs group-hover:opacity-100">
                     <span>{currentFilterObj.label}</span>
                     {currentFilterObj.color && (
                       <span className={`h-1.5 w-1.5 rounded-full ${currentFilterObj.color}`} />

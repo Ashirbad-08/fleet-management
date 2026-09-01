@@ -58,7 +58,7 @@ export default function EditVehicleModal({ vehicle, open, onClose }) {
     onClose()
   }
 
-  const inputCls = 'w-full rounded-md border border-line bg-panel-2 px-3 py-2 text-[12.5px] text-hi outline-none focus:border-accent'
+  const inputCls = 'w-full rounded-md border border-line bg-panel-2 px-3 py-2 text-[12.5px] text-hi outline-none focus:border-line focus:outline-none'
 
   return (
     <>
