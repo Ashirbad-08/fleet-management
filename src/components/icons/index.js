@@ -52,4 +52,8 @@ export {
   Gauge,
   Download,
   Radio,
+  Clock,
+  Navigation,
+  History,
+  Calendar,
 } from 'lucide-react'

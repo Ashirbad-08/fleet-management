@@ -42,7 +42,7 @@ export default function Gauge({ score, color }) {
       <text x={CX} y={CY - 10} textAnchor="middle" fontFamily="Space Grotesk" fontWeight="700" fontSize="28" fill="var(--color-hi)">
         {score}
       </text>
-      <text x={CX} y={CY + 8} textAnchor="middle" fontFamily="JetBrains Mono" fontSize="9" fill="var(--color-dim)">
+      <text x={CX} y={CY + 15} textAnchor="middle" fontFamily="JetBrains Mono" fontSize="9" fill="var(--color-dim)">
         HEALTH SCORE
       </text>
     </svg>

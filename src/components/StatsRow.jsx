@@ -52,7 +52,7 @@ export default function StatsRow() {
             <div className="flex items-center gap-1.5 font-display text-[11.5px] font-semibold text-lo group-hover:text-hi transition-colors">
               {c.pulse && (
                 <span className="relative flex h-2 w-2">
-                  <span className="h-2 w-2 rounded-full bg-accent" />
+                  <span className="h-2 w-2 rounded-full bg-accent/80" />
                 </span>
               )}
               <span>{c.label}</span>
@@ -65,17 +65,17 @@ export default function StatsRow() {
           </div>
 
           <div className="mt-3 flex items-baseline justify-between">
-            <div className="font-display text-[33px] font-bold tracking-tight text-hi tabular-nums">
+            <div className="font-display text-[33px]  tracking-tight text-hi tabular-nums">
               {c.value}
             </div>
             {c.badge && (
-              <span className="rounded-md border border-accent/25 bg-accent/10 px-1.75 py-0.5 font-mono text-[9.5px] font-medium text-accent">
+              <span className="rounded-md border border-accent/25 bg-accent/10 px-1.75 py-0.5 font-mono text-[9.5px] font-medium text-accent/80">
                 {c.badge}
               </span>
             )}
           </div>
 
-          <div className="mt-1 font-mono text-[10.5px] text-accent tabular-nums">
+          <div className="mt-1 font-mono text-[10.5px] text-accent/80 tabular-nums">
             {c.delta}
           </div>
         </div>

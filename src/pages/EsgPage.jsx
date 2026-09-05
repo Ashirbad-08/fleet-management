@@ -5,6 +5,10 @@ import { useFleet } from '../context/FleetContext'
 
 const PERIOD_DATA = {
   '7d': {
+    title: 'Daily Trends',
+    subtitle: 'Last 7 Days Breakdown',
+    co2Metric: '1.24 Metric Tons reduced',
+    reportingPeriod: 'Last 7 Days (Aug 18 – Aug 24, 2026)',
     co2: '1,240',
     diesel: '462',
     trees: '57.0',
@@ -22,6 +26,10 @@ const PERIOD_DATA = {
     ]
   },
   '30d': {
+    title: 'Weekly Trends',
+    subtitle: 'Last 30 Days Breakdown',
+    co2Metric: '5.12 Metric Tons reduced',
+    reportingPeriod: 'Last 30 Days (Jul 26 – Aug 24, 2026)',
     co2: '5,120',
     diesel: '1,910',
     trees: '235.2',
@@ -36,6 +44,10 @@ const PERIOD_DATA = {
     ]
   },
   '1y': {
+    title: 'Monthly Trends',
+    subtitle: 'Annual 12-Month Breakdown',
+    co2Metric: '14.93 Metric Tons reduced',
+    reportingPeriod: '8/24/2025 – 8/24/2026',
     co2: '14,932',
     diesel: '5,572',
     trees: '685.9',
@@ -48,7 +60,7 @@ const PERIOD_DATA = {
       { month: 'Jan', co2: 1100, diesel: 410 },
       { month: 'Feb', co2: 1250, diesel: 466 },
       { month: 'Mar', co2: 1380, diesel: 515 },
-      { month: 'Apr', co2: 15200, diesel: 5670 },
+      { month: 'Apr', co2: 1520, diesel: 567 },
       { month: 'May', co2: 1420, diesel: 530 },
       { month: 'Jun', co2: 1650, diesel: 615 },
       { month: 'Jul', co2: 1580, diesel: 590 },
@@ -141,7 +153,7 @@ export default function EsgPage() {
               <span className="text-[12px] font-medium text-lo">kilograms</span>
             </div>
             <div className="mt-1 font-mono text-[10.5px] text-accent/80">
-              14.93 Metric Tons reduced
+              {activeData.co2Metric}
             </div>
           </div>
 
@@ -200,12 +212,12 @@ export default function EsgPage() {
         {/* Chart & Report Summary Grid */}
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1fr_340px]">
           
-          {/* Monthly Trends Bar Chart */}
+          {/* Trends Bar Chart */}
           <div className="flex flex-col rounded-xl border border-line bg-panel p-5">
             <div className="flex items-center justify-between border-b border-line-soft pb-3.5 mb-4">
               <div className="flex items-center gap-2">
                 <BarChart3 className="h-4 w-4 text-accent" strokeWidth={2} />
-                <span className="font-display text-[14px] font-bold">Monthly Trends</span>
+                <span className="font-display text-[14px] font-bold">{activeData.title}</span>
               </div>
               <div className="flex items-center gap-3 text-[11px]">
                 <div className="flex items-center gap-1.5">
@@ -266,7 +278,7 @@ export default function EsgPage() {
                   </div>
                   <div>
                     <div className="text-[11px] font-semibold uppercase tracking-wider text-dim">Reporting Period</div>
-                    <div className="text-[12.5px] font-medium text-hi mt-0.5">8/24/2025 – 8/24/2026</div>
+                    <div className="text-[12.5px] font-medium text-hi mt-0.5">{activeData.reportingPeriod}</div>
                   </div>
                 </div>
 

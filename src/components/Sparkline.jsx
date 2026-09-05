@@ -1,6 +1,6 @@
 export default function Sparkline({ data, color }) {
-  const w = 372
-  const h = 64
+  const w = 420
+  const h = 56
   const pad = 4
   const max = Math.max(...data)
   const min = Math.min(...data)
@@ -17,7 +17,7 @@ export default function Sparkline({ data, color }) {
   const areaPoints = `${pad},${h - pad} ${points} ${w - pad},${h - pad}`
 
   return (
-    <svg width="100%" height={h} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none">
+    <svg width="100%" height={h} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="overflow-visible">
       <polygon points={areaPoints} fill={color} opacity="0.08" />
       <polyline points={points} fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
     </svg>

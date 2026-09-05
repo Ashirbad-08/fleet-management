@@ -60,7 +60,7 @@ function getTileUrl(style) {
   }
 }
 
-export default function MapLeaflet({ vehicles = [], height = '100%', zoom = 5, center = DEFAULT_CENTER, mapStyle, geofences }) {
+export default function MapLeaflet({ vehicles = [], height = '100%', zoom = 5, center = DEFAULT_CENTER, mapStyle, geofences, hideLegend = false }) {
   const { settings, geofences: contextGeofences, setSelectedVehicleId, sendDeviceCommand } = useFleet()
   const activeMapStyle = mapStyle || settings?.mapStyle || 'Dark Mode'
   const activeGeofences = useMemo(() => geofences || contextGeofences || [], [geofences, contextGeofences])
@@ -346,24 +346,26 @@ export default function MapLeaflet({ vehicles = [], height = '100%', zoom = 5, c
       />
 
       {/* Floating Bottom Fleet Status Legend Overlay */}
-      <div className="absolute bottom-3 left-3 z-10 flex flex-wrap items-center gap-3 rounded-xl border border-line/80 bg-panel-2/85 px-3.5 py-2 backdrop-blur-md shadow-lg">
-        <div className="flex items-center gap-1.5 text-[11px] font-medium text-hi">
-          <span className="h-2 w-2 rounded-full bg-accent" />
-          <span>Online (<strong className="font-mono tabular-nums">{statusCounts.online}</strong>)</span>
+      {!hideLegend && (
+        <div className="absolute bottom-3 left-3 z-10 flex flex-wrap items-center gap-3 rounded-xl border border-line/80 bg-panel-2/85 px-3.5 py-2 backdrop-blur-md shadow-lg">
+          <div className="flex items-center gap-1.5 text-[11px] font-medium text-hi">
+            <span className="h-2 w-2 rounded-full bg-accent" />
+            <span>Online (<strong className="font-mono tabular-nums">{statusCounts.online}</strong>)</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-[11px] font-medium text-hi">
+            <span className="h-2 w-2 rounded-full bg-amber" />
+            <span>Idle (<strong className="font-mono tabular-nums">{statusCounts.idle}</strong>)</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-[11px] font-medium text-hi">
+            <span className="h-2 w-2 rounded-full bg-red" />
+            <span>Alert (<strong className="font-mono tabular-nums">{statusCounts.alert}</strong>)</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-[11px] font-medium text-hi">
+            <span className="h-2 w-2 rounded-full bg-gray" />
+            <span>Offline (<strong className="font-mono tabular-nums">{statusCounts.offline}</strong>)</span>
+          </div>
         </div>
-        <div className="flex items-center gap-1.5 text-[11px] font-medium text-hi">
-          <span className="h-2 w-2 rounded-full bg-amber" />
-          <span>Idle (<strong className="font-mono tabular-nums">{statusCounts.idle}</strong>)</span>
-        </div>
-        <div className="flex items-center gap-1.5 text-[11px] font-medium text-hi">
-          <span className="h-2 w-2 rounded-full bg-red" />
-          <span>Alert (<strong className="font-mono tabular-nums">{statusCounts.alert}</strong>)</span>
-        </div>
-        <div className="flex items-center gap-1.5 text-[11px] font-medium text-hi">
-          <span className="h-2 w-2 rounded-full bg-gray" />
-          <span>Offline (<strong className="font-mono tabular-nums">{statusCounts.offline}</strong>)</span>
-        </div>
-      </div>
+      )}
 
       {!active && (
         <div
