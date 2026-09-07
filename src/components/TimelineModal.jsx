@@ -63,11 +63,11 @@ export default function TimelinePanel({ open, onClose, vehicle, events = [], onR
 
   return (
     <>
-      {/* Side-by-side Panel attached to left side of VehicleDrawer */}
+      {/* Side-by-side Panel attached to left side of VehicleDrawer (or on top in mobile) */}
       <div
         role="dialog"
         aria-label="Full Device Timeline Panel"
-        className={`fixed right-0 sm:right-[462px] top-0 z-[48] h-dvh w-full sm:w-[462px] flex flex-col border-l sm:border-r border-line bg-panel shadow-2xl transition-all duration-300 ease-in-out ${
+        className={`fixed right-0 sm:right-[462px] top-0 z-[60] sm:z-[48] h-dvh w-full sm:w-[462px] flex flex-col border-l sm:border-r border-line bg-panel shadow-2xl transition-all duration-300 ease-in-out ${
           open
             ? 'translate-x-0 opacity-100 pointer-events-auto'
             : 'translate-x-full sm:translate-x-[calc(100%+462px)] opacity-0 pointer-events-none'
