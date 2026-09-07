@@ -164,11 +164,18 @@ export default function NotificationDropdown({ open, onClose }) {
             const Icon = getNotificationIcon(n)
             const cls = TYPE_CLASSES[n.type] || TYPE_CLASSES.info
             return (
-              <Link
+              <div
                 key={n.id}
-                to="/vehicles"
+                role="button"
+                tabIndex={0}
                 onClick={() => handleNotificationClick(n)}
-                className="group relative flex cursor-pointer items-start gap-3 border-b border-line-soft px-4 py-3 hover:bg-hover transition-colors text-left"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    handleNotificationClick(n)
+                  }
+                }}
+                className="group relative flex cursor-pointer items-start gap-3 border-b border-line-soft px-4 py-3 hover:bg-hover transition-colors text-left outline-none"
               >
                 {!n.read && (
                   <span className="absolute right-3 top-3.5 h-1.5 w-1.5 rounded-full bg-amber" />
@@ -193,7 +200,7 @@ export default function NotificationDropdown({ open, onClose }) {
                 >
                   <X className="h-3 w-3" strokeWidth={2} />
                 </button>
-              </Link>
+              </div>
             )
           })
         )}

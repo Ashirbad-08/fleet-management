@@ -66,7 +66,6 @@ export default function NotificationsPage() {
     vehicles,
     setSelectedVehicleId,
   } = useFleet()
-  const navigate = useNavigate()
 
   const [filter, setFilter] = useState('all') // 'all', 'unread', 'read'
 
@@ -86,19 +85,18 @@ export default function NotificationsPage() {
     if (targetVehicle) {
       setSelectedVehicleId(targetVehicle.id)
     }
-    navigate('/vehicles')
   }
 
   return (
     <div className="flex min-h-0 flex-1 flex-col md:overflow-hidden">
-      <Topbar title="Notifications Center" subtitle="Review live event feeds, device diagnostics, and policy warnings" />
+      <Topbar title="Notifications Center" subtitle="Actionable operator alerts, priority issues, and diagnostic warnings" />
 
       <div className="flex flex-1 flex-col overflow-hidden px-4 pb-24 py-5 sm:px-6 md:pb-5">
         <div className="flex flex-1 flex-col overflow-hidden rounded-xl border border-line bg-panel">
           {/* Header Actions */}
           <div className="flex flex-col gap-3 border-b border-line-soft px-5 py-3.5 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-wrap items-center gap-3">
-              <span className="font-display text-[13.5px] font-semibold">Feed History</span>
+              <span className="font-display text-[13.5px] font-semibold">Actionable Alerts</span>
               {unreadCount > 0 && (
                 <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red px-1.5 text-[10px] font-bold text-white">
                   {unreadCount} unread

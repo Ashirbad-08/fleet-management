@@ -5,17 +5,11 @@ import {
   Radio,
   Download,
   RotateCw,
-  ChevronRight,
-  Filter,
-  Check,
-  TriangleAlert,
-  Info,
 } from './icons'
 
 export default function TimelinePanel({ open, onClose, vehicle, events = [], onRefresh, loading = false }) {
   const [search, setSearch] = useState('')
   const [filterSeverity, setFilterSeverity] = useState('all')
-  const [selectedEvent, setSelectedEvent] = useState(null)
 
   const filteredEvents = events.filter((e) => {
     const matchesSearch =
@@ -73,7 +67,7 @@ export default function TimelinePanel({ open, onClose, vehicle, events = [], onR
       <div
         role="dialog"
         aria-label="Full Device Timeline Panel"
-        className={`fixed right-0 sm:right-[462px] top-0 z-40 h-dvh w-full sm:w-[462px] flex flex-col border-l sm:border-r border-line bg-panel shadow-2xl transition-all duration-300 ease-in-out ${
+        className={`fixed right-0 sm:right-[462px] top-0 z-[48] h-dvh w-full sm:w-[462px] flex flex-col border-l sm:border-r border-line bg-panel shadow-2xl transition-all duration-300 ease-in-out ${
           open
             ? 'translate-x-0 opacity-100 pointer-events-auto'
             : 'translate-x-full sm:translate-x-[calc(100%+462px)] opacity-0 pointer-events-none'
@@ -170,7 +164,6 @@ export default function TimelinePanel({ open, onClose, vehicle, events = [], onR
             </div>
           ) : (
             filteredEvents.map((evt) => {
-              const isSelected = selectedEvent?.id === evt.id
               const sevColor =
                 evt.severity === 'critical'
                   ? 'var(--color-red)'
@@ -183,14 +176,9 @@ export default function TimelinePanel({ open, onClose, vehicle, events = [], onR
               return (
                 <div
                   key={evt.id}
-                  onClick={() => setSelectedEvent(isSelected ? null : evt)}
-                  className={`group rounded-xl border transition-all duration-150 cursor-pointer overflow-hidden ${
-                    isSelected
-                      ? 'border-accent/50 bg-accent/8 shadow-sm'
-                      : 'border-line-soft bg-panel hover:border-line hover:bg-panel-2/40'
-                  }`}
+                  className="group rounded-xl border border-line-soft bg-panel p-3 transition-all duration-150 hover:border-line hover:bg-panel-2/40 shadow-xs"
                 >
-                  <div className="flex items-start gap-2.5 p-3">
+                  <div className="flex items-start gap-2.5">
                     <span
                       className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full shadow-xs"
                       style={{ background: evt.color || sevColor }}
@@ -216,39 +204,7 @@ export default function TimelinePanel({ open, onClose, vehicle, events = [], onR
                         </div>
                       )}
                     </div>
-                    <ChevronRight
-                      className={`h-3.5 w-3.5 text-dim transition-transform shrink-0 mt-1 ${
-                        isSelected ? 'rotate-90 text-accent' : ''
-                      }`}
-                      strokeWidth={2}
-                    />
                   </div>
-
-                  {/* Expanded GraphQL Diagnostic info */}
-                  {isSelected && (
-                    <div className="border-t border-accent/20 bg-accent/5 px-3.5 py-3 space-y-2">
-                      <div className="flex items-center justify-between text-[10.5px] font-mono text-lo">
-                        <span>Event ID: {evt.id}</span>
-                        <span className="text-accent font-semibold">GraphQL: getTimelineDetailsByIMEI</span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-1.5 text-[10.5px] font-mono">
-                        <div className="rounded-lg border border-line-soft bg-panel px-2.5 py-2">
-                          <div className="text-dim uppercase tracking-wide mb-0.5" style={{ fontSize: '9px' }}>
-                            Severity Level
-                          </div>
-                          <div className="text-hi font-bold capitalize">{evt.severity}</div>
-                        </div>
-                        <div className="rounded-lg border border-line-soft bg-panel px-2.5 py-2">
-                          <div className="text-dim uppercase tracking-wide mb-0.5" style={{ fontSize: '9px' }}>
-                            Device IMEI
-                          </div>
-                          <div className="text-green font-bold truncate">
-                            {vehicle?.deviceId || vehicle?.id || 'IOT-DEVICE'}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
               )
             })

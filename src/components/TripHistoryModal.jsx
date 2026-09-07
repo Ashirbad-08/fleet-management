@@ -1,9 +1,8 @@
 import { useState } from 'react'
-import { X, Search, Clock, ArrowRight, Check, History, Download, MapPin, ChevronRight } from './icons'
+import { X, Search, Clock, ArrowRight, Check, History, Download } from './icons'
 
 export default function TripHistoryPanel({ open, onClose, vehicle, trips = [] }) {
   const [search, setSearch] = useState('')
-  const [selectedTrip, setSelectedTrip] = useState(null)
 
   const filteredTrips = trips.filter(
     (t) =>
@@ -39,7 +38,7 @@ export default function TripHistoryPanel({ open, onClose, vehicle, trips = [] })
       <div
         role="dialog"
         aria-label="Full Trip History Panel"
-        className={`fixed right-0 sm:right-[462px] top-0 z-40 h-dvh w-full sm:w-[462px] flex flex-col border-l sm:border-r border-line bg-panel shadow-2xl transition-all duration-300 ease-in-out ${
+        className={`fixed right-0 sm:right-[462px] top-0 z-[48] h-dvh w-full sm:w-[462px] flex flex-col border-l sm:border-r border-line bg-panel shadow-2xl transition-all duration-300 ease-in-out ${
           open ? 'translate-x-0 opacity-100 pointer-events-auto' : 'translate-x-full sm:translate-x-[calc(100%+462px)] opacity-0 pointer-events-none'
         }`}
       >
@@ -107,88 +106,49 @@ export default function TripHistoryPanel({ open, onClose, vehicle, trips = [] })
               <p className="text-[12px] text-dim">No matching trips found.</p>
             </div>
           ) : (
-            filteredTrips.map((t) => {
-              const isSelected = selectedTrip?.id === t.id
-              return (
-                <div
-                  key={t.id}
-                  onClick={() => setSelectedTrip(isSelected ? null : t)}
-                  className={`group rounded-xl border transition-all duration-150 cursor-pointer overflow-hidden ${
-                    isSelected
-                      ? 'border-accent/50 bg-accent/8 shadow-sm'
-                      : 'border-line-soft bg-panel hover:border-line hover:bg-panel-2/40'
-                  }`}
-                >
-                  {/* Card top */}
-                  <div className="flex items-start justify-between px-3.5 pt-3 pb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="font-display text-[13px] font-bold text-hi">{t.tripNumber}</span>
-                      {t.isLastRide && (
-                        <span className="rounded-full bg-accent/20 px-2 py-0.5 text-[9px] font-mono font-bold text-accent border border-accent/30 uppercase tracking-wide">
-                          Latest
-                        </span>
-                      )}
-                    </div>
-                    <ChevronRight
-                      className={`h-3.5 w-3.5 text-dim transition-transform shrink-0 mt-0.5 ${isSelected ? 'rotate-90 text-accent' : ''}`}
-                      strokeWidth={2}
-                    />
+            filteredTrips.map((t) => (
+              <div
+                key={t.id}
+                className="group rounded-xl border border-line-soft bg-panel p-3.5 transition-all duration-150 hover:border-line hover:bg-panel-2/40 shadow-xs"
+              >
+                {/* Card top */}
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="font-display text-[13.5px] font-bold text-hi">{t.tripNumber}</span>
+                    {t.isLastRide && (
+                      <span className="rounded-full bg-accent/20 px-2 py-0.5 text-[9px] font-mono font-bold text-accent border border-accent/30 uppercase tracking-wide">
+                        Latest
+                      </span>
+                    )}
                   </div>
-
-                  {/* Route */}
-                  <div className="flex items-center gap-1.5 px-3.5 pb-2 text-[12px]">
-                    <span className="text-lo font-medium truncate max-w-[140px]">{t.from}</span>
-                    <ArrowRight className="h-3 w-3 text-accent shrink-0" strokeWidth={2} />
-                    <span className="text-hi font-semibold truncate max-w-[140px]">{t.to}</span>
-                  </div>
-
-                  {/* Stats strip */}
-                  <div className="flex items-center gap-3 px-3.5 pb-3 font-mono text-[10.5px] text-dim border-t border-line-soft/40 pt-2">
-                    <span className="font-semibold text-hi">{t.distance}</span>
-                    <span className="text-line-soft">·</span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" strokeWidth={1.8} />
-                      {t.duration}
-                    </span>
-                    <span className="text-line-soft">·</span>
-                    <span className="text-amber">{t.batteryUsed}</span>
-                    <span className="text-line-soft ml-auto">·</span>
-                    <span className="inline-flex items-center gap-1 text-green">
-                      <Check className="h-3 w-3" strokeWidth={2.5} />
-                      {t.status}
-                    </span>
-                  </div>
-
-                  {/* Expanded detail */}
-                  {isSelected && (
-                    <div className="border-t border-accent/20 bg-accent/5 px-3.5 py-3 space-y-2">
-                      <div className="flex items-center justify-between text-[10.5px] font-mono text-lo">
-                        <span>{t.time}</span>
-                        <span className="text-accent font-semibold">GraphQL: Locations</span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-1.5 text-[10.5px] font-mono">
-                        <div className="rounded-lg border border-line-soft bg-panel px-2.5 py-2">
-                          <div className="text-dim uppercase tracking-wide mb-0.5" style={{ fontSize: '9px' }}>Endpoint</div>
-                          <div className="text-hi font-bold">POST /fleet-tracking</div>
-                        </div>
-                        <div className="rounded-lg border border-line-soft bg-panel px-2.5 py-2">
-                          <div className="text-dim uppercase tracking-wide mb-0.5" style={{ fontSize: '9px' }}>Waypoints</div>
-                          <div className="text-green font-bold">25 Recorded</div>
-                        </div>
-                        <div className="rounded-lg border border-line-soft bg-panel px-2.5 py-2">
-                          <div className="text-dim uppercase tracking-wide mb-0.5" style={{ fontSize: '9px' }}>From</div>
-                          <div className="text-hi font-semibold">{t.from}</div>
-                        </div>
-                        <div className="rounded-lg border border-line-soft bg-panel px-2.5 py-2">
-                          <div className="text-dim uppercase tracking-wide mb-0.5" style={{ fontSize: '9px' }}>Battery Used</div>
-                          <div className="text-amber font-bold">{t.batteryUsed}</div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                  <span className="font-mono text-[10.5px] text-lo tabular-nums">{t.time}</span>
                 </div>
-              )
-            })
+
+                {/* Route */}
+                <div className="flex items-center gap-1.5 mb-2.5 text-[12px]">
+                  <span className="text-lo font-medium truncate max-w-[140px]">{t.from}</span>
+                  <ArrowRight className="h-3 w-3 text-accent shrink-0" strokeWidth={2} />
+                  <span className="text-hi font-semibold truncate max-w-[140px]">{t.to}</span>
+                </div>
+
+                {/* Stats strip */}
+                <div className="flex items-center gap-3 font-mono text-[10.5px] text-dim border-t border-line-soft/40 pt-2">
+                  <span className="font-semibold text-hi">{t.distance}</span>
+                  <span className="text-line-soft">·</span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" strokeWidth={1.8} />
+                    {t.duration}
+                  </span>
+                  <span className="text-line-soft">·</span>
+                  <span className="text-amber">{t.batteryUsed}</span>
+                  <span className="text-line-soft ml-auto">·</span>
+                  <span className="inline-flex items-center gap-1 text-green">
+                    <Check className="h-3 w-3" strokeWidth={2.5} />
+                    {t.status}
+                  </span>
+                </div>
+              </div>
+            ))
           )}
         </div>
 

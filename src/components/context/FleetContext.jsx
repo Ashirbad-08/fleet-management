@@ -5,15 +5,17 @@ import { admins as seedAdmins } from '../../data/admins'
 
 const FleetContext = createContext(null)
 
-// Convert existing alerts to notification format
-const seedNotifications = seedAlerts.map((a, i) => ({
-  id: `n-${a.id}`,
-  type: a.sev,
-  title: a.msg,
-  vehicle: a.vehicle,
-  time: a.time,
-  read: i > 2, // first 3 are unread
-}))
+// Convert only actionable alerts to notification format
+const seedNotifications = seedAlerts
+  .filter((a) => a.actionable === true)
+  .map((a, i) => ({
+    id: `n-${a.id}`,
+    type: a.sev,
+    title: a.msg,
+    vehicle: a.vehicle,
+    time: a.time,
+    read: i > 1, // first 2 are unread
+  }))
 
 const seedGeofences = [
   { id: 'G-1', name: 'Pune Depot', type: 'Depot', vehicles: 3, alerts: 'Entry + exit', status: 'Active', lat: 18.5204, lon: 73.8567, radius: 1.5 },
@@ -51,11 +53,11 @@ export function FleetProvider({ children }) {
   })
 
   const [alerts, setAlerts] = useState(() => {
-    const val = localStorage.getItem('fc_alerts')
+    const val = localStorage.getItem('fc_alerts_v2')
     return val ? JSON.parse(val) : seedAlerts
   })
   const [notifications, setNotifications] = useState(() => {
-    const val = localStorage.getItem('fc_notifications')
+    const val = localStorage.getItem('fc_notifications_v2')
     return val ? JSON.parse(val) : seedNotifications
   })
   const [admins, setAdmins] = useState(() => {
@@ -88,7 +90,8 @@ export function FleetProvider({ children }) {
   }, [])
 
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return localStorage.getItem('fc_auth') === 'true'
+    const saved = localStorage.getItem('fc_auth')
+    return saved !== null ? saved === 'true' : true
   })
 
   const login = useCallback((email, password) => {
@@ -109,11 +112,11 @@ export function FleetProvider({ children }) {
   }, [vehicles])
 
   useEffect(() => {
-    localStorage.setItem('fc_alerts', JSON.stringify(alerts))
+    localStorage.setItem('fc_alerts_v2', JSON.stringify(alerts))
   }, [alerts])
 
   useEffect(() => {
-    localStorage.setItem('fc_notifications', JSON.stringify(notifications))
+    localStorage.setItem('fc_notifications_v2', JSON.stringify(notifications))
   }, [notifications])
 
   useEffect(() => {
@@ -276,8 +279,10 @@ export function FleetProvider({ children }) {
     setNotifications([])
   }, [])
 
-  // Helper to add custom alerts/notifications dynamically
-  const addLiveEvent = useCallback((sev, vehicleName, msg) => {
+  // Helper to add events:
+  // - ALL events (low-level telemetry, pings, updates) are sent to Alerts & Live Feed
+  // - ONLY actionable items requiring operator response are sent to Notifications Center
+  const addLiveEvent = useCallback((sev, vehicleName, msg, actionable = (sev === 'critical')) => {
     const time = new Date().toLocaleTimeString('en-IN', { hour12: false })
     const newAlert = {
       id: Date.now(),
@@ -285,18 +290,21 @@ export function FleetProvider({ children }) {
       vehicle: vehicleName,
       msg,
       time,
+      actionable,
     }
     setAlerts((prev) => [newAlert, ...prev].slice(0, 50)) // cap at 50
 
-    const newNotification = {
-      id: `n-${Date.now()}`,
-      type: sev === 'critical' ? 'critical' : sev === 'warning' ? 'warning' : 'info',
-      title: msg,
-      vehicle: vehicleName,
-      time,
-      read: false,
+    if (actionable) {
+      const newNotification = {
+        id: `n-${Date.now()}`,
+        type: sev === 'critical' ? 'critical' : sev === 'warning' ? 'warning' : 'info',
+        title: msg,
+        vehicle: vehicleName,
+        time,
+        read: false,
+      }
+      setNotifications((prev) => [newNotification, ...prev])
     }
-    setNotifications((prev) => [newNotification, ...prev])
   }, [])
 
   // ── Device Commands ───────────────────────────────────────────────────────
@@ -314,12 +322,12 @@ export function FleetProvider({ children }) {
         updateVehicle(vehicle.id, { locked: action === 'lock' })
       } else if (action === 'deactivate') {
         updateVehicle(vehicle.id, { status: 'alert' })
-        addLiveEvent('critical', vehicle.name, 'Flagged for maintenance by operator')
+        addLiveEvent('critical', vehicle.name, 'Flagged for maintenance by operator', true)
       } else if (action === 'restart') {
         updateVehicle(vehicle.id, { status: 'offline', lastSeen: 'Just now' })
         setTimeout(() => {
           updateVehicle(vehicle.id, { status: 'online' })
-          addLiveEvent('info', vehicle.name, 'Device restarted and connected')
+          addLiveEvent('info', vehicle.name, 'Device restarted and connected', false)
         }, 3000)
       } else if (action === 'firmware') {
         // Trigger simulated progression
@@ -347,7 +355,7 @@ export function FleetProvider({ children }) {
             const v = vehicles.find((veh) => veh.id === id)
             if (v) {
               updateVehicle(id, { firmware: '2.4.1' })
-              addLiveEvent('info', v.name, `Firmware successfully updated to v2.4.1`)
+              addLiveEvent('info', v.name, `Firmware successfully updated to v2.4.1`, false)
               showToast(`${v.name} firmware updated to v2.4.1`)
             }
           } else {
@@ -417,17 +425,17 @@ export function FleetProvider({ children }) {
             lastSeen: 'Just now',
           }
 
-          // Trigger overspeed alerts
+          // Trigger overspeed alerts (Actionable policy warning)
           if (nextSpeed > settings.overspeed && v.speed <= settings.overspeed) {
-            addLiveEvent('warning', v.name, `Overspeed alert: running at ${nextSpeed} km/h (limit: ${settings.overspeed} km/h)`)
+            addLiveEvent('warning', v.name, `Overspeed alert: running at ${nextSpeed} km/h (limit: ${settings.overspeed} km/h)`, true)
           }
 
-          // Trigger low battery alerts
+          // Trigger low battery alerts (Actionable critical warning)
           if (nextBattery < settings.lowBattery && v.battery >= settings.lowBattery) {
-            addLiveEvent('critical', v.name, `Critical battery warning: ${nextBattery}% charge remaining`)
+            addLiveEvent('critical', v.name, `Critical battery warning: ${nextBattery}% charge remaining`, true)
           }
 
-          // Geofence Intersection Check
+          // Geofence Intersection Check (Low-level telemetry: sent only to alerts & live feed)
           geofences.forEach((g) => {
             if (g.status !== 'Active') return
             // Calculate distance in km (approx 111.12 km per degree lat)
@@ -439,12 +447,12 @@ export function FleetProvider({ children }) {
             if (isInside && !wasInside) {
               prevPositions.current[cacheKey] = true
               if (settings.geofenceEntry) {
-                addLiveEvent('info', v.name, `Geofence entered: ${g.name}`)
+                addLiveEvent('info', v.name, `Geofence entered: ${g.name}`, false)
               }
             } else if (!isInside && wasInside) {
               prevPositions.current[cacheKey] = false
               if (settings.geofenceExit) {
-                addLiveEvent('info', v.name, `Geofence exited: ${g.name}`)
+                addLiveEvent('info', v.name, `Geofence exited: ${g.name}`, false)
               }
             }
           })

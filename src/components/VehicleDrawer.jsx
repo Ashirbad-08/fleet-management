@@ -102,7 +102,7 @@ export default function VehicleDrawer() {
     setMapFullscreen(false)
   }
 
-  // Handle Escape key to close drawer smoothly
+  // Handle Escape key to close overlays smoothly
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape' && open) {
@@ -110,12 +110,20 @@ export default function VehicleDrawer() {
           setMapFullscreen(false)
           return
         }
+        if (historyModalOpen) {
+          setHistoryModalOpen(false)
+          return
+        }
+        if (timelineModalOpen) {
+          setTimelineModalOpen(false)
+          return
+        }
         close()
       }
     }
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [mapFullscreen, open])
+  }, [mapFullscreen, historyModalOpen, timelineModalOpen, open])
 
   const battData = useMemo(() => {
     if (!selectedVehicle) return []
@@ -485,7 +493,11 @@ export default function VehicleDrawer() {
                       <RotateCw className="h-2.5 w-2.5" strokeWidth={2} />
                     </button>
                     <button
-                      onClick={() => setMapFullscreen(true)}
+                      onClick={() => {
+                        setHistoryModalOpen(false)
+                        setTimelineModalOpen(false)
+                        setMapFullscreen(true)
+                      }}
                       title="Open full map"
                       aria-label="Open full screen vehicle map"
                       className="flex h-5.5 w-5.5 items-center justify-center rounded border border-line bg-panel text-lo hover:bg-hover hover:text-accent transition-colors cursor-pointer"
@@ -598,6 +610,7 @@ export default function VehicleDrawer() {
 
                   <button
                     onClick={() => {
+                      setMapFullscreen(false)
                       setTimelineModalOpen(false)
                       setHistoryModalOpen(true)
                     }}
@@ -700,6 +713,7 @@ export default function VehicleDrawer() {
 
                     <button
                       onClick={() => {
+                        setMapFullscreen(false)
                         setHistoryModalOpen(false)
                         setTimelineModalOpen(true)
                       }}
