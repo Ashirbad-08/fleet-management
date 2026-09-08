@@ -816,7 +816,7 @@ export default function VehicleDrawer() {
 
       {/* Expanded Full-Screen Map Overlay */}
       {mapFullscreen && selectedVehicle && (
-        <div className="fixed inset-0 z-[60] flex bg-base/95 p-2 sm:p-3 backdrop-blur-md sm:inset-y-0 sm:left-0 sm:right-[462px] sm:z-[45]">
+        <div className="fixed inset-0 z-[60] flex bg-base/95 p-2 sm:p-4 backdrop-blur-md xl:inset-y-0 xl:left-0 xl:right-[462px] xl:z-[45]">
           <div className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-line bg-panel shadow-2xl">
             <div className="flex items-center justify-between border-b border-line-soft bg-panel-2/60 px-4 py-3">
               <div className="min-w-0">

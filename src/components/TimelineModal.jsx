@@ -63,14 +63,14 @@ export default function TimelinePanel({ open, onClose, vehicle, events = [], onR
 
   return (
     <>
-      {/* Side-by-side Panel attached to left side of VehicleDrawer (or on top in mobile) */}
+      {/* Slide-out Device Timeline: Full overlay on mobile/tablet, side-by-side on large desktop */}
       <div
         role="dialog"
         aria-label="Full Device Timeline Panel"
-        className={`fixed right-0 sm:right-[462px] top-0 z-[60] sm:z-[48] h-dvh w-full sm:w-[462px] flex flex-col border-l sm:border-r border-line bg-panel shadow-2xl transition-all duration-300 ease-in-out ${
+        className={`fixed right-0 top-0 z-[60] h-dvh w-full sm:max-w-[462px] xl:max-w-none xl:w-[462px] xl:right-[462px] xl:z-[48] flex flex-col border-l xl:border-r border-line bg-panel shadow-2xl transition-all duration-300 ease-in-out ${
           open
             ? 'translate-x-0 opacity-100 pointer-events-auto'
-            : 'translate-x-full sm:translate-x-[calc(100%+462px)] opacity-0 pointer-events-none'
+            : 'translate-x-full xl:translate-x-[calc(100%+462px)] opacity-0 pointer-events-none'
         }`}
       >
         {/* Header */}
@@ -198,9 +198,9 @@ export default function TimelinePanel({ open, onClose, vehicle, events = [], onR
                       <div className="text-[12px] font-medium leading-snug text-hi">{evt.message}</div>
 
                       {(evt.location || evt.metadata) && (
-                        <div className="mt-1.5 font-mono text-[10.5px] text-lo flex items-center justify-between border-t border-line-soft/40 pt-1.5">
-                          <span>{evt.metadata}</span>
-                          {evt.location && <span className="text-accent font-semibold">{evt.location}</span>}
+                        <div className="mt-1.5 font-mono text-[10px] sm:text-[10.5px] text-lo flex flex-wrap items-center justify-between gap-1 border-t border-line-soft/40 pt-1.5">
+                          <span className="truncate max-w-[200px]">{evt.metadata}</span>
+                          {evt.location && <span className="text-accent font-semibold truncate max-w-[180px]">{evt.location}</span>}
                         </div>
                       )}
                     </div>

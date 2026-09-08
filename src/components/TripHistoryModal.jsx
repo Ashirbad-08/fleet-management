@@ -34,12 +34,12 @@ export default function TripHistoryPanel({ open, onClose, vehicle, trips = [] })
 
   return (
     <>
-      {/* Side-by-side Panel attached to left side of VehicleDrawer (or on top in mobile) */}
+      {/* Slide-out Trip History: Full overlay on mobile/tablet, side-by-side on large desktop */}
       <div
         role="dialog"
         aria-label="Full Trip History Panel"
-        className={`fixed right-0 sm:right-[462px] top-0 z-[60] sm:z-[48] h-dvh w-full sm:w-[462px] flex flex-col border-l sm:border-r border-line bg-panel shadow-2xl transition-all duration-300 ease-in-out ${
-          open ? 'translate-x-0 opacity-100 pointer-events-auto' : 'translate-x-full sm:translate-x-[calc(100%+462px)] opacity-0 pointer-events-none'
+        className={`fixed right-0 top-0 z-[60] h-dvh w-full sm:max-w-[462px] xl:max-w-none xl:w-[462px] xl:right-[462px] xl:z-[48] flex flex-col border-l xl:border-r border-line bg-panel shadow-2xl transition-all duration-300 ease-in-out ${
+          open ? 'translate-x-0 opacity-100 pointer-events-auto' : 'translate-x-full xl:translate-x-[calc(100%+462px)] opacity-0 pointer-events-none'
         }`}
       >
         {/* Header */}
@@ -126,13 +126,13 @@ export default function TripHistoryPanel({ open, onClose, vehicle, trips = [] })
 
                 {/* Route */}
                 <div className="flex items-center gap-1.5 mb-2.5 text-[12px]">
-                  <span className="text-lo font-medium truncate max-w-[140px]">{t.from}</span>
+                  <span className="text-lo font-medium min-w-0 flex-1 truncate">{t.from}</span>
                   <ArrowRight className="h-3 w-3 text-accent shrink-0" strokeWidth={2} />
-                  <span className="text-hi font-semibold truncate max-w-[140px]">{t.to}</span>
+                  <span className="text-hi font-semibold min-w-0 flex-1 truncate">{t.to}</span>
                 </div>
 
                 {/* Stats strip */}
-                <div className="flex items-center gap-3 font-mono text-[10.5px] text-dim border-t border-line-soft/40 pt-2">
+                <div className="flex items-center gap-2 sm:gap-2.5 font-mono text-[10px] sm:text-[10.5px] text-dim border-t border-line-soft/40 pt-2 flex-wrap">
                   <span className="font-semibold text-hi">{t.distance}</span>
                   <span className="text-line-soft">·</span>
                   <span className="flex items-center gap-1">
