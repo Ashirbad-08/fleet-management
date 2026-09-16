@@ -18,7 +18,6 @@ import {
   MapPin,
   Gauge,
 } from '../components/icons'
-import { useNavigate } from 'react-router-dom'
 
 function getNotificationIcon(n) {
   if (n.icon) return n.icon

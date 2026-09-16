@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Search, Bell, Settings as SettingsIcon } from './icons'
 import { useFleet } from '../context/FleetContext'
 import NotificationDropdown from './NotificationDropdown'
@@ -9,7 +9,6 @@ export default function Topbar({ title, subtitle }) {
   const [clock, setClock] = useState('')
   const [notifOpenMobile, setNotifOpenMobile] = useState(false)
   const [notifOpenDesktop, setNotifOpenDesktop] = useState(false)
-  const bellRef = useRef(null)
   const navigate = useNavigate()
   const currentAdmin = admins[0]
 

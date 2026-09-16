@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutGrid, Truck, Cpu, TriangleAlert, MapPin, UploadCloud, Settings, Users, Bell, Leaf, Lock, Power } from './icons'
+import { LayoutGrid, Truck, Cpu, TriangleAlert, MapPin, UploadCloud, Settings, Users, Bell, Leaf, Power } from './icons'
 import { useFleet } from '../context/FleetContext'
 
 const NAV_ITEMS = [

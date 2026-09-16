@@ -16,7 +16,7 @@ import {
   Gauge,
 } from './icons'
 import { useFleet } from '../context/FleetContext'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 function getNotificationIcon(n) {
   if (n.icon) return n.icon
@@ -63,7 +63,6 @@ export default function NotificationDropdown({ open, onClose }) {
     vehicles,
     setSelectedVehicleId,
   } = useFleet()
-  const navigate = useNavigate()
   const ref = useRef(null)
 
   // Close when clicking outside

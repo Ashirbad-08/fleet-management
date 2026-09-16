@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import Topbar from '../components/Topbar'
 import { useFleet } from '../context/FleetContext'
-import { ROLES, PERMISSION_GROUPS } from '../data/admins'
-import { Plus, Edit2, Trash2, ShieldCheck, X, Save, Users } from '../components/icons'
+import { ROLES } from '../data/admins'
+import { Plus, Edit2, Trash2, ShieldCheck, X, Save, Users, Check, Info } from '../components/icons'
 
 export default function Admins() {
   const { admins, addAdmin, updateAdmin, deleteAdmin } = useFleet()
@@ -15,21 +15,11 @@ export default function Admins() {
   const [formName, setFormName] = useState('')
   const [formEmail, setFormEmail] = useState('')
   const [formRole, setFormRole] = useState('operator')
-  const [formPermissions, setFormPermissions] = useState({})
 
   const startAdd = () => {
     setFormName('')
     setFormEmail('')
     setFormRole('operator')
-    // Default permissions for operator
-    const defaultPerms = {}
-    PERMISSION_GROUPS.forEach((group) => {
-      defaultPerms[group.key] = {}
-      group.perms.forEach((p) => {
-        defaultPerms[group.key][p.key] = p.key === 'view' // views are true, edits are false
-      })
-    })
-    setFormPermissions(defaultPerms)
     setIsAdding(true)
     setIsEditing(false)
     setSelectedAdmin(null)
@@ -39,16 +29,7 @@ export default function Admins() {
     setSelectedAdmin(admin)
     setFormName(admin.name)
     setFormEmail(admin.email)
-    setFormRole(admin.role)
-    // Deep clone permissions
-    const clone = {}
-    PERMISSION_GROUPS.forEach((group) => {
-      clone[group.key] = {}
-      group.perms.forEach((p) => {
-        clone[group.key][p.key] = !!admin.permissions?.[group.key]?.[p.key]
-      })
-    })
-    setFormPermissions(clone)
+    setFormRole(admin.role || 'operator')
     setIsEditing(true)
     setIsAdding(false)
   }
@@ -57,11 +38,13 @@ export default function Admins() {
     e.preventDefault()
     if (!formName || !formEmail) return
 
+    const roleObj = ROLES.find((r) => r.value === formRole) || ROLES[2]
+
     const data = {
       name: formName,
       email: formEmail,
       role: formRole,
-      permissions: formPermissions,
+      permissions: roleObj.permissions,
     }
 
     if (isAdding) {
@@ -74,20 +57,9 @@ export default function Admins() {
     }
   }
 
-  const handlePermissionToggle = (groupKey, permKey) => {
-    setFormPermissions((prev) => ({
-      ...prev,
-      [groupKey]: {
-        ...prev[groupKey],
-        [groupKey]: prev[groupKey] || {},
-        [permKey]: !prev[groupKey]?.[permKey],
-      },
-    }))
-  }
-
   const getRoleMeta = (r) => {
     const matched = ROLES.find((role) => role.value === r)
-    return matched || { label: r, color: 'text-lo', bg: 'bg-panel-2' }
+    return matched || { label: r, color: 'text-lo', bg: 'bg-panel-2', scope: 'Standard Access' }
   }
 
   const inputCls = 'w-full rounded-md border border-line bg-panel-2 px-3 py-1.75 text-[12.5px] text-hi outline-none focus:border-line focus:outline-none'
@@ -106,7 +78,7 @@ export default function Admins() {
             </div>
             <button
               onClick={startAdd}
-              className="flex items-center gap-1 rounded-lg bg-accent/15 px-2.5 py-1 text-[11px] font-medium text-accent hover:bg-accent/25 transition-colors"
+              className="flex items-center gap-1 rounded-lg bg-accent/15 px-2.5 py-1 text-[11px] font-medium text-accent hover:bg-accent/25 transition-colors cursor-pointer"
             >
               <Plus className="h-3 w-3" strokeWidth={2.5} />
               Add Member
@@ -117,7 +89,7 @@ export default function Admins() {
             <table className="w-full min-w-[760px] border-collapse">
               <thead>
                 <tr>
-                  {['Member', 'Role', 'Access Granted', 'Joined', ''].map((h) => (
+                  {['Member', 'Role', 'Access Scope', 'Joined', ''].map((h) => (
                     <th
                       key={h}
                       className="sticky top-0 z-10 border-b border-line-soft bg-panel px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wide text-dim"
@@ -131,16 +103,6 @@ export default function Admins() {
                 {admins.map((admin) => {
                   const roleMeta = getRoleMeta(admin.role)
                   const isPendingDelete = confirmDeleteId === admin.id
-
-                  // Count active permissions
-                  let activePermsCount = 0
-                  if (admin.permissions) {
-                    Object.values(admin.permissions).forEach((grp) => {
-                      Object.values(grp).forEach((val) => {
-                        if (val) activePermsCount++
-                      })
-                    })
-                  }
 
                   return (
                     <tr key={admin.id} className="hover:bg-hover group transition-colors">
@@ -161,7 +123,7 @@ export default function Admins() {
                         </span>
                       </td>
                       <td className="border-b border-line-soft px-4 py-2.5 font-mono text-[11.5px] text-lo">
-                        {activePermsCount} permissions
+                        {roleMeta.scope || 'Standard Access'}
                       </td>
                       <td className="border-b border-line-soft px-4 py-2.5 font-mono text-[11.5px] text-dim">
                         {admin.joinedAt}
@@ -175,13 +137,13 @@ export default function Admins() {
                                 deleteAdmin(admin.id)
                                 setConfirmDeleteId(null)
                               }}
-                              className="rounded bg-red/10 px-1.5 py-0.5 text-[10.5px] font-semibold text-red hover:bg-red/20"
+                              className="rounded bg-red/10 px-1.5 py-0.5 text-[10.5px] font-semibold text-red hover:bg-red/20 cursor-pointer"
                             >
                               Yes
                             </button>
                             <button
                               onClick={() => setConfirmDeleteId(null)}
-                              className="rounded border border-line bg-panel-2 px-1.5 py-0.5 text-[10.5px] text-lo hover:bg-hover"
+                              className="rounded border border-line bg-panel-2 px-1.5 py-0.5 text-[10.5px] text-lo hover:bg-hover cursor-pointer"
                             >
                               No
                             </button>
@@ -190,14 +152,14 @@ export default function Admins() {
                           <div className="flex items-center justify-end gap-2 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
                             <button
                               onClick={() => startEdit(admin)}
-                              className="flex h-6 w-6 items-center justify-center rounded-md border border-line bg-panel-2 text-dim hover:text-accent hover:border-accent/30"
-                              title="Edit Permissions"
+                              className="flex h-6 w-6 items-center justify-center rounded-md border border-line bg-panel-2 text-dim hover:text-accent hover:border-accent/30 cursor-pointer"
+                              title="Edit Member Role"
                             >
                               <Edit2 className="h-3 w-3" strokeWidth={2} />
                             </button>
                             <button
                               onClick={() => setConfirmDeleteId(admin.id)}
-                              className="flex h-6 w-6 items-center justify-center rounded-md border border-line bg-panel-2 text-dim hover:text-red hover:border-red/30"
+                              className="flex h-6 w-6 items-center justify-center rounded-md border border-line bg-panel-2 text-dim hover:text-red hover:border-red/30 cursor-pointer"
                               title="Delete Admin"
                             >
                               <Trash2 className="h-3 w-3" strokeWidth={2} />
@@ -220,7 +182,7 @@ export default function Admins() {
               <div className="flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4 text-accent" strokeWidth={2} />
                 <span className="font-display text-[13.5px] font-bold">
-                  {isAdding ? 'Add Admin Profile' : 'Configure Permissions'}
+                  {isAdding ? 'Add Team Member' : 'Edit Member Role'}
                 </span>
               </div>
               <button
@@ -229,7 +191,7 @@ export default function Admins() {
                   setIsEditing(false)
                   setSelectedAdmin(null)
                 }}
-                className="flex h-6 w-6 items-center justify-center rounded-md border border-line bg-panel-2 text-lo hover:bg-hover hover:text-hi"
+                className="flex h-6 w-6 items-center justify-center rounded-md border border-line bg-panel-2 text-lo hover:bg-hover hover:text-hi cursor-pointer"
               >
                 <X className="h-3 w-3" strokeWidth={2} />
               </button>
@@ -269,41 +231,48 @@ export default function Admins() {
                 >
                   {ROLES.map((r) => (
                     <option key={r.value} value={r.value}>
-                      {r.label}
+                      {r.label} ({r.scope})
                     </option>
                   ))}
                 </select>
               </div>
 
-              <div className="border-t border-line-soft pt-3">
-                <div className="mb-2 text-[10.5px] font-semibold uppercase tracking-wide text-dim">Resource Policies</div>
-                <div className="space-y-3.5">
-                  {PERMISSION_GROUPS.map((group) => (
-                    <div key={group.key} className="rounded-lg border border-line bg-panel-2 p-3">
-                      <div className="mb-2 font-display text-[11.5px] font-bold text-hi">{group.label}</div>
-                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                        {group.perms.map((p) => {
-                          const val = !!formPermissions[group.key]?.[p.key]
-                          return (
-                            <label
-                              key={p.key}
-                              className="flex cursor-pointer items-center gap-2 rounded border border-line bg-panel px-2.5 py-1.5 text-[11px] text-lo hover:border-accent/35 transition-colors"
-                            >
-                              <input
-                                type="checkbox"
-                                checked={val}
-                                onChange={() => handlePermissionToggle(group.key, p.key)}
-                                className="h-3.5 w-3.5 rounded border-line bg-panel-2 text-accent focus:ring-0 cursor-pointer accent-accent"
-                              />
-                              <span className="truncate select-none">{p.label}</span>
-                            </label>
-                          )
-                        })}
-                      </div>
+              {/* Static Role Access Privileges Summary Card */}
+              {(() => {
+                const currentRoleMeta = ROLES.find((r) => r.value === formRole) || ROLES[2]
+                return (
+                  <div className="rounded-xl border border-line bg-panel-2/60 p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10.5px] font-semibold uppercase tracking-wider text-dim">
+                        Included Privileges
+                      </span>
+                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${currentRoleMeta.bg} ${currentRoleMeta.color}`}>
+                        {currentRoleMeta.scope}
+                      </span>
                     </div>
-                  ))}
-                </div>
-              </div>
+
+                    <p className="text-[11.5px] text-lo leading-relaxed">
+                      {currentRoleMeta.description}
+                    </p>
+
+                    <div className="space-y-2 border-t border-line-soft pt-3">
+                      {currentRoleMeta.permissionsList.map((permText, idx) => (
+                        <div key={idx} className="flex items-start gap-2 text-[11.5px] text-hi">
+                          <div className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-accent/15 text-accent">
+                            <Check className="h-2.5 w-2.5" strokeWidth={3} />
+                          </div>
+                          <span className="leading-tight">{permText}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="flex items-center gap-2 rounded-lg border border-line-soft bg-panel p-2.5 text-[10.5px] text-dim">
+                      <Info className="h-3.5 w-3.5 shrink-0 text-accent" />
+                      <span>Role policies are predefined to maintain strict organization security.</span>
+                    </div>
+                  </div>
+                )
+              })()}
 
               <div className="flex gap-3 pt-3 border-t border-line-soft sticky bottom-0 bg-panel">
                 <button
@@ -313,13 +282,13 @@ export default function Admins() {
                     setIsEditing(false)
                     setSelectedAdmin(null)
                   }}
-                  className="flex-1 rounded-lg border border-line bg-panel-2 py-2 text-[12.5px] font-medium text-lo hover:bg-hover"
+                  className="flex-1 rounded-lg border border-line bg-panel-2 py-2 text-[12.5px] font-medium text-lo hover:bg-hover cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-accent/20 py-2 text-[12.5px] font-medium text-accent hover:bg-accent/30"
+                  className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-accent/20 py-2 text-[12.5px] font-medium text-accent hover:bg-accent/30 cursor-pointer"
                 >
                   <Save className="h-4 w-4" strokeWidth={2} />
                   Save Member

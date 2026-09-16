@@ -2,21 +2,29 @@ import { useState } from 'react'
 import { X, Plus, Save } from './icons'
 import { useFleet } from '../context/FleetContext'
 
+const INITIAL_FORM_DATA = {
+  name: '',
+  plate: '',
+  model: '',
+  type: '4 Wheeler',
+  driver: '',
+  status: 'online',
+  battery: 100,
+  rangeKm: 80,
+  location: '',
+  lat: 12.9716,
+  lon: 77.5946,
+}
+
+const inputCls = 'w-full rounded-md border border-line bg-panel-2 px-3 py-2 text-[12.5px] text-hi outline-none focus:border-line focus:outline-none'
+
 export default function AddVehicleModal({ open, onClose }) {
   const { addVehicle } = useFleet()
-  const [formData, setFormData] = useState({
-    name: '',
-    plate: '',
-    model: '',
-    type: '4 Wheeler',
-    driver: '',
-    status: 'online',
-    battery: 100,
-    rangeKm: 80,
-    location: '',
-    lat: 12.9716,
-    lon: 77.5946,
-  })
+  const [formData, setFormData] = useState(INITIAL_FORM_DATA)
+
+  const updateField = (field) => (event) => {
+    setFormData((current) => ({ ...current, [field]: event.target.value }))
+  }
 
   if (!open) return null
 
@@ -31,24 +39,9 @@ export default function AddVehicleModal({ open, onClose }) {
       lat: Number(formData.lat) || 12.9716,
       lon: Number(formData.lon) || 77.5946,
     })
-    // Reset form
-    setFormData({
-      name: '',
-      plate: '',
-      model: '',
-      type: '4 Wheeler',
-      driver: '',
-      status: 'online',
-      battery: 100,
-      rangeKm: 80,
-      location: '',
-      lat: 12.9716,
-      lon: 77.5946,
-    })
+    setFormData(INITIAL_FORM_DATA)
     onClose()
   }
-
-  const inputCls = 'w-full rounded-md border border-line bg-panel-2 px-3 py-2 text-[12.5px] text-hi outline-none focus:border-line focus:outline-none'
 
   return (
     <>
@@ -79,7 +72,7 @@ export default function AddVehicleModal({ open, onClose }) {
                 type="text"
                 placeholder="e.g. Courier 21"
                 value={formData.name}
-                onChange={(e) => setFormData((f) => ({ ...f, name: e.target.value }))}
+                onChange={updateField('name')}
                 className={inputCls}
               />
             </div>
@@ -90,7 +83,7 @@ export default function AddVehicleModal({ open, onClose }) {
                 type="text"
                 placeholder="e.g. DL3C AY 9982"
                 value={formData.plate}
-                onChange={(e) => setFormData((f) => ({ ...f, plate: e.target.value }))}
+                onChange={updateField('plate')}
                 className={inputCls}
               />
             </div>
@@ -101,7 +94,7 @@ export default function AddVehicleModal({ open, onClose }) {
               <label className="mb-1 block text-[10.5px] font-semibold uppercase tracking-wide text-dim">Vehicle Type</label>
               <select
                 value={formData.type}
-                onChange={(e) => setFormData((f) => ({ ...f, type: e.target.value }))}
+                onChange={updateField('type')}
                 className={inputCls + ' cursor-pointer'}
               >
                 <option value="2 Wheeler">2 Wheeler</option>
@@ -116,7 +109,7 @@ export default function AddVehicleModal({ open, onClose }) {
                 type="text"
                 placeholder="e.g. Mahindra eSupro"
                 value={formData.model}
-                onChange={(e) => setFormData((f) => ({ ...f, model: e.target.value }))}
+                onChange={updateField('model')}
                 className={inputCls}
               />
             </div>
@@ -126,7 +119,7 @@ export default function AddVehicleModal({ open, onClose }) {
                 type="text"
                 placeholder="e.g. Amit Sen"
                 value={formData.driver}
-                onChange={(e) => setFormData((f) => ({ ...f, driver: e.target.value }))}
+                onChange={updateField('driver')}
                 className={inputCls}
               />
             </div>
@@ -137,7 +130,7 @@ export default function AddVehicleModal({ open, onClose }) {
               <label className="mb-1 block text-[10.5px] font-semibold uppercase tracking-wide text-dim">Status</label>
               <select
                 value={formData.status}
-                onChange={(e) => setFormData((f) => ({ ...f, status: e.target.value }))}
+                onChange={updateField('status')}
                 className={inputCls + ' cursor-pointer'}
               >
                 <option value="online">Online</option>
@@ -153,7 +146,7 @@ export default function AddVehicleModal({ open, onClose }) {
                 min="0"
                 max="100"
                 value={formData.battery}
-                onChange={(e) => setFormData((f) => ({ ...f, battery: e.target.value }))}
+                onChange={updateField('battery')}
                 className={inputCls}
               />
             </div>
@@ -163,7 +156,7 @@ export default function AddVehicleModal({ open, onClose }) {
                 type="number"
                 min="0"
                 value={formData.rangeKm}
-                onChange={(e) => setFormData((f) => ({ ...f, rangeKm: e.target.value }))}
+                onChange={updateField('rangeKm')}
                 className={inputCls}
               />
             </div>
@@ -175,7 +168,7 @@ export default function AddVehicleModal({ open, onClose }) {
               type="text"
               placeholder="e.g. Depot 3, Sector 5"
               value={formData.location}
-              onChange={(e) => setFormData((f) => ({ ...f, location: e.target.value }))}
+              onChange={updateField('location')}
               className={inputCls}
             />
           </div>
@@ -188,7 +181,7 @@ export default function AddVehicleModal({ open, onClose }) {
                 step="any"
                 placeholder="e.g. 12.9716"
                 value={formData.lat}
-                onChange={(e) => setFormData((f) => ({ ...f, lat: e.target.value }))}
+                onChange={updateField('lat')}
                 className={inputCls}
               />
             </div>
@@ -199,7 +192,7 @@ export default function AddVehicleModal({ open, onClose }) {
                 step="any"
                 placeholder="e.g. 77.5946"
                 value={formData.lon}
-                onChange={(e) => setFormData((f) => ({ ...f, lon: e.target.value }))}
+                onChange={updateField('lon')}
                 className={inputCls}
               />
             </div>

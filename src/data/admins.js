@@ -63,54 +63,74 @@ export const admins = [
 ]
 
 export const ROLES = [
-  { value: 'superadmin', label: 'Super Admin', color: 'text-accent', bg: 'bg-accent/15' },
-  { value: 'admin', label: 'Admin', color: 'text-green', bg: 'bg-green/15' },
-  { value: 'operator', label: 'Operator', color: 'text-amber', bg: 'bg-amber/15' },
+  {
+    value: 'superadmin',
+    label: 'Super Admin',
+    color: 'text-accent',
+    bg: 'bg-accent/15',
+    border: 'border-accent/30',
+    scope: 'Full System Access',
+    description: 'Complete unrestricted control across vehicles, firmware, admins, and system settings.',
+    permissionsList: [
+      'Full access to all vehicles (view, add, edit, delete)',
+      'Remote vehicle commands & OTA firmware rollout',
+      'Manage organization members, roles & permissions',
+      'Manage geofences and global fleet settings',
+      'Acknowledge & dismiss all alert feeds',
+    ],
+    permissions: {
+      vehicles: { view: true, edit: true, delete: true, add: true },
+      firmware: { view: true, push: true },
+      alerts: { view: true, dismiss: true },
+      admins: { view: true, add: true, edit: true, delete: true },
+      settings: { view: true, edit: true },
+    },
+  },
+  {
+    value: 'admin',
+    label: 'Admin',
+    color: 'text-green',
+    bg: 'bg-green/15',
+    border: 'border-green/30',
+    scope: 'Fleet Operations & Control',
+    description: 'Operational management of fleet, vehicles, telemetry, and live controls.',
+    permissionsList: [
+      'View, add, and edit vehicles (deletion restricted)',
+      'Remote vehicle lock/unlock & restart commands',
+      'View firmware versions and live alerts',
+      'View team members roster (read-only)',
+      'Configure geofences and operational alerts',
+    ],
+    permissions: {
+      vehicles: { view: true, edit: true, delete: false, add: true },
+      firmware: { view: true, push: false },
+      alerts: { view: true, dismiss: true },
+      admins: { view: true, add: false, edit: false, delete: false },
+      settings: { view: true, edit: false },
+    },
+  },
+  {
+    value: 'operator',
+    label: 'Operator',
+    color: 'text-amber',
+    bg: 'bg-amber/15',
+    border: 'border-amber/30',
+    scope: 'Live Monitoring Only',
+    description: 'Day-to-day monitoring of active vehicles, trips, map, and telemetry feeds.',
+    permissionsList: [
+      'View real-time map & vehicle telemetry sensors',
+      'View trip history and driver timeline analytics',
+      'Monitor active alerts and notifications',
+      'No editing, deleting, or remote commands',
+      'No access to member administration or settings',
+    ],
+    permissions: {
+      vehicles: { view: true, edit: false, delete: false, add: false },
+      firmware: { view: true, push: false },
+      alerts: { view: true, dismiss: false },
+      admins: { view: false, add: false, edit: false, delete: false },
+      settings: { view: false, edit: false },
+    },
+  },
 ]
 
-export const PERMISSION_GROUPS = [
-  {
-    key: 'vehicles',
-    label: 'Vehicles',
-    perms: [
-      { key: 'view', label: 'View all vehicles' },
-      { key: 'add', label: 'Add new vehicles' },
-      { key: 'edit', label: 'Edit vehicle data' },
-      { key: 'delete', label: 'Delete vehicles' },
-    ],
-  },
-  {
-    key: 'firmware',
-    label: 'Firmware',
-    perms: [
-      { key: 'view', label: 'View firmware versions' },
-      { key: 'push', label: 'Push firmware updates' },
-    ],
-  },
-  {
-    key: 'alerts',
-    label: 'Alerts',
-    perms: [
-      { key: 'view', label: 'View alerts' },
-      { key: 'dismiss', label: 'Dismiss alerts' },
-    ],
-  },
-  {
-    key: 'admins',
-    label: 'Admin Management',
-    perms: [
-      { key: 'view', label: 'View admin list' },
-      { key: 'add', label: 'Add new admins' },
-      { key: 'edit', label: 'Edit admin roles' },
-      { key: 'delete', label: 'Delete admins' },
-    ],
-  },
-  {
-    key: 'settings',
-    label: 'Settings',
-    perms: [
-      { key: 'view', label: 'View settings' },
-      { key: 'edit', label: 'Edit settings' },
-    ],
-  },
-]
