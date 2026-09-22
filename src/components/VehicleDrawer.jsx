@@ -69,8 +69,18 @@ export default function VehicleDrawer() {
   const [timelineEvents, setTimelineEvents] = useState([])
   const [timelineLoading, setTimelineLoading] = useState(false)
   const [timelineError, setTimelineError] = useState(null)
+  const [telemetryLoading, setTelemetryLoading] = useState(true)
   const [mapKey, setMapKey] = useState(0)
   const [mapFullscreen, setMapFullscreen] = useState(false)
+
+  // Trigger smooth skeleton loading state when switching vehicles
+  useEffect(() => {
+    if (selectedVehicle?.id) {
+      setTelemetryLoading(true)
+      const timer = setTimeout(() => setTelemetryLoading(false), 240)
+      return () => clearTimeout(timer)
+    }
+  }, [selectedVehicle?.id])
 
   const loadTimeline = useCallback(async () => {
     if (!selectedVehicle) return
@@ -223,15 +233,24 @@ export default function VehicleDrawer() {
             </div>
 
             {/* SECTION 1: Health Score Gauge */}
-            <div className="flex flex-col items-center bg-panel px-5 py-4 border-b border-line-soft">
-              <Gauge score={selectedVehicle.health} color={meta.color} />
-              <span
-                className={`mt-1 inline-flex items-center gap-1.5 rounded-full py-0.5 pl-2 pr-2.5 text-[10.5px] font-semibold ${meta.pill}`}
-              >
-                <span className="h-1.5 w-1.5 rounded-full" style={{ background: meta.color }} />
-                {meta.label}
-              </span>
-            </div>
+            {telemetryLoading ? (
+              <div className="flex flex-col items-center bg-panel px-5 py-6 border-b border-line-soft animate-pulse">
+                <div className="h-28 w-28 rounded-full border-4 border-panel-2 bg-panel-2/60 flex items-center justify-center">
+                  <div className="h-8 w-12 rounded bg-panel-2" />
+                </div>
+                <div className="mt-3 h-4.5 w-20 rounded-full bg-panel-2" />
+              </div>
+            ) : (
+              <div className="flex flex-col items-center bg-panel px-5 py-4 border-b border-line-soft">
+                <Gauge score={selectedVehicle.health} color={meta.color} />
+                <span
+                  className={`mt-1 inline-flex items-center gap-1.5 rounded-full py-0.5 pl-2 pr-2.5 text-[10.5px] font-semibold ${meta.pill}`}
+                >
+                  <span className="h-1.5 w-1.5 rounded-full" style={{ background: meta.color }} />
+                  {meta.label}
+                </span>
+              </div>
+            )}
 
             {/* Firmware Updating Progress */}
             {updatingVehicles[selectedVehicle.id] !== undefined && (
@@ -383,6 +402,22 @@ export default function VehicleDrawer() {
                   </button>
                 </div>
               </div>
+            ) : telemetryLoading ? (
+              /* Telemetry Sensors Skeleton */
+              <div className="animate-pulse">
+                <div className="flex items-center justify-between border-b border-line-soft bg-panel-2/60 px-5 py-2">
+                  <div className="h-3.5 w-24 rounded bg-panel-2" />
+                  <div className="h-3 w-16 rounded bg-panel-2/60" />
+                </div>
+                <div className="grid grid-cols-3 gap-px border-b border-line-soft bg-line-soft">
+                  {Array.from({ length: 12 }).map((_, i) => (
+                    <div key={`skel-sens-${i}`} className="bg-panel px-3.5 py-3 space-y-1.5">
+                      <div className="h-2.5 w-14 rounded bg-panel-2" />
+                      <div className="h-3.5 w-20 rounded bg-panel-2/70" />
+                    </div>
+                  ))}
+                </div>
+              </div>
             ) : (
               /* SECTION 2: Telemetry Sensors Grid */
               <div>
@@ -450,103 +485,147 @@ export default function VehicleDrawer() {
 
             {/* SECTION 3: Battery 24h Trend */}
             {!editing && (
-              <div>
-                <div className="flex items-center justify-between border-b border-line-soft bg-panel-2/60 px-5 py-2">
-                  <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-hi">
-                    <span className="flex h-4 w-4 items-center justify-center rounded bg-amber/15 text-amber">
-                      <Zap className="h-2.5 w-2.5" strokeWidth={2.5} />
-                    </span>
-                    <span>Battery Trend</span>
+              telemetryLoading ? (
+                <div className="animate-pulse">
+                  <div className="flex items-center justify-between border-b border-line-soft bg-panel-2/60 px-5 py-2">
+                    <div className="h-3.5 w-24 rounded bg-panel-2" />
+                    <div className="h-3 w-16 rounded bg-panel-2/60" />
                   </div>
-                  <span className="font-mono text-[10.5px] font-bold text-amber tabular-nums">
-                    {selectedVehicle.battery}% Last 24h
-                  </span>
+                  <div className="border-b border-line-soft px-5 py-5 bg-panel">
+                    <div className="h-8 w-full rounded bg-panel-2/50" />
+                  </div>
                 </div>
-                <div className="border-b border-line-soft px-5 py-3.5 bg-panel">
-                  <Sparkline data={battData} color={meta.color} />
+              ) : (
+                <div>
+                  <div className="flex items-center justify-between border-b border-line-soft bg-panel-2/60 px-5 py-2">
+                    <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-hi">
+                      <span className="flex h-4 w-4 items-center justify-center rounded bg-amber/15 text-amber">
+                        <Zap className="h-2.5 w-2.5" strokeWidth={2.5} />
+                      </span>
+                      <span>Battery Trend</span>
+                    </div>
+                    <span className="font-mono text-[10.5px] font-bold text-amber tabular-nums">
+                      {selectedVehicle.battery}% Last 24h
+                    </span>
+                  </div>
+                  <div className="border-b border-line-soft px-5 py-3.5 bg-panel">
+                    <Sparkline data={battData} color={meta.color} />
+                  </div>
                 </div>
-              </div>
+              )
             )}
 
             {/* SECTION 4: Live Location Mini Map */}
             {!editing && (
-              <div>
-                <div className="flex items-center justify-between border-b border-line-soft bg-panel-2/60 px-5 py-2">
-                  <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-hi">
-                    <span className="flex h-4 w-4 items-center justify-center rounded bg-accent/15 text-accent">
-                      <Map className="h-2.5 w-2.5" strokeWidth={2.5} />
-                    </span>
-                    <span>Live Location</span>
+              telemetryLoading ? (
+                <div className="animate-pulse">
+                  <div className="flex items-center justify-between border-b border-line-soft bg-panel-2/60 px-5 py-2">
+                    <div className="h-3.5 w-24 rounded bg-panel-2" />
+                    <div className="h-3 w-20 rounded bg-panel-2/60" />
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-[10px] text-dim tabular-nums">
-                      {selectedVehicle.lat
-                        ? `${selectedVehicle.lat.toFixed(4)}, ${selectedVehicle.lon.toFixed(4)}`
-                        : 'No GPS Fix'}
-                    </span>
-                    <button
-                      onClick={() => setMapKey((k) => k + 1)}
-                      title="Refresh map"
-                      aria-label="Refresh mini map"
-                      className="flex h-5.5 w-5.5 items-center justify-center rounded border border-line bg-panel text-lo hover:bg-hover hover:text-accent transition-colors cursor-pointer"
-                    >
-                      <RotateCw className="h-2.5 w-2.5" strokeWidth={2} />
-                    </button>
-                    <button
-                      onClick={() => {
-                        setHistoryModalOpen(false)
-                        setTimelineModalOpen(false)
-                        setMapFullscreen(true)
-                      }}
-                      title="Open full map"
-                      aria-label="Open full screen vehicle map"
-                      className="flex h-5.5 w-5.5 items-center justify-center rounded border border-line bg-panel text-lo hover:bg-hover hover:text-accent transition-colors cursor-pointer"
-                    >
-                      <Maximize2 className="h-2.5 w-2.5" strokeWidth={2} />
-                    </button>
+                  <div className="border-b border-line-soft p-4 bg-panel">
+                    <div className="h-44 w-full rounded-xl bg-panel-2/50 flex items-center justify-center">
+                      <div className="h-6 w-24 rounded bg-panel-2" />
+                    </div>
                   </div>
                 </div>
+              ) : (
+                <div>
+                  <div className="flex items-center justify-between border-b border-line-soft bg-panel-2/60 px-5 py-2">
+                    <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-hi">
+                      <span className="flex h-4 w-4 items-center justify-center rounded bg-accent/15 text-accent">
+                        <Map className="h-2.5 w-2.5" strokeWidth={2.5} />
+                      </span>
+                      <span>Live Location</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-[10px] text-dim tabular-nums">
+                        {selectedVehicle.lat
+                          ? `${selectedVehicle.lat.toFixed(4)}, ${selectedVehicle.lon.toFixed(4)}`
+                          : 'No GPS Fix'}
+                      </span>
+                      <button
+                        onClick={() => setMapKey((k) => k + 1)}
+                        title="Refresh map"
+                        aria-label="Refresh mini map"
+                        className="flex h-5.5 w-5.5 items-center justify-center rounded border border-line bg-panel text-lo hover:bg-hover hover:text-accent transition-colors cursor-pointer"
+                      >
+                        <RotateCw className="h-2.5 w-2.5" strokeWidth={2} />
+                      </button>
+                      <button
+                        onClick={() => {
+                          setHistoryModalOpen(false)
+                          setTimelineModalOpen(false)
+                          setMapFullscreen(true)
+                        }}
+                        title="Open full map"
+                        aria-label="Open full screen vehicle map"
+                        className="flex h-5.5 w-5.5 items-center justify-center rounded border border-line bg-panel text-lo hover:bg-hover hover:text-accent transition-colors cursor-pointer"
+                      >
+                        <Maximize2 className="h-2.5 w-2.5" strokeWidth={2} />
+                      </button>
+                    </div>
+                  </div>
 
-                <div className="border-b border-line-soft p-4 bg-panel">
-                  <div className="relative h-44 w-full overflow-hidden rounded-xl border border-line-soft shadow-inner">
-                    <MapLeaflet
-                      key={mapKey}
-                      vehicles={[selectedVehicle]}
-                      center={[selectedVehicle.lat || 20.5937, selectedVehicle.lon || 78.9629]}
-                      zoom={13}
-                      height="100%"
-                      hideLegend
-                    />
+                  <div className="border-b border-line-soft p-4 bg-panel">
+                    <div className="relative h-44 w-full overflow-hidden rounded-xl border border-line-soft shadow-inner">
+                      <MapLeaflet
+                        key={mapKey}
+                        vehicles={[selectedVehicle]}
+                        center={[selectedVehicle.lat || 20.5937, selectedVehicle.lon || 78.9629]}
+                        zoom={13}
+                        height="100%"
+                        hideLegend
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
+              )
             )}
 
             {/* SECTION 5: Recent Trips & Last Ride Summary */}
             {!editing && (
-              <div>
-                <div className="flex items-center justify-between border-b border-line-soft bg-panel-2/60 px-5 py-2">
-                  <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-hi">
-                    <span className="flex h-4 w-4 items-center justify-center rounded bg-accent/15 text-accent">
-                      <History className="h-2.5 w-2.5" strokeWidth={2.5} />
-                    </span>
-                    <span>Recent Trips</span>
+              telemetryLoading ? (
+                <div className="animate-pulse">
+                  <div className="flex items-center justify-between border-b border-line-soft bg-panel-2/60 px-5 py-2">
+                    <div className="h-3.5 w-24 rounded bg-panel-2" />
+                    <div className="h-3 w-16 rounded bg-panel-2/60" />
                   </div>
-                  <span className="font-mono text-[9.5px] text-dim uppercase">{seedTrips.length} Total Trips</span>
-                </div>
-
-                <div className="border-b border-line-soft px-5 py-3.5 bg-panel-2/15 space-y-2.5">
-                  {/* Last Ride Summary */}
-                  <div className="rounded-xl border border-line-soft bg-panel p-3.5 shadow-xs">
-                    <div className="mb-2 flex items-center justify-between">
-                      <div className="text-[11px] font-semibold text-lo flex items-center gap-1.5">
-                        <Navigation className="h-3.5 w-3.5 text-accent" />
-                        <span>Last Ride Summary</span>
+                  <div className="border-b border-line-soft px-5 py-3.5 bg-panel-2/15 space-y-2.5">
+                    <div className="rounded-xl border border-line-soft bg-panel p-3.5 space-y-2">
+                      <div className="flex justify-between">
+                        <div className="h-3.5 w-24 rounded bg-panel-2" />
+                        <div className="h-4 w-18 rounded-full bg-panel-2" />
                       </div>
-                      <span className="inline-flex items-center rounded-full bg-accent/15 px-2.5 py-0.5 text-[10px] font-semibold text-accent border border-accent/30">
-                        Ended 1h 15m ago
-                      </span>
+                      <div className="h-4 w-20 rounded bg-panel-2" />
+                      <div className="h-3 w-32 rounded bg-panel-2/60" />
                     </div>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <div className="flex items-center justify-between border-b border-line-soft bg-panel-2/60 px-5 py-2">
+                    <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-hi">
+                      <span className="flex h-4 w-4 items-center justify-center rounded bg-accent/15 text-accent">
+                        <History className="h-2.5 w-2.5" strokeWidth={2.5} />
+                      </span>
+                      <span>Recent Trips</span>
+                    </div>
+                    <span className="font-mono text-[9.5px] text-dim uppercase">{seedTrips.length} Total Trips</span>
+                  </div>
+
+                  <div className="border-b border-line-soft px-5 py-3.5 bg-panel-2/15 space-y-2.5">
+                    {/* Last Ride Summary */}
+                    <div className="rounded-xl border border-line-soft bg-panel p-3.5 shadow-xs">
+                      <div className="mb-2 flex items-center justify-between">
+                        <div className="text-[11px] font-semibold text-lo flex items-center gap-1.5">
+                          <Navigation className="h-3.5 w-3.5 text-accent" />
+                          <span>Last Ride Summary</span>
+                        </div>
+                        <span className="inline-flex items-center rounded-full bg-accent/15 px-2.5 py-0.5 text-[10px] font-semibold text-accent border border-accent/30">
+                          Ended 1h 15m ago
+                        </span>
+                      </div>
 
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-display text-[13.5px] font-bold text-hi">Trip #842</span>
@@ -608,19 +687,20 @@ export default function VehicleDrawer() {
                     </div>
                   </div>
 
-                  <button
-                    onClick={() => {
-                      setMapFullscreen(false)
-                      setTimelineModalOpen(false)
-                      setHistoryModalOpen(true)
-                    }}
-                    className="flex w-full items-center justify-center gap-2 rounded-xl border border-accent/30 bg-accent/10 py-2.5 text-[12px] font-semibold text-accent hover:bg-accent/20 transition-all cursor-pointer shadow-xs"
-                  >
-                    <History className="h-3.5 w-3.5" />
-                    View Full History
-                  </button>
+                    <button
+                      onClick={() => {
+                        setMapFullscreen(false)
+                        setHistoryModalOpen(false)
+                        setHistoryModalOpen(true)
+                      }}
+                      className="flex w-full items-center justify-center gap-2 rounded-xl border border-accent/30 bg-accent/10 py-2.5 text-[12px] font-semibold text-accent hover:bg-accent/20 transition-all cursor-pointer shadow-xs"
+                    >
+                      <History className="h-3.5 w-3.5" />
+                      View Full History
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )
             )}
 
             {/* SECTION 6: Device Timeline (getTimelineDetailsByIMEI) */}

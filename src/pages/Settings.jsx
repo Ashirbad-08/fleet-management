@@ -1,75 +1,126 @@
 import { useState, useEffect } from 'react'
 import Topbar from '../components/Topbar'
-import { useFleet } from '../context/FleetContext'
-import { Settings as SettingsIcon, Lock, Bell, Trash2, Plus } from '../components/icons'
+import { useFleet, TIMEZONE_OPTIONS, getTimezoneIana } from '../context/FleetContext'
+import {
+  Settings as SettingsIcon,
+  Lock,
+  Bell,
+  ShieldCheck,
+  Eye,
+  EyeOff,
+} from '../components/icons'
 
 export default function Settings() {
   const { settings, updateSettings, showToast } = useFleet()
   const [activeTab, setActiveTab] = useState('general') // 'general', 'alerts', 'security'
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    setIsLoading(true)
+    const timer = setTimeout(() => setIsLoading(false), 200)
+    return () => clearTimeout(timer)
+  }, [activeTab])
 
   // General Settings State
   const [orgName, setOrgName] = useState(settings?.orgName ?? 'Acme Logistics Pvt. Ltd.')
   const [region, setRegion] = useState(settings?.region ?? 'India - West & South')
-  const [mapStyle, setMapStyle] = useState(settings?.mapStyle ?? 'Dark Mode')
+  const [defaultCityHub, setDefaultCityHub] = useState(settings?.defaultCityHub ?? 'Pune Depot')
+  const [unitSystem, setUnitSystem] = useState(settings?.unitSystem ?? 'Metric')
   const [speedUnit, setSpeedUnit] = useState(settings?.speedUnit ?? 'km/h')
   const [distanceUnit, setDistanceUnit] = useState(settings?.distanceUnit ?? 'kilometers')
   const [tempUnit, setTempUnit] = useState(settings?.tempUnit ?? 'Celsius')
+  const [mapStyle, setMapStyle] = useState(settings?.mapStyle ?? 'Dark Mode')
   const [timezone, setTimezone] = useState(settings?.timezone ?? 'IST (GMT+5:30)')
-  const [refreshInterval, setRefreshInterval] = useState(settings?.refreshInterval ?? '10s')
+  const [livePreviewTime, setLivePreviewTime] = useState('')
+
+  // Live preview clock for currently selected timezone
+  useEffect(() => {
+    const updatePreview = () => {
+      try {
+        const iana = getTimezoneIana(timezone)
+        const formatted = new Intl.DateTimeFormat('en-GB', {
+          timeZone: iana,
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: true,
+        }).format(new Date())
+        setLivePreviewTime(formatted)
+      } catch {
+        setLivePreviewTime('')
+      }
+    }
+    updatePreview()
+    const id = setInterval(updatePreview, 1000)
+    return () => clearInterval(id)
+  }, [timezone])
 
   // Alerts Settings State
-  const [channels, setChannels] = useState(settings?.channels ?? {
-    email: true,
-    sms: true,
-    slack: false,
-    push: true,
-  })
-  const [retention, setRetention] = useState(settings?.retention ?? '90 days')
   const [overspeed, setOverspeed] = useState(settings?.overspeed ?? 80)
   const [lowBattery, setLowBattery] = useState(settings?.lowBattery ?? 15)
+  const [highBatteryTemp, setHighBatteryTemp] = useState(settings?.highBatteryTemp ?? 45)
   const [geofenceEntry, setGeofenceEntry] = useState(settings?.geofenceEntry ?? true)
   const [geofenceExit, setGeofenceExit] = useState(settings?.geofenceExit ?? true)
+  const [channels, setChannels] = useState(settings?.channels ?? { email: true, sms: false, push: true })
 
-  // Sync state with global settings context
-  useEffect(() => {
-    if (settings) {
-      setOrgName(settings.orgName)
-      setRegion(settings.region)
-      setMapStyle(settings.mapStyle)
-      setSpeedUnit(settings.speedUnit)
-      setDistanceUnit(settings.distanceUnit)
-      setTempUnit(settings.tempUnit)
-      setTimezone(settings.timezone)
-      setRefreshInterval(settings.refreshInterval)
-      setChannels(settings.channels)
-      setRetention(settings.retention)
-      setOverspeed(settings.overspeed)
-      setLowBattery(settings.lowBattery)
-      setGeofenceEntry(settings.geofenceEntry)
-      setGeofenceExit(settings.geofenceExit)
-    }
-  }, [settings])
+  // Browser Notification Status
+  const [pushPermission, setPushPermission] = useState(() => {
+    return 'Notification' in window ? Notification.permission : 'unsupported'
+  })
 
   // Security Settings State
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [apiKeys, setApiKeys] = useState([
-    { id: '1', name: 'Production Webhook', key: 'fc_live_••••••••3a9b', created: '2025-06-12' },
-  ])
-  const [newKeyName, setNewKeyName] = useState('')
+  const [showCurrentPass, setShowCurrentPass] = useState(false)
+  const [showNewPass, setShowNewPass] = useState(false)
+
+  // Sync state with global settings context
+  useEffect(() => {
+    if (settings) {
+      setOrgName(settings.orgName ?? 'Acme Logistics Pvt. Ltd.')
+      setRegion(settings.region ?? 'India - West & South')
+      setDefaultCityHub(settings.defaultCityHub ?? 'Pune Depot')
+      setUnitSystem(settings.unitSystem ?? 'Metric')
+      setSpeedUnit(settings.speedUnit ?? 'km/h')
+      setDistanceUnit(settings.distanceUnit ?? 'kilometers')
+      setTempUnit(settings.tempUnit ?? 'Celsius')
+      setMapStyle(settings.mapStyle ?? 'Dark Mode')
+      setTimezone(settings.timezone ?? 'IST (GMT+5:30)')
+      setOverspeed(settings.overspeed ?? 80)
+      setLowBattery(settings.lowBattery ?? 15)
+      setHighBatteryTemp(settings.highBatteryTemp ?? 45)
+      setGeofenceEntry(settings.geofenceEntry ?? true)
+      setGeofenceExit(settings.geofenceExit ?? true)
+      setChannels(settings.channels ?? { email: true, sms: false, push: true })
+    }
+  }, [settings])
+
+  const handleUnitSystemChange = (system) => {
+    setUnitSystem(system)
+    if (system === 'Metric') {
+      setSpeedUnit('km/h')
+      setDistanceUnit('kilometers')
+      setTempUnit('Celsius')
+    } else {
+      setSpeedUnit('mph')
+      setDistanceUnit('miles')
+      setTempUnit('Fahrenheit')
+    }
+  }
 
   const handleSaveGeneral = (e) => {
     e.preventDefault()
     updateSettings({
       orgName,
       region,
-      mapStyle,
+      defaultCityHub,
+      unitSystem,
       speedUnit,
       distanceUnit,
       tempUnit,
+      mapStyle,
       timezone,
-      refreshInterval,
     })
     showToast('General settings saved successfully')
   }
@@ -77,14 +128,49 @@ export default function Settings() {
   const handleSaveAlerts = (e) => {
     e.preventDefault()
     updateSettings({
-      channels,
-      retention,
       overspeed,
       lowBattery,
+      highBatteryTemp,
       geofenceEntry,
       geofenceExit,
+      channels,
     })
     showToast('Alert policies updated successfully')
+  }
+
+  const handleTogglePush = async (e) => {
+    const checked = e.target.checked
+    if (checked) {
+      if (!('Notification' in window)) {
+        showToast('Browser notifications are not supported on this browser')
+        return
+      }
+      if (pushPermission !== 'granted') {
+        try {
+          const res = await Notification.requestPermission()
+          setPushPermission(res)
+          if (res === 'granted') {
+            setChannels((prev) => ({ ...prev, push: true }))
+            showToast('Browser notifications turned ON')
+            new Notification('ElectriE Fleet Control', {
+              body: 'Desktop notifications are active for live fleet alerts',
+              icon: '/favicon.svg',
+            })
+          } else {
+            setChannels((prev) => ({ ...prev, push: false }))
+            showToast('Browser notifications permission denied')
+          }
+        } catch {
+          showToast('Could not request notification permission')
+        }
+      } else {
+        setChannels((prev) => ({ ...prev, push: true }))
+        showToast('Browser notifications turned ON')
+      }
+    } else {
+      setChannels((prev) => ({ ...prev, push: false }))
+      showToast('Browser notifications turned OFF')
+    }
   }
 
   const handlePasswordChange = (e) => {
@@ -97,38 +183,18 @@ export default function Settings() {
       showToast('Passwords do not match')
       return
     }
+    if (newPassword.length < 8) {
+      showToast('Password must be at least 8 characters')
+      return
+    }
     showToast('Password updated successfully')
     setCurrentPassword('')
     setNewPassword('')
     setConfirmPassword('')
   }
 
-  const handleGenerateKey = (e) => {
-    e.preventDefault()
-    if (!newKeyName.trim()) {
-      showToast('Please enter an API key name')
-      return
-    }
-    const randHex = Math.random().toString(16).substring(2, 6)
-    const newKey = {
-      id: Date.now().toString(),
-      name: newKeyName,
-      key: `fc_live_••••••••${randHex}`,
-      created: new Date().toISOString().split('T')[0],
-    }
-    setApiKeys([...apiKeys, newKey])
-    setNewKeyName('')
-    showToast('New API key generated successfully')
-  }
-
-  const handleRevokeKey = (id) => {
-    setApiKeys(apiKeys.filter((k) => k.id !== id))
-    showToast('API key revoked')
-  }
-
-  const handleToggleChannel = (key) => {
-    setChannels((prev) => ({ ...prev, [key]: !prev[key] }))
-  }
+  const inputCls =
+    'rounded-lg border border-line bg-panel-2 px-3.5 py-2 text-[12.5px] text-hi focus:border-accent focus:outline-hidden transition-colors'
 
   return (
     <div className="flex min-h-0 flex-1 flex-col md:overflow-hidden">
@@ -139,15 +205,15 @@ export default function Settings() {
         <div className="flex gap-4">
           {[
             { id: 'general', label: 'General & Localization', icon: SettingsIcon },
-            { id: 'alerts', label: 'Alert Policies & Channels', icon: Bell },
-            { id: 'security', label: 'Security & API Keys', icon: Lock },
+            { id: 'alerts', label: 'Alert Policies & Thresholds', icon: Bell },
+            { id: 'security', label: 'Security & Account', icon: Lock },
           ].map((tab) => {
             const Icon = tab.icon
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 border-b-2 px-1 py-3 text-[13px] font-medium transition-all ${
+                className={`flex items-center gap-2 border-b-2 px-1 py-3 text-[13px] font-medium transition-all cursor-pointer ${
                   activeTab === tab.id
                     ? 'border-accent text-accent'
                     : 'border-transparent text-lo hover:text-hi'
@@ -164,12 +230,63 @@ export default function Settings() {
       {/* Settings Content Area */}
       <div className="flex-1 overflow-y-auto px-4 pb-24 py-5 sm:px-6 md:pb-5">
         <div className="mx-auto max-w-3xl space-y-6">
-          {activeTab === 'general' && (
+
+          {/* SKELETON LOADING STATE */}
+          {isLoading ? (
+            <div className="animate-pulse space-y-6">
+              <div className="overflow-hidden rounded-xl border border-line bg-panel p-5 space-y-4">
+                <div className="flex items-center justify-between border-b border-line-soft pb-4">
+                  <div className="h-4 w-40 rounded-xs bg-panel-2" />
+                  <div className="h-3 w-20 rounded-xs bg-panel-2/60" />
+                </div>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 pt-2">
+                  <div className="space-y-1.5">
+                    <div className="h-3 w-28 rounded-xs bg-panel-2" />
+                    <div className="h-9 w-full rounded-lg bg-panel-2" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="h-3 w-28 rounded-xs bg-panel-2" />
+                    <div className="h-9 w-full rounded-lg bg-panel-2" />
+                  </div>
+                </div>
+                <div className="space-y-1.5 pt-2">
+                  <div className="h-3 w-44 rounded-xs bg-panel-2" />
+                  <div className="h-9 w-full rounded-lg bg-panel-2" />
+                </div>
+              </div>
+
+              <div className="overflow-hidden rounded-xl border border-line bg-panel p-5 space-y-4">
+                <div className="border-b border-line-soft pb-4">
+                  <div className="h-4 w-48 rounded-xs bg-panel-2" />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                  <div className="h-16 rounded-lg bg-panel-2" />
+                  <div className="h-16 rounded-lg bg-panel-2" />
+                </div>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 pt-2">
+                  <div className="space-y-1.5">
+                    <div className="h-3 w-28 rounded-xs bg-panel-2" />
+                    <div className="h-9 w-full rounded-lg bg-panel-2" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="h-3 w-28 rounded-xs bg-panel-2" />
+                    <div className="h-9 w-full rounded-lg bg-panel-2" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* ============================================================ */}
+              {/* TAB 1: GENERAL & LOCALIZATION                                */}
+              {/* ============================================================ */}
+              {activeTab === 'general' && (
             <form onSubmit={handleSaveGeneral} className="space-y-6">
-              {/* Org Card */}
+              {/* Organization Profile Card */}
               <div className="overflow-hidden rounded-xl border border-line bg-panel">
-                <div className="border-b border-line-soft px-5 py-4">
+                <div className="border-b border-line-soft px-5 py-4 flex items-center justify-between">
                   <h2 className="font-display text-[14px] font-semibold text-hi">Organization Profile</h2>
+                  <span className="text-[10.5px] font-mono text-dim uppercase">Company Master</span>
                 </div>
                 <div className="p-5 space-y-4">
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -177,131 +294,137 @@ export default function Settings() {
                       <label className="text-[12px] font-medium text-lo">Organization Name</label>
                       <input
                         type="text"
+                        required
                         value={orgName}
                         onChange={(e) => setOrgName(e.target.value)}
-                        className="rounded-lg border border-line bg-panel-2 px-3.5 py-2 text-[12.5px] text-hi focus:border-accent focus:outline-hidden"
+                        className={inputCls}
                       />
                     </div>
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[12px] font-medium text-lo">Fleet Region</label>
+                      <label className="text-[12px] font-medium text-lo">Operating Region</label>
                       <select
                         value={region}
                         onChange={(e) => setRegion(e.target.value)}
-                        className="rounded-lg border border-line bg-panel-2 px-3.5 py-2 text-[12.5px] text-hi focus:border-accent focus:outline-hidden"
+                        className={inputCls + ' cursor-pointer'}
                       >
                         <option>India - West & South</option>
-                        <option>India - North</option>
-                        <option>India - East & North-East</option>
-                        <option>Global Operations</option>
+                        <option>India - North & NCR</option>
+                        <option>India - East & Central</option>
+                        <option>Pan-India Operations</option>
+                        <option>Global Fleet</option>
                       </select>
                     </div>
                   </div>
+
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[12px] font-medium text-lo">Default Map Style</label>
+                    <label className="text-[12px] font-medium text-lo">Default City Hub (Primary Depot)</label>
                     <select
-                      value={mapStyle}
-                      onChange={(e) => setMapStyle(e.target.value)}
-                      className="rounded-lg border border-line bg-panel-2 px-3.5 py-2 text-[12.5px] text-hi focus:border-accent focus:outline-hidden"
+                      value={defaultCityHub}
+                      onChange={(e) => setDefaultCityHub(e.target.value)}
+                      className={inputCls + ' cursor-pointer'}
                     >
-                      <option>Dark Mode</option>
-                      <option>Satellite Hybrid</option>
-                      <option>Standard Vector</option>
+                      <option value="Pune Depot">Pune Hub (Maharashtra - West)</option>
+                      <option value="Okhla Service Yard">Okhla Service Yard (Delhi NCR)</option>
+                      <option value="Bengaluru Ring Route">Bengaluru Central Depot (Karnataka)</option>
+                      <option value="Mumbai West Hub">Mumbai West Hub (Andheri/Bandra)</option>
+                      <option value="Kolkata Central Hub">Kolkata Central Depot (West Bengal)</option>
                     </select>
+                    <p className="text-[10.5px] text-dim">The default focal point when opening the live telemetry map.</p>
                   </div>
                 </div>
               </div>
 
-              {/* Preferences Card */}
+              {/* Display & Measurement Preferences */}
               <div className="overflow-hidden rounded-xl border border-line bg-panel">
                 <div className="border-b border-line-soft px-5 py-4">
-                  <h2 className="font-display text-[14px] font-semibold text-hi">Localization & Display</h2>
+                  <h2 className="font-display text-[14px] font-semibold text-hi">Display & Measurement Units</h2>
                 </div>
                 <div className="p-5 space-y-4">
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[12px] font-medium text-lo">Speed Unit</label>
-                      <select
-                        value={speedUnit}
-                        onChange={(e) => setSpeedUnit(e.target.value)}
-                        className="rounded-lg border border-line bg-panel-2 px-3.5 py-2 text-[12.5px] text-hi focus:border-accent focus:outline-hidden"
+                  {/* Unified Unit System Selector */}
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[12px] font-medium text-lo">Measurement System</label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div
+                        onClick={() => handleUnitSystemChange('Metric')}
+                        className={`cursor-pointer rounded-lg border p-3.5 transition-all ${
+                          unitSystem === 'Metric'
+                            ? 'border-accent bg-accent/5'
+                            : 'border-line bg-panel-2 hover:bg-hover'
+                        }`}
                       >
-                        <option>km/h</option>
-                        <option>mph</option>
-                      </select>
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[12px] font-medium text-lo">Distance Unit</label>
-                      <select
-                        value={distanceUnit}
-                        onChange={(e) => setDistanceUnit(e.target.value)}
-                        className="rounded-lg border border-line bg-panel-2 px-3.5 py-2 text-[12.5px] text-hi focus:border-accent focus:outline-hidden"
+                        <div className="flex items-center justify-between">
+                          <div className="text-[12.5px] font-semibold text-hi">Metric System (Recommended)</div>
+                          <input
+                            type="radio"
+                            name="unitSystem"
+                            checked={unitSystem === 'Metric'}
+                            readOnly
+                            className="accent-accent"
+                          />
+                        </div>
+                        <p className="mt-1 text-[11px] text-dim">Speed: <strong>km/h</strong> • Distance: <strong>km</strong> • Temp: <strong>°C</strong></p>
+                      </div>
+
+                      <div
+                        onClick={() => handleUnitSystemChange('Imperial')}
+                        className={`cursor-pointer rounded-lg border p-3.5 transition-all ${
+                          unitSystem === 'Imperial'
+                            ? 'border-accent bg-accent/5'
+                            : 'border-line bg-panel-2 hover:bg-hover'
+                        }`}
                       >
-                        <option>kilometers</option>
-                        <option>miles</option>
-                      </select>
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[12px] font-medium text-lo">Temperature Unit</label>
-                      <select
-                        value={tempUnit}
-                        onChange={(e) => setTempUnit(e.target.value)}
-                        className="rounded-lg border border-line bg-panel-2 px-3.5 py-2 text-[12.5px] text-hi focus:border-accent focus:outline-hidden"
-                      >
-                        <option>Celsius</option>
-                        <option>Fahrenheit</option>
-                      </select>
+                        <div className="flex items-center justify-between">
+                          <div className="text-[12.5px] font-semibold text-hi">Imperial System</div>
+                          <input
+                            type="radio"
+                            name="unitSystem"
+                            checked={unitSystem === 'Imperial'}
+                            readOnly
+                            className="accent-accent"
+                          />
+                        </div>
+                        <p className="mt-1 text-[11px] text-dim">Speed: <strong>mph</strong> • Distance: <strong>miles</strong> • Temp: <strong>°F</strong></p>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 pt-1">
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[12px] font-medium text-lo">Preferred Timezone</label>
+                      <label className="text-[12px] font-medium text-lo">Default Map Style</label>
+                      <select
+                        value={mapStyle}
+                        onChange={(e) => setMapStyle(e.target.value)}
+                        className={inputCls + ' cursor-pointer'}
+                      >
+                        <option>Dark Mode</option>
+                        <option>Satellite Hybrid</option>
+                        <option>Standard Vector</option>
+                      </select>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[12px] font-medium text-lo">System Timezone</label>
+                        {livePreviewTime && (
+                          <span className="font-mono text-[10.5px] text-accent font-medium">
+                            Live: {livePreviewTime}
+                          </span>
+                        )}
+                      </div>
                       <select
                         value={timezone}
                         onChange={(e) => setTimezone(e.target.value)}
-                        className="rounded-lg border border-line bg-panel-2 px-3.5 py-2 text-[12.5px] text-hi focus:border-accent focus:outline-hidden"
+                        className={inputCls + ' cursor-pointer'}
                       >
-                        <option>UTC</option>
-                        <option>IST (GMT+5:30)</option>
-                        <option>EST (GMT-5)</option>
-                        <option>PST (GMT-8)</option>
+                        {TIMEZONE_OPTIONS.map((tz) => (
+                          <option key={tz.value} value={tz.value}>
+                            {tz.label}
+                          </option>
+                        ))}
                       </select>
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[12px] font-medium text-lo">Auto-Refresh Interval</label>
-                      <select
-                        value={refreshInterval}
-                        onChange={(e) => setRefreshInterval(e.target.value)}
-                        className="rounded-lg border border-line bg-panel-2 px-3.5 py-2 text-[12.5px] text-hi focus:border-accent focus:outline-hidden"
-                      >
-                        <option>Real-time</option>
-                        <option>10s</option>
-                        <option>30s</option>
-                        <option>1m</option>
-                        <option>Manual</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Billing Card */}
-              <div className="overflow-hidden rounded-xl border border-line bg-panel">
-                <div className="border-b border-line-soft px-5 py-4">
-                  <h2 className="font-display text-[14px] font-semibold text-hi">Billing & Subscription</h2>
-                </div>
-                <div className="p-5">
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-lg border border-line-soft bg-panel-2 p-4">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-display text-[14px] font-bold text-hi">Enterprise Tier</span>
-                        <span className="rounded bg-green/15 px-1.5 py-0.5 text-[10px] font-semibold text-green uppercase">Active</span>
-                      </div>
-                      <p className="mt-1 text-[11.5px] text-dim">Using 24 of 50 active device tracking slots.</p>
-                    </div>
-                    <div className="text-left sm:text-right">
-                      <div className="text-[13px] font-semibold text-hi">Next Renewal</div>
-                      <p className="text-[11.5px] text-dim">October 15, 2026</p>
+                      <p className="text-[10.5px] text-dim">
+                        All live dashboards, alert feeds, and telemetry clocks will display time in this zone.
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -311,122 +434,175 @@ export default function Settings() {
               <div className="flex justify-end">
                 <button
                   type="submit"
-                  className="rounded-lg bg-accent px-4 py-2 text-[12.5px] font-medium text-white hover:bg-accent/80 transition-colors"
+                  className="rounded-lg bg-accent px-5 py-2 text-[12.5px] font-semibold text-base hover:bg-accent/90 transition-all cursor-pointer shadow-xs"
                 >
-                  Save General Changes
+                  Save General Settings
                 </button>
               </div>
             </form>
           )}
 
+          {/* ============================================================ */}
+          {/* TAB 2: ALERT POLICIES & THRESHOLDS                           */}
+          {/* ============================================================ */}
           {activeTab === 'alerts' && (
             <form onSubmit={handleSaveAlerts} className="space-y-6">
-              {/* Channels Card */}
+              {/* EV & Telemetry Safety Thresholds */}
               <div className="overflow-hidden rounded-xl border border-line bg-panel">
-                <div className="border-b border-line-soft px-5 py-4">
-                  <h2 className="font-display text-[14px] font-semibold text-hi">Notification Channels</h2>
+                <div className="border-b border-line-soft px-5 py-4 flex items-center justify-between">
+                  <h2 className="font-display text-[14px] font-semibold text-hi">EV Telemetry Thresholds</h2>
+                  <span className="text-[10.5px] font-mono text-dim uppercase">Automated Triggers</span>
                 </div>
                 <div className="p-5 space-y-4">
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    {[
-                      { id: 'email', label: 'Email Alerts', desc: 'Send daily digests and critical event alerts to org mail' },
-                      { id: 'sms', label: 'SMS Notifications', desc: 'Critical priority notifications direct to mobile numbers' },
-                      { id: 'slack', label: 'Slack Webhook', desc: 'Stream active system logs to a workspace channel' },
-                      { id: 'push', label: 'Browser Push Notifications', desc: 'Realtime overlay popups inside active dashboard' },
-                    ].map((ch) => (
-                      <div
-                        key={ch.id}
-                        onClick={() => handleToggleChannel(ch.id)}
-                        className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3.5 transition-all ${
-                          channels[ch.id]
-                            ? 'border-accent bg-accent/5'
-                            : 'border-line bg-panel hover:bg-hover'
-                        }`}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={channels[ch.id]}
-                          readOnly
-                          className="mt-0.5 h-3.5 w-3.5 accent-accent"
-                        />
-                        <div>
-                          <div className="text-[12.5px] font-semibold text-hi">{ch.label}</div>
-                          <p className="mt-0.5 text-[11px] leading-snug text-dim">{ch.desc}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="flex flex-col gap-1.5 pt-2">
-                    <label className="text-[12px] font-medium text-lo">Alert Event Data Retention</label>
-                    <select
-                      value={retention}
-                      onChange={(e) => setRetention(e.target.value)}
-                      className="rounded-lg border border-line bg-panel-2 px-3.5 py-2 text-[12.5px] text-hi focus:border-accent focus:outline-hidden"
-                    >
-                      <option>30 days</option>
-                      <option>60 days</option>
-                      <option>90 days</option>
-                      <option>180 days</option>
-                      <option>1 year</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              {/* Threshold Policies Card */}
-              <div className="overflow-hidden rounded-xl border border-line bg-panel">
-                <div className="border-b border-line-soft px-5 py-4">
-                  <h2 className="font-display text-[14px] font-semibold text-hi">Alert Policies & Thresholds</h2>
-                </div>
-                <div className="p-5 space-y-4">
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[12px] font-medium text-lo">Overspeed Threshold ({speedUnit})</label>
+                      <div className="flex items-center justify-between">
+                        <label className="text-[12px] font-medium text-lo">Speed Limit</label>
+                        <span className="font-mono text-[10px] text-accent font-semibold">{speedUnit}</span>
+                      </div>
                       <input
                         type="number"
+                        min="20"
+                        max="160"
                         value={overspeed}
                         onChange={(e) => setOverspeed(parseInt(e.target.value) || 0)}
-                        className="rounded-lg border border-line bg-panel-2 px-3.5 py-2 text-[12.5px] text-hi focus:border-accent focus:outline-hidden"
+                        className={inputCls}
                       />
-                      <p className="text-[10.5px] text-dim">Generate a warning when vehicle speeds exceed this value.</p>
+                      <p className="text-[10.5px] text-dim">Overspeed warning generated above this speed.</p>
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[12px] font-medium text-lo">Low Battery Warning (%)</label>
+                      <div className="flex items-center justify-between">
+                        <label className="text-[12px] font-medium text-lo">Low Battery Warning</label>
+                        <span className="font-mono text-[10px] text-amber font-semibold">%</span>
+                      </div>
                       <input
                         type="number"
+                        min="5"
+                        max="40"
                         value={lowBattery}
                         onChange={(e) => setLowBattery(parseInt(e.target.value) || 0)}
-                        className="rounded-lg border border-line bg-panel-2 px-3.5 py-2 text-[12.5px] text-hi focus:border-accent focus:outline-hidden"
+                        className={inputCls}
                       />
-                      <p className="text-[10.5px] text-dim">Alert when vehicle tracker backup battery drops below threshold.</p>
+                      <p className="text-[10.5px] text-dim">Urgent prompt to route vehicle to charging depot.</p>
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[12px] font-medium text-lo">Max Battery Temp</label>
+                        <span className="font-mono text-[10px] text-red font-semibold">{tempUnit === 'Fahrenheit' ? '°F' : '°C'}</span>
+                      </div>
+                      <input
+                        type="number"
+                        min="35"
+                        max="70"
+                        value={highBatteryTemp}
+                        onChange={(e) => setHighBatteryTemp(parseInt(e.target.value) || 0)}
+                        className={inputCls}
+                      />
+                      <p className="text-[10.5px] text-dim">Thermal safety alert to prevent battery overheating.</p>
                     </div>
                   </div>
 
-                  <div className="border-t border-line-soft pt-4 space-y-3">
+                  {/* Geofencing Toggles */}
+                  <div className="border-t border-line-soft pt-4 space-y-2.5">
                     <div className="text-[12px] font-semibold text-hi">Geofencing Notifications</div>
-                    <div className="space-y-2.5">
-                      <label className="flex items-center gap-2.5 cursor-pointer text-[12px] text-lo">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <label className="flex items-center gap-2.5 rounded-lg border border-line bg-panel-2 p-3 cursor-pointer text-[12px] text-lo hover:border-accent/30 transition-colors">
                         <input
                           type="checkbox"
                           checked={geofenceEntry}
                           onChange={(e) => setGeofenceEntry(e.target.checked)}
-                          className="h-3.5 w-3.5 accent-accent"
+                          className="h-3.5 w-3.5 accent-accent cursor-pointer"
                         />
-                        Alert when device enters a geofenced area
+                        <span>Alert when vehicle <strong>enters</strong> depot</span>
                       </label>
-                      <label className="flex items-center gap-2.5 cursor-pointer text-[12px] text-lo">
+                      <label className="flex items-center gap-2.5 rounded-lg border border-line bg-panel-2 p-3 cursor-pointer text-[12px] text-lo hover:border-accent/30 transition-colors">
                         <input
                           type="checkbox"
                           checked={geofenceExit}
                           onChange={(e) => setGeofenceExit(e.target.checked)}
-                          className="h-3.5 w-3.5 accent-accent"
+                          className="h-3.5 w-3.5 accent-accent cursor-pointer"
                         />
-                        Alert when device exits a geofenced area
+                        <span>Alert when vehicle <strong>exits</strong> depot</span>
                       </label>
                     </div>
                   </div>
+                </div>
+              </div>
+
+              {/* Notification Channels */}
+              <div className="overflow-hidden rounded-xl border border-line bg-panel">
+                <div className="border-b border-line-soft px-5 py-4">
+                  <h2 className="font-display text-[14px] font-semibold text-hi">Notification Channels</h2>
+                </div>
+                <div className="p-5 space-y-3.5">
+                  {/* Browser Push Card */}
+                  <label className="flex items-center justify-between cursor-pointer rounded-lg border border-line bg-panel-2 p-4 hover:border-accent/30 transition-colors">
+                    <div className="pr-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[12.5px] font-semibold text-hi">Browser Desktop Notifications</span>
+                        <span
+                          className={`rounded px-1.5 py-0.5 text-[9.5px] font-mono font-semibold uppercase ${
+                            pushPermission === 'denied'
+                              ? 'bg-red/15 text-red'
+                              : pushPermission === 'granted' && channels.push
+                              ? 'bg-green/15 text-green'
+                              : 'bg-zinc-500/15 text-dim'
+                          }`}
+                        >
+                          {pushPermission === 'denied'
+                            ? 'Blocked'
+                            : pushPermission === 'granted' && channels.push
+                            ? 'Active (On)'
+                            : 'Disabled (Off)'}
+                        </span>
+                      </div>
+                      <p className="mt-0.5 text-[11px] text-dim">
+                        Receive instant OS popups in Windows/macOS for critical safety events even if the tab is minimized.
+                      </p>
+                      {pushPermission === 'denied' && (
+                        <p className="mt-1 text-[10.5px] text-red">
+                          Notifications are blocked in your browser settings. Please allow notifications in site permissions to enable.
+                        </p>
+                      )}
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={Boolean(channels.push && pushPermission === 'granted')}
+                      disabled={pushPermission === 'denied'}
+                      onChange={handleTogglePush}
+                      className="h-4 w-4 accent-accent cursor-pointer shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
+                    />
+                  </label>
+
+                  {/* Email Channel */}
+                  <label className="flex items-center justify-between cursor-pointer rounded-lg border border-line bg-panel-2 p-4 hover:border-accent/30 transition-colors">
+                    <div>
+                      <span className="text-[12.5px] font-semibold text-hi">Email Alert Dispatch</span>
+                      <p className="text-[11px] text-dim">Send automated critical issue digests and alerts via email.</p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={channels.email}
+                      onChange={(e) => setChannels((prev) => ({ ...prev, email: e.target.checked }))}
+                      className="h-4 w-4 accent-accent cursor-pointer"
+                    />
+                  </label>
+
+                  {/* SMS Emergency Channel */}
+                  <label className="flex items-center justify-between cursor-pointer rounded-lg border border-line bg-panel-2 p-4 hover:border-accent/30 transition-colors">
+                    <div>
+                      <span className="text-[12.5px] font-semibold text-hi">Emergency SOS SMS</span>
+                      <p className="text-[11px] text-dim">Send instant SMS notifications for critical safety alarms.</p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={channels.sms}
+                      onChange={(e) => setChannels((prev) => ({ ...prev, sms: e.target.checked }))}
+                      className="h-4 w-4 accent-accent cursor-pointer"
+                    />
+                  </label>
                 </div>
               </div>
 
@@ -434,7 +610,7 @@ export default function Settings() {
               <div className="flex justify-end">
                 <button
                   type="submit"
-                  className="rounded-lg bg-accent px-4 py-2 text-[12.5px] font-medium text-white hover:bg-accent/80 transition-colors"
+                  className="rounded-lg bg-accent px-5 py-2 text-[12.5px] font-semibold text-base hover:bg-accent/90 transition-all cursor-pointer shadow-xs"
                 >
                   Save Policy Changes
                 </button>
@@ -442,66 +618,39 @@ export default function Settings() {
             </form>
           )}
 
+          {/* ============================================================ */}
+          {/* TAB 3: SECURITY & ACCOUNT                                    */}
+          {/* ============================================================ */}
           {activeTab === 'security' && (
             <div className="space-y-6">
-              {/* API Access Card */}
+              {/* Current Admin Account Card */}
               <div className="overflow-hidden rounded-xl border border-line bg-panel">
-                <div className="border-b border-line-soft px-5 py-4">
-                  <h2 className="font-display text-[14px] font-semibold text-hi">API & Integrations</h2>
+                <div className="border-b border-line-soft px-5 py-4 flex items-center justify-between">
+                  <h2 className="font-display text-[14px] font-semibold text-hi">Current Account & Role</h2>
+                  <span className="rounded bg-accent/15 px-2 py-0.5 text-[10px] font-semibold text-accent uppercase">
+                    Super Admin
+                  </span>
                 </div>
-                <div className="p-5 space-y-4">
-                  <div className="text-[11.5px] text-dim">
-                    Use API keys to connect outer dashboards, databases, or webhook consumers to Fleet Control telemetry.
+                <div className="p-5">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-lg border border-line-soft bg-panel-2 p-4">
+                    <div className="flex items-center gap-3.5">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent/15 font-display text-[14px] font-bold text-accent border border-accent/30">
+                        RD
+                      </div>
+                      <div>
+                        <div className="text-[13.5px] font-semibold text-hi">Rajesh Deshmukh</div>
+                        <div className="text-[11.5px] text-dim">admin@electrie.io</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[11.5px] text-dim">
+                      <ShieldCheck className="h-4 w-4 text-green" />
+                      <span>Role-Based Access Control (RBAC) Enforced</span>
+                    </div>
                   </div>
-
-                  {/* List of keys */}
-                  <div className="divide-y divide-line-soft rounded-lg border border-line bg-panel-2">
-                    {apiKeys.length === 0 ? (
-                      <div className="p-4 text-center text-[12px] text-dim">No active API keys found.</div>
-                    ) : (
-                      apiKeys.map((key) => (
-                        <div key={key.id} className="flex items-center justify-between p-3.5 gap-4">
-                          <div>
-                            <div className="text-[12.5px] font-semibold text-hi">{key.name}</div>
-                            <div className="mt-1 flex items-center gap-3 text-[11px] text-dim">
-                              <span className="font-mono">{key.key}</span>
-                              <span>&bull;</span>
-                              <span>Created {key.created}</span>
-                            </div>
-                          </div>
-                          <button
-                            onClick={() => handleRevokeKey(key.id)}
-                            className="flex h-7 w-7 items-center justify-center rounded-md border border-line text-dim hover:text-red hover:bg-red/5 transition-colors"
-                            title="Revoke Key"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                      ))
-                    )}
-                  </div>
-
-                  {/* Key Generator */}
-                  <form onSubmit={handleGenerateKey} className="flex items-center gap-3 pt-2">
-                    <input
-                      type="text"
-                      placeholder="e.g. Telemetry Exporter"
-                      value={newKeyName}
-                      onChange={(e) => setNewKeyName(e.target.value)}
-                      className="flex-1 rounded-lg border border-line bg-panel-2 px-3.5 py-2 text-[12.5px] text-hi focus:border-accent focus:outline-hidden"
-                    />
-                    <button
-                      type="submit"
-                      className="flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-[12.5px] font-medium text-white hover:bg-accent/80 transition-colors"
-                    >
-                      <Plus className="h-3.5 w-3.5" />
-                      Generate Key
-                    </button>
-                  </form>
                 </div>
               </div>
 
-              {/* Password Change Card */}
+              {/* Change Password Card */}
               <div className="overflow-hidden rounded-xl border border-line bg-panel">
                 <div className="border-b border-line-soft px-5 py-4">
                   <h2 className="font-display text-[14px] font-semibold text-hi">Change Password</h2>
@@ -509,31 +658,53 @@ export default function Settings() {
                 <form onSubmit={handlePasswordChange} className="p-5 space-y-4">
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[12px] font-medium text-lo">Current Password</label>
-                    <input
-                      type="password"
-                      value={currentPassword}
-                      onChange={(e) => setCurrentPassword(e.target.value)}
-                      className="rounded-lg border border-line bg-panel-2 px-3.5 py-2 text-[12.5px] text-hi focus:border-accent focus:outline-hidden"
-                    />
+                    <div className="relative">
+                      <input
+                        type={showCurrentPass ? 'text' : 'password'}
+                        required
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
+                        className={inputCls + ' w-full pr-10'}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowCurrentPass(!showCurrentPass)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-dim hover:text-hi cursor-pointer"
+                      >
+                        {showCurrentPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div className="flex flex-col gap-1.5">
                       <label className="text-[12px] font-medium text-lo">New Password</label>
-                      <input
-                        type="password"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        className="rounded-lg border border-line bg-panel-2 px-3.5 py-2 text-[12.5px] text-hi focus:border-accent focus:outline-hidden"
-                      />
+                      <div className="relative">
+                        <input
+                          type={showNewPass ? 'text' : 'password'}
+                          required
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          className={inputCls + ' w-full pr-10'}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowNewPass(!showNewPass)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-dim hover:text-hi cursor-pointer"
+                        >
+                          {showNewPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
                     </div>
+
                     <div className="flex flex-col gap-1.5">
                       <label className="text-[12px] font-medium text-lo">Confirm New Password</label>
                       <input
                         type="password"
+                        required
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
-                        className="rounded-lg border border-line bg-panel-2 px-3.5 py-2 text-[12.5px] text-hi focus:border-accent focus:outline-hidden"
+                        className={inputCls}
                       />
                     </div>
                   </div>
@@ -541,7 +712,7 @@ export default function Settings() {
                   <div className="flex justify-end pt-2">
                     <button
                       type="submit"
-                      className="rounded-lg bg-accent px-4 py-2 text-[12.5px] font-medium text-white hover:bg-accent/80 transition-colors"
+                      className="rounded-lg bg-accent px-5 py-2 text-[12.5px] font-semibold text-base hover:bg-accent/90 transition-all cursor-pointer shadow-xs"
                     >
                       Update Password
                     </button>
@@ -550,6 +721,9 @@ export default function Settings() {
               </div>
             </div>
           )}
+          </>
+        )}
+
         </div>
       </div>
     </div>

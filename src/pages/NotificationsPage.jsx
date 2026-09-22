@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import Topbar from '../components/Topbar'
 import { useFleet } from '../context/FleetContext'
 import {
@@ -67,6 +67,13 @@ export default function NotificationsPage() {
   } = useFleet()
 
   const [filter, setFilter] = useState('all') // 'all', 'unread', 'read'
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    setIsLoading(true)
+    const timer = setTimeout(() => setIsLoading(false), 240)
+    return () => clearTimeout(timer)
+  }, [filter])
 
   const filteredNotifications = useMemo(() => {
     return notifications.filter((n) => {
@@ -143,7 +150,26 @@ export default function NotificationsPage() {
 
           {/* List content */}
           <div className="flex-1 overflow-y-auto divide-y divide-line-soft">
-            {filteredNotifications.length === 0 ? (
+            {isLoading ? (
+              [1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="animate-pulse flex items-start justify-between gap-3 px-4 py-4.5 sm:gap-4 sm:px-6">
+                  <div className="flex items-start gap-4 min-w-0 flex-1">
+                    <div className="h-7.5 w-7.5 shrink-0 rounded-lg bg-panel-2" />
+                    <div className="min-w-0 space-y-2 flex-1">
+                      <div className="h-3.5 w-3/5 rounded-xs bg-panel-2" />
+                      <div className="flex items-center gap-3">
+                        <div className="h-2.5 w-16 rounded-xs bg-panel-2/70" />
+                        <div className="h-2.5 w-12 rounded-xs bg-panel-2/50" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <div className="h-6.5 w-6.5 rounded-md bg-panel-2" />
+                    <div className="h-6.5 w-6.5 rounded-md bg-panel-2" />
+                  </div>
+                </div>
+              ))
+            ) : filteredNotifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-center">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-panel-2 border border-line-soft text-dim mb-3">
                   <Bell className="h-6 w-6" strokeWidth={1.5} />

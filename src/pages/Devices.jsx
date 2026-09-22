@@ -1,9 +1,17 @@
+import { useState, useEffect } from 'react'
 import Topbar from '../components/Topbar'
 import { useFleet } from '../context/FleetContext'
 import { STATUS_META } from '../data/statusMeta'
 
 export default function Devices() {
   const { vehicles, setSelectedVehicleId } = useFleet()
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    setIsLoading(true)
+    const timer = setTimeout(() => setIsLoading(false), 240)
+    return () => clearTimeout(timer)
+  }, [])
 
   return (
     <div className="flex min-h-0 flex-1 flex-col md:overflow-hidden">
@@ -11,7 +19,28 @@ export default function Devices() {
 
       <div className="flex-1 overflow-y-auto px-4 pb-24 py-5 sm:px-6 md:pb-5">
         <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 xl:grid-cols-3">
-          {vehicles.map((v) => {
+          {isLoading ? (
+            Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={`skel-dev-${i}`}
+                className="animate-pulse rounded-xl border border-line bg-panel p-4 space-y-3.5"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="h-3 w-20 rounded bg-panel-2" />
+                  <div className="h-4.5 w-16 rounded-full bg-panel-2" />
+                </div>
+                <div className="space-y-1.5 pt-1">
+                  <div className="h-4.5 w-32 rounded bg-panel-2" />
+                  <div className="h-3 w-24 rounded bg-panel-2/60" />
+                </div>
+                <div className="flex items-center justify-between pt-2 border-t border-line-soft/60">
+                  <div className="h-3 w-18 rounded bg-panel-2" />
+                  <div className="h-3 w-16 rounded bg-panel-2" />
+                </div>
+              </div>
+            ))
+          ) : (
+            vehicles.map((v) => {
             const meta = STATUS_META[v.status]
             return (
               <button
@@ -34,7 +63,7 @@ export default function Devices() {
                 </div>
               </button>
             )
-          })}
+          }))}
         </div>
       </div>
     </div>

@@ -1,8 +1,16 @@
+import { useState, useEffect } from 'react'
 import { Truck, Wifi, BatteryMedium, TriangleAlert } from './icons'
 import { useFleet } from '../context/FleetContext'
 
 export default function StatsRow() {
   const { stats } = useFleet()
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    setIsLoading(true)
+    const timer = setTimeout(() => setIsLoading(false), 240)
+    return () => clearTimeout(timer)
+  }, [])
 
   const cards = [
     {
@@ -40,6 +48,29 @@ export default function StatsRow() {
       delta: 'Requires action',
     },
   ]
+
+  if (isLoading) {
+    return (
+      <div className="mb-4.5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div
+            key={`skel-card-${i}`}
+            className="animate-pulse flex flex-col justify-between rounded-xl border border-line bg-panel p-4 space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <div className="h-3.5 w-24 rounded bg-panel-2" />
+              <div className="h-7 w-7 rounded-lg bg-panel-2" />
+            </div>
+            <div className="mt-2 flex items-baseline justify-between">
+              <div className="h-8 w-14 rounded bg-panel-2" />
+              <div className="h-4 w-16 rounded-md bg-panel-2/60" />
+            </div>
+            <div className="h-2.5 w-24 rounded bg-panel-2/50" />
+          </div>
+        ))}
+      </div>
+    )
+  }
 
   return (
     <div className="mb-4.5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">

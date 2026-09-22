@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import Topbar from '../components/Topbar'
 import { Leaf, Trees, Zap, DollarSign, TrendingUp, BarChart3, RotateCw, ChevronDown } from '../components/icons'
 import { useFleet } from '../context/FleetContext'
@@ -73,14 +73,25 @@ export default function EsgPage() {
   const { showToast } = useFleet()
   const [period, setPeriod] = useState('1y')
   const [depot, setDepot] = useState('all')
+  const [isLoading, setIsLoading] = useState(true)
   const [isCalculating, setIsCalculating] = useState(false)
+
+  useEffect(() => {
+    setIsLoading(true)
+    const timer = setTimeout(() => setIsLoading(false), 240)
+    return () => clearTimeout(timer)
+  }, [period, depot])
 
   const activeData = PERIOD_DATA[period] || PERIOD_DATA['1y']
 
   const handleCalculate = () => {
     setIsCalculating(true)
+    setIsLoading(true)
     if (showToast) showToast('Recalculating ESG environmental impact telemetry...')
-    setTimeout(() => setIsCalculating(false), 600)
+    setTimeout(() => {
+      setIsCalculating(false)
+      setIsLoading(false)
+    }, 500)
   }
 
   const maxCo2 = useMemo(() => Math.max(...activeData.chart.map(c => c.co2)), [activeData])
@@ -138,194 +149,260 @@ export default function EsgPage() {
         </div>
 
         {/* 4 KPI Cards */}
-        <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 xl:grid-cols-4">
-          
-          {/* Card 1: CO2 Avoided */}
-          <div className="group rounded-xl border border-line bg-panel p-4.5 transition-all hover:border-accent/40 hover:bg-panel-2/50">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-dim">CO₂ Avoided</span>
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent/15 text-accent border border-accent/20">
-                <Leaf className="h-4 w-4" strokeWidth={2.2} />
+        {isLoading ? (
+          <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 xl:grid-cols-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="animate-pulse rounded-xl border border-line bg-panel p-4.5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="h-3 w-24 rounded-xs bg-panel-2" />
+                  <div className="h-7 w-7 rounded-lg bg-panel-2" />
+                </div>
+                <div className="h-8 w-32 rounded-md bg-panel-2" />
+                <div className="h-3 w-40 rounded-xs bg-panel-2/60" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 xl:grid-cols-4">
+            {/* Card 1: CO2 Avoided */}
+            <div className="group rounded-xl border border-line bg-panel p-4.5 transition-all hover:border-accent/40 hover:bg-panel-2/50">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-dim">CO₂ Avoided</span>
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent/15 text-accent border border-accent/20">
+                  <Leaf className="h-4 w-4" strokeWidth={2.2} />
+                </div>
+              </div>
+              <div className="mt-3 flex items-baseline gap-2">
+                <span className="font-display text-[28px] font-extrabold text-accent">{activeData.co2}</span>
+                <span className="text-[12px] font-medium text-lo">kilograms</span>
+              </div>
+              <div className="mt-1 font-mono text-[10.5px] text-accent/80">
+                {activeData.co2Metric}
               </div>
             </div>
-            <div className="mt-3 flex items-baseline gap-2">
-              <span className="font-display text-[28px] font-extrabold text-accent">{activeData.co2}</span>
-              <span className="text-[12px] font-medium text-lo">kilograms</span>
-            </div>
-            <div className="mt-1 font-mono text-[10.5px] text-accent/80">
-              {activeData.co2Metric}
-            </div>
-          </div>
 
-          {/* Card 2: Diesel Saved */}
-          <div className="group rounded-xl border border-line bg-panel p-4.5 transition-all hover:border-accent/40 hover:bg-panel-2/50">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-dim">Diesel Saved</span>
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent/15 text-accent border border-accent/20">
-                <Zap className="h-4 w-4" strokeWidth={2.2} />
+            {/* Card 2: Diesel Saved */}
+            <div className="group rounded-xl border border-line bg-panel p-4.5 transition-all hover:border-accent/40 hover:bg-panel-2/50">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-dim">Diesel Saved</span>
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent/15 text-accent border border-accent/20">
+                  <Zap className="h-4 w-4" strokeWidth={2.2} />
+                </div>
+              </div>
+              <div className="mt-3 flex items-baseline gap-2">
+                <span className="font-display text-[28px] font-extrabold text-hi">{activeData.diesel}</span>
+                <span className="text-[12px] font-medium text-lo">Liters</span>
+              </div>
+              <div className="mt-1 font-mono text-[10.5px] text-dim">
+                Based on ICE 9.5 km/L avg
               </div>
             </div>
-            <div className="mt-3 flex items-baseline gap-2">
-              <span className="font-display text-[28px] font-extrabold text-hi">{activeData.diesel}</span>
-              <span className="text-[12px] font-medium text-lo">Liters</span>
-            </div>
-            <div className="mt-1 font-mono text-[10.5px] text-dim">
-              Based on ICE 9.5 km/L avg
-            </div>
-          </div>
 
-          {/* Card 3: Trees Equivalent */}
-          <div className="group rounded-xl border border-line bg-panel p-4.5 transition-all hover:border-accent/40 hover:bg-panel-2/50">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-dim">Trees Equivalent</span>
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent/15 text-accent border border-accent/20">
-                <Trees className="h-4 w-4" strokeWidth={2.2} />
+            {/* Card 3: Trees Equivalent */}
+            <div className="group rounded-xl border border-line bg-panel p-4.5 transition-all hover:border-accent/40 hover:bg-panel-2/50">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-dim">Trees Equivalent</span>
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent/15 text-accent border border-accent/20">
+                  <Trees className="h-4 w-4" strokeWidth={2.2} />
+                </div>
+              </div>
+              <div className="mt-3 flex items-baseline gap-2">
+                <span className="font-display text-[28px] font-extrabold text-accent">{activeData.trees}</span>
+                <span className="text-[12px] font-medium text-lo">trees planted</span>
+              </div>
+              <div className="mt-1 font-mono text-[10.5px] text-accent/80">
+                10-year carbon offset equivalent
               </div>
             </div>
-            <div className="mt-3 flex items-baseline gap-2">
-              <span className="font-display text-[28px] font-extrabold text-accent">{activeData.trees}</span>
-              <span className="text-[12px] font-medium text-lo">trees planted</span>
-            </div>
-            <div className="mt-1 font-mono text-[10.5px] text-accent/80">
-              10-year carbon offset equivalent
-            </div>
-          </div>
 
-          {/* Card 4: Cost Savings */}
-          <div className="group rounded-xl border border-line bg-panel p-4.5 transition-all hover:border-accent/40 hover:bg-panel-2/50">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-dim">Cost Savings</span>
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent/15 text-accent border border-accent/20">
-                <DollarSign className="h-4 w-4" strokeWidth={2.2} />
+            {/* Card 4: Cost Savings */}
+            <div className="group rounded-xl border border-line bg-panel p-4.5 transition-all hover:border-accent/40 hover:bg-panel-2/50">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-dim">Cost Savings</span>
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent/15 text-accent border border-accent/20">
+                  <DollarSign className="h-4 w-4" strokeWidth={2.2} />
+                </div>
+              </div>
+              <div className="mt-3 flex items-baseline gap-2">
+                <span className="font-display text-[24px] font-extrabold text-hi sm:text-[26px]">{activeData.savings}</span>
+              </div>
+              <div className="mt-1 font-mono text-[10.5px] text-dim">
+                Fuel + maintenance savings
               </div>
             </div>
-            <div className="mt-3 flex items-baseline gap-2">
-              <span className="font-display text-[24px] font-extrabold text-hi sm:text-[26px]">{activeData.savings}</span>
-            </div>
-            <div className="mt-1 font-mono text-[10.5px] text-dim">
-              Fuel + maintenance savings
-            </div>
           </div>
-
-        </div>
+        )}
 
         {/* Chart & Report Summary Grid */}
-        <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1fr_340px]">
-          
-          {/* Trends Bar Chart */}
-          <div className="flex flex-col rounded-xl border border-line bg-panel p-5">
-            <div className="flex items-center justify-between border-b border-line-soft pb-3.5 mb-4">
-              <div className="flex items-center gap-2">
-                <BarChart3 className="h-4 w-4 text-accent" strokeWidth={2} />
-                <span className="font-display text-[14px] font-bold">{activeData.title}</span>
-              </div>
-              <div className="flex items-center gap-3 text-[11px]">
-                <div className="flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded-xs bg-accent" />
-                  <span className="text-lo">CO₂ Avoided</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 rounded-xs bg-blue-500" />
-                  <span className="text-lo">Diesel Saved</span>
+        {isLoading ? (
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1fr_340px]">
+            {/* Chart Skeleton */}
+            <div className="animate-pulse flex flex-col rounded-xl border border-line bg-panel p-5">
+              <div className="flex items-center justify-between border-b border-line-soft pb-3.5 mb-4">
+                <div className="h-4 w-36 rounded-xs bg-panel-2" />
+                <div className="flex gap-3">
+                  <div className="h-3 w-20 rounded-xs bg-panel-2" />
+                  <div className="h-3 w-20 rounded-xs bg-panel-2" />
                 </div>
               </div>
-            </div>
-
-            {/* Custom SVG Bar Chart */}
-            <div className="relative flex-1 min-h-[220px] flex items-end gap-3 pt-6 pb-2 px-2">
-              {activeData.chart.map((item, idx) => {
-                const co2Height = Math.max(12, Math.round((item.co2 / maxCo2) * 160))
-                const dieselHeight = Math.max(8, Math.round((item.diesel / maxCo2) * 160))
-                return (
-                  <div key={idx} className="group relative flex flex-1 flex-col items-center justify-end h-full">
-                    
-                    {/* Tooltip on hover */}
-                    <div className="pointer-events-none absolute -top-10 z-20 hidden rounded-lg border border-line bg-panel-2 px-2.5 py-1 text-center font-mono text-[10px] shadow-lg group-hover:block whitespace-nowrap">
-                      <div className="text-accent font-bold">{item.co2} kg CO₂</div>
-                      <div className="text-blue-400">{item.diesel} L Diesel</div>
-                    </div>
-
-                    {/* Bars Container */}
+              <div className="min-h-[220px] flex items-end gap-3 pt-6 pb-2 px-2">
+                {[60, 90, 75, 120, 105, 50, 40, 110, 85, 130].map((h, idx) => (
+                  <div key={idx} className="flex flex-1 flex-col items-center justify-end gap-2 h-full">
                     <div className="flex items-end gap-1 w-full justify-center">
-                      <div
-                        style={{ height: `${co2Height}px` }}
-                        className="w-full max-w-[20px] rounded-t-md bg-accent transition-all duration-300 group-hover:brightness-110"
-                      />
-                      <div
-                        style={{ height: `${dieselHeight}px` }}
-                        className="w-full max-w-[20px] rounded-t-md bg-blue-500/80 transition-all duration-300 group-hover:brightness-110"
-                      />
+                      <div style={{ height: `${h}px` }} className="w-full max-w-[20px] rounded-t-md bg-panel-2" />
+                      <div style={{ height: `${Math.round(h * 0.45)}px` }} className="w-full max-w-[20px] rounded-t-md bg-panel-2/60" />
                     </div>
-
-                    <span className="mt-2 font-mono text-[10.5px] text-dim">{item.month}</span>
+                    <div className="h-2.5 w-6 rounded-xs bg-panel-2/50" />
                   </div>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* Report Summary Side Panel */}
-          <div className="flex flex-col justify-between rounded-xl border border-line bg-panel p-5">
-            <div>
-              <div className="font-display text-[14px] font-bold border-b border-line-soft pb-3.5 mb-4">
-                Report Summary
-              </div>
-
-              <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-panel-2 border border-line-soft text-lo">
-                    <TrendingUp className="h-3.5 w-3.5" strokeWidth={2} />
-                  </div>
-                  <div>
-                    <div className="text-[11px] font-semibold uppercase tracking-wider text-dim">Reporting Period</div>
-                    <div className="text-[12.5px] font-medium text-hi mt-0.5">{activeData.reportingPeriod}</div>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-panel-2 border border-line-soft text-accent">
-                    <Zap className="h-3.5 w-3.5" strokeWidth={2} />
-                  </div>
-                  <div>
-                    <div className="text-[11px] font-semibold uppercase tracking-wider text-dim">Total Distance</div>
-                    <div className="text-[12.5px] font-medium text-hi mt-0.5">{activeData.distance}</div>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-panel-2 border border-line-soft text-amber">
-                    <Leaf className="h-3.5 w-3.5" strokeWidth={2} />
-                  </div>
-                  <div>
-                    <div className="text-[11px] font-semibold uppercase tracking-wider text-dim">Energy Consumed</div>
-                    <div className="text-[12.5px] font-medium text-hi mt-0.5">{activeData.energy}</div>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
 
-            <div className="mt-5 rounded-lg border border-line-soft bg-panel-2/60 p-3">
-              <div className="text-[11px] font-semibold text-lo">Efficiency Index</div>
-              <div className="mt-1 font-mono text-[12px] font-bold text-accent">49.5 km / kWh average</div>
+            {/* Report Summary Side Panel Skeleton */}
+            <div className="animate-pulse flex flex-col justify-between rounded-xl border border-line bg-panel p-5 space-y-4">
+              <div>
+                <div className="h-4 w-32 rounded-xs bg-panel-2 border-b border-line-soft pb-3.5 mb-4" />
+                <div className="space-y-4 pt-2">
+                  {[1, 2, 3].map((s) => (
+                    <div key={s} className="flex items-start gap-3">
+                      <div className="h-7 w-7 shrink-0 rounded-lg bg-panel-2" />
+                      <div className="space-y-1.5 flex-1">
+                        <div className="h-2.5 w-24 rounded-xs bg-panel-2/60" />
+                        <div className="h-3.5 w-36 rounded-xs bg-panel-2" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-lg border border-line-soft bg-panel-2/60 p-3 space-y-1.5">
+                <div className="h-2.5 w-20 rounded-xs bg-panel-2" />
+                <div className="h-3.5 w-32 rounded-xs bg-panel-2" />
+              </div>
             </div>
           </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1fr_340px]">
+            {/* Trends Bar Chart */}
+            <div className="flex flex-col rounded-xl border border-line bg-panel p-5">
+              <div className="flex items-center justify-between border-b border-line-soft pb-3.5 mb-4">
+                <div className="flex items-center gap-2">
+                  <BarChart3 className="h-4 w-4 text-accent" strokeWidth={2} />
+                  <span className="font-display text-[14px] font-bold">{activeData.title}</span>
+                </div>
+                <div className="flex items-center gap-3 text-[11px]">
+                  <div className="flex items-center gap-1.5">
+                    <span className="h-2.5 w-2.5 rounded-xs bg-accent" />
+                    <span className="text-lo">CO₂ Avoided</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="h-2.5 w-2.5 rounded-xs bg-blue-500" />
+                    <span className="text-lo">Diesel Saved</span>
+                  </div>
+                </div>
+              </div>
 
-        </div>
+              {/* Custom SVG Bar Chart */}
+              <div className="relative flex-1 min-h-[220px] flex items-end gap-3 pt-6 pb-2 px-2">
+                {activeData.chart.map((item, idx) => {
+                  const co2Height = Math.max(12, Math.round((item.co2 / maxCo2) * 160))
+                  const dieselHeight = Math.max(8, Math.round((item.diesel / maxCo2) * 160))
+                  return (
+                    <div key={idx} className="group relative flex flex-1 flex-col items-center justify-end h-full">
+                      {/* Tooltip on hover */}
+                      <div className="pointer-events-none absolute -top-10 z-20 hidden rounded-lg border border-line bg-panel-2 px-2.5 py-1 text-center font-mono text-[10px] shadow-lg group-hover:block whitespace-nowrap">
+                        <div className="text-accent font-bold">{item.co2} kg CO₂</div>
+                        <div className="text-blue-400">{item.diesel} L Diesel</div>
+                      </div>
+
+                      {/* Bars Container */}
+                      <div className="flex items-end gap-1 w-full justify-center">
+                        <div
+                          style={{ height: `${co2Height}px` }}
+                          className="w-full max-w-[20px] rounded-t-md bg-accent transition-all duration-300 group-hover:brightness-110"
+                        />
+                        <div
+                          style={{ height: `${dieselHeight}px` }}
+                          className="w-full max-w-[20px] rounded-t-md bg-blue-500/80 transition-all duration-300 group-hover:brightness-110"
+                        />
+                      </div>
+
+                      <span className="mt-2 font-mono text-[10.5px] text-dim">{item.month}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Report Summary Side Panel */}
+            <div className="flex flex-col justify-between rounded-xl border border-line bg-panel p-5">
+              <div>
+                <div className="font-display text-[14px] font-bold border-b border-line-soft pb-3.5 mb-4">
+                  Report Summary
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-panel-2 border border-line-soft text-lo">
+                      <TrendingUp className="h-3.5 w-3.5" strokeWidth={2} />
+                    </div>
+                    <div>
+                      <div className="text-[11px] font-semibold uppercase tracking-wider text-dim">Reporting Period</div>
+                      <div className="text-[12.5px] font-medium text-hi mt-0.5">{activeData.reportingPeriod}</div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-panel-2 border border-line-soft text-accent">
+                      <Zap className="h-3.5 w-3.5" strokeWidth={2} />
+                    </div>
+                    <div>
+                      <div className="text-[11px] font-semibold uppercase tracking-wider text-dim">Total Distance</div>
+                      <div className="text-[12.5px] font-medium text-hi mt-0.5">{activeData.distance}</div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-panel-2 border border-line-soft text-amber">
+                      <Leaf className="h-3.5 w-3.5" strokeWidth={2} />
+                    </div>
+                    <div>
+                      <div className="text-[11px] font-semibold uppercase tracking-wider text-dim">Energy Consumed</div>
+                      <div className="text-[12.5px] font-medium text-hi mt-0.5">{activeData.energy}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-5 rounded-lg border border-line-soft bg-panel-2/60 p-3">
+                <div className="text-[11px] font-semibold text-lo">Efficiency Index</div>
+                <div className="mt-1 font-mono text-[12px] font-bold text-accent">49.5 km / kWh average</div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Environmental Impact Statement (Bottom Banner) */}
-        <div className="rounded-xl border border-accent/30 bg-accent/5 p-4.5 backdrop-blur">
-          <div className="flex items-center gap-2 font-display text-[13.5px] font-bold text-accent mb-2">
-            <Leaf className="h-4 w-4" strokeWidth={2.2} />
-            <span>Environmental Impact Statement</span>
+        {isLoading ? (
+          <div className="animate-pulse rounded-xl border border-line bg-panel p-4.5 space-y-2.5">
+            <div className="h-4 w-52 rounded-xs bg-panel-2" />
+            <div className="h-3 w-full rounded-xs bg-panel-2/60" />
+            <div className="h-3 w-4/5 rounded-xs bg-panel-2/40" />
           </div>
-          <p className="text-[12px] leading-relaxed text-hi">
-            By operating an electric vehicle fleet, your organization has avoided{' '}
-            <strong className="text-accent font-bold">{activeData.co2} kg</strong> of CO₂ emissions over the reporting period. This is equivalent to planting{' '}
-            <strong className="text-accent font-bold">{activeData.trees} trees</strong> or saving{' '}
-            <strong className="text-accent font-bold">{activeData.diesel} liters</strong> of diesel fuel. Your transition to electric mobility has resulted in cost savings of{' '}
-            <strong className="text-accent font-bold">{activeData.savings}</strong> while contributing to a sustainable future.
-          </p>
-        </div>
+        ) : (
+          <div className="rounded-xl border border-accent/30 bg-accent/5 p-4.5 backdrop-blur">
+            <div className="flex items-center gap-2 font-display text-[13.5px] font-bold text-accent mb-2">
+              <Leaf className="h-4 w-4" strokeWidth={2.2} />
+              <span>Environmental Impact Statement</span>
+            </div>
+            <p className="text-[12px] leading-relaxed text-hi">
+              By operating an electric vehicle fleet, your organization has avoided{' '}
+              <strong className="text-accent font-bold">{activeData.co2} kg</strong> of CO₂ emissions over the reporting period. This is equivalent to planting{' '}
+              <strong className="text-accent font-bold">{activeData.trees} trees</strong> or saving{' '}
+              <strong className="text-accent font-bold">{activeData.diesel} liters</strong> of diesel fuel. Your transition to electric mobility has resulted in cost savings of{' '}
+              <strong className="text-accent font-bold">{activeData.savings}</strong> while contributing to a sustainable future.
+            </p>
+          </div>
+        )}
 
       </div>
     </div>

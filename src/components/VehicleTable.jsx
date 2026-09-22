@@ -1,10 +1,19 @@
+import { useState, useEffect } from 'react'
 import { useFleet } from '../context/FleetContext'
 import { STATUS_META } from '../data/statusMeta'
 
 const battColor = (b) => (b > 50 ? 'bg-green' : b > 20 ? 'bg-amber' : 'bg-red')
 
 export default function VehicleTable({ limit }) {
-  const { filteredVehicles, selectedVehicleId, setSelectedVehicleId, settings } = useFleet()
+  const { filteredVehicles, selectedVehicleId, setSelectedVehicleId, settings, statusFilter, searchQuery } = useFleet()
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Smooth skeleton loading transition when switching filters or navigating
+  useEffect(() => {
+    setIsLoading(true)
+    const timer = setTimeout(() => setIsLoading(false), 260)
+    return () => clearTimeout(timer)
+  }, [statusFilter, searchQuery])
 
   const visibleVehicles = typeof limit === 'number' ? filteredVehicles.slice(0, limit) : filteredVehicles
 
@@ -26,7 +35,40 @@ export default function VehicleTable({ limit }) {
           </tr>
         </thead>
         <tbody>
-          {filteredVehicles.length === 0 && (
+          {isLoading ? (
+            Array.from({ length: 6 }).map((_, i) => (
+              <tr key={`skel-${i}`} className="animate-pulse border-b border-line-soft/80">
+                <td className="px-4 py-3">
+                  <div className="h-3.5 w-28 rounded bg-panel-2 mb-1.5" />
+                  <div className="h-2.5 w-18 rounded bg-panel-2/60" />
+                </td>
+                <td className="px-4 py-3">
+                  <div className="h-4 w-18 rounded-md bg-panel-2" />
+                </td>
+                <td className="px-4 py-3">
+                  <div className="h-3.5 w-24 rounded bg-panel-2" />
+                </td>
+                <td className="px-4 py-3">
+                  <div className="h-4.5 w-16 rounded-full bg-panel-2" />
+                </td>
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    <div className="h-2 w-11 rounded-full bg-panel-2" />
+                    <div className="h-3 w-7 rounded bg-panel-2" />
+                  </div>
+                </td>
+                <td className="px-4 py-3">
+                  <div className="h-3.5 w-14 rounded bg-panel-2" />
+                </td>
+                <td className="px-4 py-3">
+                  <div className="h-3.5 w-28 rounded bg-panel-2" />
+                </td>
+                <td className="px-4 py-3">
+                  <div className="h-3 w-16 rounded bg-panel-2" />
+                </td>
+              </tr>
+            ))
+          ) : filteredVehicles.length === 0 ? (
             <tr>
               <td colSpan={8} className="px-4 py-12 text-center text-dim">
                 <div className="flex flex-col items-center justify-center gap-3">
@@ -40,8 +82,8 @@ export default function VehicleTable({ limit }) {
                 </div>
               </td>
             </tr>
-          )}
-          {visibleVehicles.map((v) => {
+          ) : (
+            visibleVehicles.map((v) => {
             const meta = STATUS_META[v.status] || STATUS_META.offline
             const selected = selectedVehicleId === v.id
             const displaySpeed = settings?.speedUnit === 'mph'
@@ -104,7 +146,7 @@ export default function VehicleTable({ limit }) {
                 </td>
               </tr>
             )
-          })}
+          }))}
         </tbody>
       </table>
     </div>

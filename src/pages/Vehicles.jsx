@@ -2,13 +2,11 @@ import { useState } from 'react'
 import Topbar from '../components/Topbar'
 import FilterChips from '../components/FilterChips'
 import VehicleTable from '../components/VehicleTable'
-import AddVehicleModal from '../components/AddVehicleModal'
 import { Plus } from '../components/icons'
 import { useFleet } from '../context/FleetContext'
 
 export default function Vehicles() {
-  const { vehicles } = useFleet()
-  const [modalOpen, setModalOpen] = useState(false)
+  const { vehicles, setIsAddVehicleOpen } = useFleet()
   const [showExportMenu, setShowExportMenu] = useState(false)
 
   const exportToCSV = (data) => {
@@ -69,8 +67,8 @@ export default function Vehicles() {
             <div className="flex flex-wrap items-center gap-3">
               <span className="font-display text-[13.5px] font-semibold">All vehicles</span>
               <button
-                onClick={() => setModalOpen(true)}
-                className="flex items-center gap-1 rounded-lg bg-accent/15 px-2.5 py-1 text-[11px] font-medium text-accent hover:bg-accent/25 transition-colors"
+                onClick={() => setIsAddVehicleOpen(true)}
+                className="flex items-center gap-1 rounded-lg bg-accent/15 px-2.5 py-1 text-[11px] font-medium text-accent hover:bg-accent/25 transition-colors cursor-pointer"
               >
                 <Plus className="h-3 w-3" strokeWidth={2.5} />
                 Add Vehicle
@@ -78,7 +76,7 @@ export default function Vehicles() {
               <div className="relative">
                 <button
                   onClick={() => setShowExportMenu(!showExportMenu)}
-                  className="flex items-center gap-1 rounded-lg border border-line bg-panel-2 px-2.5 py-1 text-[11px] font-medium text-lo hover:bg-hover hover:text-hi transition-colors"
+                  className="flex items-center gap-1 rounded-lg border border-line bg-panel-2 px-2.5 py-1 text-[11px] font-medium text-lo hover:bg-hover hover:text-hi transition-colors cursor-pointer"
                 >
                   Export Data
                 </button>
@@ -89,7 +87,7 @@ export default function Vehicles() {
                         exportToCSV(vehicles)
                         setShowExportMenu(false)
                       }}
-                      className="w-full px-3 py-1.5 text-left text-[11.5px] hover:bg-hover text-lo hover:text-hi"
+                      className="w-full px-3 py-1.5 text-left text-[11.5px] hover:bg-hover text-lo hover:text-hi cursor-pointer"
                     >
                       Export CSV
                     </button>
@@ -98,7 +96,7 @@ export default function Vehicles() {
                         exportToJSON(vehicles)
                         setShowExportMenu(false)
                       }}
-                      className="w-full px-3 py-1.5 text-left text-[11.5px] hover:bg-hover text-lo hover:text-hi"
+                      className="w-full px-3 py-1.5 text-left text-[11.5px] hover:bg-hover text-lo hover:text-hi cursor-pointer"
                     >
                       Export JSON
                     </button>
@@ -111,8 +109,6 @@ export default function Vehicles() {
           <VehicleTable />
         </div>
       </div>
-
-      <AddVehicleModal open={modalOpen} onClose={() => setModalOpen(false)} />
     </div>
   )
 }
