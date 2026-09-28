@@ -111,31 +111,64 @@ const DEFAULT_SETTINGS = {
 
 
 export function FleetProvider({ children }) {
-  // Load initial states from localStorage or use seeds
+  // Load initial states from localStorage or use seeds safely
   const [vehicles, setVehicles] = useState(() => {
-    const val = localStorage.getItem('fc_vehicles')
-    return val ? JSON.parse(val) : seedVehicles
+    try {
+      const val = localStorage.getItem('fc_vehicles')
+      if (val) {
+        const parsed = JSON.parse(val)
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed
+      }
+    } catch (_e) {}
+    return seedVehicles
   })
 
   const [alerts, setAlerts] = useState(() => {
-    const val = localStorage.getItem('fc_alerts_v2')
-    return val ? JSON.parse(val) : seedAlerts
+    try {
+      const val = localStorage.getItem('fc_alerts_v2')
+      if (val) {
+        const parsed = JSON.parse(val)
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed
+      }
+    } catch (_e) {}
+    return seedAlerts
   })
   const [notifications, setNotifications] = useState(() => {
-    const val = localStorage.getItem('fc_notifications_v2')
-    return val ? JSON.parse(val) : seedNotifications
+    try {
+      const val = localStorage.getItem('fc_notifications_v2')
+      if (val) {
+        const parsed = JSON.parse(val)
+        if (Array.isArray(parsed)) return parsed
+      }
+    } catch (_e) {}
+    return seedNotifications
   })
   const [admins, setAdmins] = useState(() => {
-    const val = localStorage.getItem('fc_admins')
-    return val ? JSON.parse(val) : seedAdmins
+    try {
+      const val = localStorage.getItem('fc_admins')
+      if (val) {
+        const parsed = JSON.parse(val)
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed
+      }
+    } catch (_e) {}
+    return seedAdmins
   })
   const [geofences, setGeofences] = useState(() => {
-    const val = localStorage.getItem('fc_geofences')
-    return val ? JSON.parse(val) : seedGeofences
+    try {
+      const val = localStorage.getItem('fc_geofences')
+      if (val) {
+        const parsed = JSON.parse(val)
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed
+      }
+    } catch (_e) {}
+    return seedGeofences
   })
   const [settings, setSettings] = useState(() => {
-    const val = localStorage.getItem('fc_settings')
-    return val ? JSON.parse(val) : DEFAULT_SETTINGS
+    try {
+      const val = localStorage.getItem('fc_settings')
+      if (val) return JSON.parse(val)
+    } catch (_e) {}
+    return DEFAULT_SETTINGS
   })
 
   // Local state for active firmware updates: { [vehicleId]: progressPercent }
@@ -222,14 +255,21 @@ export function FleetProvider({ children }) {
   }, [settings])
 
   const filteredVehicles = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase()
+    if (!Array.isArray(vehicles)) return []
+    const q = (searchQuery || '').trim().toLowerCase()
     return vehicles.filter((v) => {
-      const matchesFilter = statusFilter === 'all' || v.status === statusFilter
+      if (!v) return false
+      const vStatus = (v.status || '').toLowerCase()
+      const filterTarget = (statusFilter || 'all').toLowerCase()
+      const matchesFilter = filterTarget === 'all' || vStatus === filterTarget
       const matchesSearch =
         !q ||
-        v.name.toLowerCase().includes(q) ||
-        v.plate.toLowerCase().includes(q) ||
-        v.deviceId.toLowerCase().includes(q)
+        (v.name && String(v.name).toLowerCase().includes(q)) ||
+        (v.plate && String(v.plate).toLowerCase().includes(q)) ||
+        (v.deviceId && String(v.deviceId).toLowerCase().includes(q)) ||
+        (v.model && String(v.model).toLowerCase().includes(q)) ||
+        (v.driver && String(v.driver).toLowerCase().includes(q)) ||
+        (v.location && String(v.location).toLowerCase().includes(q))
       return matchesFilter && matchesSearch
     })
   }, [vehicles, statusFilter, searchQuery])
@@ -305,7 +345,6 @@ export function FleetProvider({ children }) {
     setSettings((prev) => ({ ...prev, ...updates }))
   }, [])
 
-  // ── Vehicle CRUD ──────────────────────────────────────────────────────────
   const addVehicle = useCallback((vehicleData) => {
     const newId = `V-${Math.floor(100 + Math.random() * 900)}`
     const newVehicle = {
@@ -329,6 +368,45 @@ export function FleetProvider({ children }) {
     setVehicles((prev) => [newVehicle, ...prev])
     showToast(`${newVehicle.name} added to fleet`)
     return newVehicle
+  }, [showToast])
+
+  const addMultipleVehicles = useCallback((vehiclesList) => {
+    if (!Array.isArray(vehiclesList) || vehiclesList.length === 0) return []
+    const newVehicles = vehiclesList.map((vehicleData, index) => {
+      const newId = `V-${Math.floor(100 + Math.random() * 899) + 100}${index > 0 ? index : ''}`
+      const numBattery = Number(vehicleData.battery) || (vehicleData.battery === 0 ? 0 : 100)
+      const numRange = Number(vehicleData.rangeKm) || (vehicleData.rangeKm === 0 ? 0 : 80)
+      return {
+        id: vehicleData.id || newId,
+        name: vehicleData.name || `Vehicle ${newId}`,
+        plate: vehicleData.plate || `IN-${Math.floor(1000 + Math.random() * 9000)}`,
+        model: vehicleData.model || 'Standard EV',
+        type: vehicleData.type || '4 Wheeler',
+        driver: vehicleData.driver || 'Unassigned',
+        status: vehicleData.status || 'online',
+        deviceId: vehicleData.deviceId || `IOT-${Math.floor(10000 + Math.random() * 90000)}`,
+        firmware: vehicleData.firmware || '2.4.1',
+        lastSeen: vehicleData.lastSeen || 'Just now',
+        battery: numBattery,
+        health: vehicleData.health !== undefined ? Number(vehicleData.health) : numBattery,
+        rangeKm: numRange,
+        totalRangeKm: vehicleData.totalRangeKm !== undefined ? Number(vehicleData.totalRangeKm) : numRange,
+        location: vehicleData.location || 'Central Depot',
+        batteryTempC: vehicleData.batteryTempC !== undefined ? Number(vehicleData.batteryTempC) : 30,
+        voltageV: vehicleData.voltageV !== undefined ? Number(vehicleData.voltageV) : 350,
+        currentA: vehicleData.currentA !== undefined ? Number(vehicleData.currentA) : 0,
+        odometerKm: vehicleData.odometerKm !== undefined ? Number(vehicleData.odometerKm) : 0,
+        locked: vehicleData.locked !== undefined ? Boolean(vehicleData.locked) : false,
+        signal: vehicleData.signal !== undefined ? Number(vehicleData.signal) : 4,
+        speed: vehicleData.speed !== undefined ? Number(vehicleData.speed) : 0,
+        lat: vehicleData.lat !== undefined ? Number(vehicleData.lat) : 20.5937,
+        lon: vehicleData.lon !== undefined ? Number(vehicleData.lon) : 78.9629,
+        ...vehicleData,
+      }
+    })
+    setVehicles((prev) => [...newVehicles, ...prev])
+    showToast(`Successfully added ${newVehicles.length} vehicles to fleet`)
+    return newVehicles
   }, [showToast])
 
   const updateVehicle = useCallback((id, updates) => {
@@ -652,6 +730,7 @@ export function FleetProvider({ children }) {
     unreadCount,
     // Vehicle CRUD
     addVehicle,
+    addMultipleVehicles,
     updateVehicle,
     deleteVehicle,
     // Admin CRUD

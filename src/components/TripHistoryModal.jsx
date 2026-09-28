@@ -34,6 +34,15 @@ export default function TripHistoryPanel({ open, onClose, vehicle, trips = [] })
 
   return (
     <>
+      {/* Backdrop — closes only this panel, not the whole drawer */}
+      <div
+        aria-hidden="true"
+        onClick={onClose}
+        className={`fixed inset-0 z-[59] bg-black/40 backdrop-blur-[1px] transition-opacity duration-300 xl:hidden ${
+          open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+      />
+
       {/* Slide-out Trip History: Full overlay on mobile/tablet, side-by-side on large desktop */}
       <div
         role="dialog"

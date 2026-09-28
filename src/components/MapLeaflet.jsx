@@ -48,15 +48,35 @@ function makeMarkerHtml(color) {
   `
 }
 
-function getTileUrl(style) {
+function getTileConfig(style) {
   switch (style) {
     case 'Standard Vector':
-      return 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+      return {
+        url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        options: {
+          maxZoom: 19,
+          subdomains: ['a', 'b', 'c'],
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        },
+      }
     case 'Satellite Hybrid':
-      return 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+      return {
+        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        options: {
+          maxZoom: 19,
+          attribution: '&copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+        },
+      }
     case 'Dark Mode':
     default:
-      return 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+      return {
+        url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+        options: {
+          maxZoom: 20,
+          subdomains: 'abcd',
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        },
+      }
   }
 }
 
@@ -114,13 +134,11 @@ export default function MapLeaflet({ vehicles = [], height = '100%', zoom = 5, c
       touchZoom: false,
     }).setView(center, zoom)
 
-    const tileUrl = getTileUrl(activeMapStyle)
-    const tileLayer = L.tileLayer(tileUrl, {
-      maxZoom: 20,
-    }).addTo(map)
+    const { url, options } = getTileConfig(activeMapStyle)
+    const tileLayer = L.tileLayer(url, options).addTo(map)
     tileLayerRef.current = tileLayer
 
-    // Custom zoom control top-right
+    // Custom zoom control bottom-right
     L.control.zoom({ position: 'bottomright' }).addTo(map)
 
     mapRef.current = map
@@ -141,10 +159,8 @@ export default function MapLeaflet({ vehicles = [], height = '100%', zoom = 5, c
       tileLayerRef.current.remove()
     }
 
-    const tileUrl = getTileUrl(activeMapStyle)
-    tileLayerRef.current = L.tileLayer(tileUrl, {
-      maxZoom: 20,
-    }).addTo(map)
+    const { url, options } = getTileConfig(activeMapStyle)
+    tileLayerRef.current = L.tileLayer(url, options).addTo(map)
   }, [activeMapStyle, leafletReady])
 
   // Handle geofences
@@ -168,7 +184,7 @@ export default function MapLeaflet({ vehicles = [], height = '100%', zoom = 5, c
       })
         .addTo(map)
         .bindTooltip(
-          `<div style="font-size:11px;font-weight:600;padding:3px 8px;background:#12151b;color:#e8edf2;border:1px solid #242a33;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.4);white-space:nowrap;">
+          `<div style="font-size:12px;font-weight:600;padding:4px 8px;background:#12151b;color:#e8edf2;border:1px solid #242a33;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.4);white-space:nowrap;">
             ${g.name} (${g.type})
           </div>`,
           { permanent: false, direction: 'top', opacity: 0.95 }
@@ -226,11 +242,11 @@ export default function MapLeaflet({ vehicles = [], height = '100%', zoom = 5, c
         <div style="padding:6px 10px;background:#12151b;color:#e8edf2;border:1px solid #242a33;border-radius:8px;box-shadow:0 10px 25px rgba(0,0,0,0.5);font-family:Inter,sans-serif;min-width:140px;">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;font-weight:700;">
             <span>${v.name}</span>
-            <span style="font-size:9.5px;font-family:JetBrains Mono,monospace;color:${color};background:${color}15;padding:1px 5px;border-radius:4px;border:1px solid ${color}30;text-transform:uppercase;">
+            <span style="font-size:10px;font-family:JetBrains Mono,monospace;color:${color};background:${color}15;padding:1px 5px;border-radius:4px;border:1px solid ${color}30;text-transform:uppercase;">
               ${v.status}
             </span>
           </div>
-          <div style="margin-top:3px;font-size:10.5px;color:#8b96a3;display:flex;align-items:center;gap:4px;">
+          <div style="margin-top:3px;font-size:11px;color:#8b96a3;display:flex;align-items:center;gap:4px;">
             <span>${v.model}</span> · <span style="color:#e8edf2;font-family:JetBrains Mono,monospace;">${v.speed > 0 ? `${v.speed} km/h` : 'Stopped'}</span>
           </div>
           <div style="margin-top:5px;display:flex;align-items:center;gap:6px;">
@@ -246,7 +262,7 @@ export default function MapLeaflet({ vehicles = [], height = '100%', zoom = 5, c
         <div style="padding:10px 12px;background:#12151b;color:#e8edf2;border:1px solid #242a33;border-radius:10px;box-shadow:0 12px 30px rgba(0,0,0,0.7);font-family:Inter,sans-serif;min-width:190px;">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
             <span style="font-size:13px;font-weight:700;color:#f0f4f8;">${v.name}</span>
-            <span style="font-size:9.5px;font-family:JetBrains Mono,monospace;color:${color};background:${color}20;padding:2px 6px;border-radius:4px;border:1px solid ${color}40;text-transform:uppercase;font-weight:700;">
+            <span style="font-size:10px;font-family:JetBrains Mono,monospace;color:${color};background:${color}20;padding:2px 6px;border-radius:4px;border:1px solid ${color}40;text-transform:uppercase;font-weight:700;">
               ${v.status}
             </span>
           </div>
@@ -264,10 +280,10 @@ export default function MapLeaflet({ vehicles = [], height = '100%', zoom = 5, c
             <span style="font-size:10px;font-family:JetBrains Mono,monospace;color:#8b96a3;">${v.battery}%</span>
           </div>
           <div style="margin-top:10px;display:flex;gap:6px;padding-top:8px;border-top:1px solid #242a33;">
-            <button onclick="window.__selectMapVehicle('${v.id}')" style="flex:1;padding:5px 8px;font-size:11px;font-weight:600;background:#00ff6620;color:#00ff66;border:1px solid #00ff6640;border-radius:6px;cursor:pointer;transition:all 0.2s;">
+            <button onclick="window.__selectMapVehicle('${v.id}')" style="flex:1;padding:6px 8px;font-size:11px;font-weight:600;background:#00ff6620;color:#00ff66;border:1px solid #00ff6640;border-radius:6px;cursor:pointer;transition:all 0.2s;">
               View Telemetry
             </button>
-            <button onclick="window.__pingMapVehicle('${v.id}')" style="flex:1;padding:5px 8px;font-size:11px;font-weight:600;background:#1e242d;color:#8b96a3;border:1px solid #242a33;border-radius:6px;cursor:pointer;transition:all 0.2s;">
+            <button onclick="window.__pingMapVehicle('${v.id}')" style="flex:1;padding:6px 8px;font-size:11px;font-weight:600;background:#1e242d;color:#8b96a3;border:1px solid #242a33;border-radius:6px;cursor:pointer;transition:all 0.2s;">
               Ping Device
             </button>
           </div>
@@ -312,8 +328,8 @@ export default function MapLeaflet({ vehicles = [], height = '100%', zoom = 5, c
       <div style={{ height }} className="flex flex-col items-center justify-center gap-3 rounded-xl border border-line bg-panel-2 p-6 animate-pulse">
         <div className="h-8 w-8 rounded-full border-2 border-accent border-t-transparent animate-spin" />
         <div className="flex flex-col items-center gap-1">
-          <span className="font-display text-[13px] font-semibold text-hi">Initializing Map Engine</span>
-          <span className="text-[11px] text-dim">Fetching live IoT coordinates & geofences…</span>
+          <span className="font-display text-sm font-semibold text-hi">Initializing Map Engine</span>
+          <span className="text-xs text-dim">Fetching live IoT coordinates & geofences…</span>
         </div>
       </div>
     )
@@ -348,19 +364,19 @@ export default function MapLeaflet({ vehicles = [], height = '100%', zoom = 5, c
       {/* Floating Bottom Fleet Status Legend Overlay */}
       {!hideLegend && (
         <div className="absolute bottom-3 left-3 z-10 flex flex-wrap items-center gap-3 rounded-xl border border-line/80 bg-panel-2/85 px-3.5 py-2 backdrop-blur-md shadow-lg">
-          <div className="flex items-center gap-1.5 text-[11px] font-medium text-hi">
+          <div className="flex items-center gap-1.5 text-xs font-medium text-hi">
             <span className="h-2 w-2 rounded-full bg-accent" />
             <span>Online (<strong className="font-mono tabular-nums">{statusCounts.online}</strong>)</span>
           </div>
-          <div className="flex items-center gap-1.5 text-[11px] font-medium text-hi">
+          <div className="flex items-center gap-1.5 text-xs font-medium text-hi">
             <span className="h-2 w-2 rounded-full bg-amber" />
             <span>Idle (<strong className="font-mono tabular-nums">{statusCounts.idle}</strong>)</span>
           </div>
-          <div className="flex items-center gap-1.5 text-[11px] font-medium text-hi">
+          <div className="flex items-center gap-1.5 text-xs font-medium text-hi">
             <span className="h-2 w-2 rounded-full bg-red" />
             <span>Alert (<strong className="font-mono tabular-nums">{statusCounts.alert}</strong>)</span>
           </div>
-          <div className="flex items-center gap-1.5 text-[11px] font-medium text-hi">
+          <div className="flex items-center gap-1.5 text-xs font-medium text-hi">
             <span className="h-2 w-2 rounded-full bg-gray" />
             <span>Offline (<strong className="font-mono tabular-nums">{statusCounts.offline}</strong>)</span>
           </div>

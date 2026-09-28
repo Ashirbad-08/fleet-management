@@ -63,6 +63,15 @@ export default function TimelinePanel({ open, onClose, vehicle, events = [], onR
 
   return (
     <>
+      {/* Backdrop — closes only this panel, not the whole drawer */}
+      <div
+        aria-hidden="true"
+        onClick={onClose}
+        className={`fixed inset-0 z-[59] bg-black/40 backdrop-blur-[1px] transition-opacity duration-300 xl:hidden ${
+          open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
+      />
+
       {/* Slide-out Device Timeline: Full overlay on mobile/tablet, side-by-side on large desktop */}
       <div
         role="dialog"
@@ -80,10 +89,10 @@ export default function TimelinePanel({ open, onClose, vehicle, events = [], onR
               <Radio className="h-4 w-4 animate-pulse" strokeWidth={2.2} />
             </div>
             <div>
-              <div className="font-display text-[14px] font-bold text-hi leading-tight">
+              <div className="font-display text-sm font-bold text-hi leading-tight">
                 Device Event Timeline
               </div>
-              <div className="font-mono text-[10.5px] text-lo tabular-nums">
+              <div className="font-mono text-xs text-lo tabular-nums">
                 {vehicle?.name || 'Vehicle'} • IMEI: {vehicle?.deviceId || vehicle?.id || '—'}
               </div>
             </div>
@@ -113,21 +122,21 @@ export default function TimelinePanel({ open, onClose, vehicle, events = [], onR
         {/* Toolbar: Search & Export */}
         <div className="flex items-center gap-2 border-b border-line-soft px-4 py-2.5 bg-panel-2/20 shrink-0">
           <div className="relative flex-1">
-            <Search className="absolute left-2.5 top-1/2 h-3 w-3 -translate-y-1/2 text-dim" />
+            <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-dim" />
             <input
               type="text"
               placeholder="Search event type, location, message..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-lg border border-line bg-panel-2 pl-8 pr-3 py-1.5 text-[11.5px] text-hi placeholder:text-dim outline-none focus:border-accent/60 transition-colors"
+              className="w-full rounded-lg border border-line bg-panel-2 pl-8 pr-3 py-1.5 text-xs text-hi placeholder:text-dim outline-none focus:border-accent/60 transition-colors"
             />
           </div>
           <button
             onClick={handleExportCSV}
             title="Export CSV"
-            className="flex items-center gap-1.5 rounded-lg border border-line bg-panel-2 px-2.5 py-1.5 text-[11px] font-medium text-lo hover:bg-hover hover:text-hi transition-colors cursor-pointer shrink-0"
+            className="flex items-center gap-1.5 rounded-lg border border-line bg-panel-2 px-2.5 py-1.5 text-xs font-medium text-lo hover:bg-hover hover:text-hi transition-colors cursor-pointer shrink-0"
           >
-            <Download className="h-3 w-3" />
+            <Download className="h-3.5 w-3.5" />
             CSV
           </button>
         </div>
@@ -140,7 +149,7 @@ export default function TimelinePanel({ open, onClose, vehicle, events = [], onR
               <button
                 key={sev}
                 onClick={() => setFilterSeverity(sev)}
-                className={`rounded-full px-2.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider transition-colors cursor-pointer ${
+                className={`rounded-full px-2.5 py-0.5 font-mono text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer ${
                   active
                     ? 'bg-accent text-black font-bold shadow-xs'
                     : 'bg-panel-2 border border-line-soft text-lo hover:text-hi hover:bg-hover'
@@ -150,7 +159,7 @@ export default function TimelinePanel({ open, onClose, vehicle, events = [], onR
               </button>
             )
           })}
-          <span className="ml-auto font-mono text-[10.5px] text-dim shrink-0">
+          <span className="ml-auto font-mono text-xs text-dim shrink-0">
             {filteredEvents.length} event{filteredEvents.length !== 1 ? 's' : ''}
           </span>
         </div>
@@ -160,7 +169,7 @@ export default function TimelinePanel({ open, onClose, vehicle, events = [], onR
           {filteredEvents.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Radio className="h-8 w-8 text-dim mb-3" />
-              <p className="text-[12px] text-dim">No matching timeline events found.</p>
+              <p className="text-xs text-dim">No matching timeline events found.</p>
             </div>
           ) : (
             filteredEvents.map((evt) => {
@@ -186,21 +195,21 @@ export default function TimelinePanel({ open, onClose, vehicle, events = [], onR
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-1 mb-1">
                         <span
-                          className={`rounded px-1.5 py-0.25 font-mono text-[9px] font-bold uppercase tracking-wider border ${getSeverityBadge(
+                          className={`rounded px-1.5 py-0.25 font-mono text-[10px] font-bold uppercase tracking-wider border ${getSeverityBadge(
                             evt.severity
                           )}`}
                         >
                           {evt.eventType}
                         </span>
-                        <span className="font-mono text-[10px] text-dim tabular-nums">{evt.timestamp}</span>
+                        <span className="font-mono text-xs text-dim tabular-nums">{evt.timestamp}</span>
                       </div>
 
-                      <div className="text-[12px] font-medium leading-snug text-hi">{evt.message}</div>
+                      <div className="text-xs font-medium leading-snug text-hi">{evt.message}</div>
 
                       {(evt.location || evt.metadata) && (
-                        <div className="mt-1.5 font-mono text-[10px] sm:text-[10.5px] text-lo flex flex-wrap items-center justify-between gap-1 border-t border-line-soft/40 pt-1.5">
-                          <span className="truncate max-w-[200px]">{evt.metadata}</span>
-                          {evt.location && <span className="text-accent font-semibold truncate max-w-[180px]">{evt.location}</span>}
+                        <div className="mt-1.5 font-mono text-xs text-lo flex flex-wrap items-center justify-between gap-1.5 border-t border-line-soft/40 pt-1.5">
+                          <span className="break-words leading-relaxed text-dim">{evt.metadata}</span>
+                          {evt.location && <span className="text-accent font-semibold shrink-0">{evt.location}</span>}
                         </div>
                       )}
                     </div>
@@ -213,12 +222,12 @@ export default function TimelinePanel({ open, onClose, vehicle, events = [], onR
 
         {/* Footer */}
         <div className="flex items-center justify-between border-t border-line-soft px-4 py-2.5 bg-panel-2/40 shrink-0">
-          <span className="font-mono text-[10.5px] text-dim">
+          <span className="font-mono text-xs text-dim">
             Showing {filteredEvents.length} of {events.length} logged events
           </span>
           <button
             onClick={onClose}
-            className="rounded-lg bg-panel-2 border border-line px-3.5 py-1.5 text-[11.5px] font-medium text-hi hover:bg-hover transition-colors cursor-pointer"
+            className="rounded-lg bg-panel-2 border border-line px-3.5 py-1.5 text-xs font-medium text-hi hover:bg-hover transition-colors cursor-pointer"
           >
             Close
           </button>

@@ -60,10 +60,9 @@ export default function AlertsFeed({ limit, showSearchFilter = true, showSeeAll 
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    setIsLoading(true)
-    const timer = setTimeout(() => setIsLoading(false), 2000)
+    const timer = setTimeout(() => setIsLoading(false), 180)
     return () => clearTimeout(timer)
-  }, [sevFilter])
+  }, [])
 
   const filtered = alerts.filter((a) => {
     const q = search.trim().toLowerCase()
