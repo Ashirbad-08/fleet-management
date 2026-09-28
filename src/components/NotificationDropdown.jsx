@@ -115,17 +115,17 @@ export default function NotificationDropdown({ open, onClose }) {
       ref={ref}
       role="dialog"
       aria-label="Notifications menu"
-      className={`fixed left-4 right-4 top-24 z-[3000] overflow-hidden rounded-xl border border-line bg-panel-2/95 backdrop-blur-md shadow-[0_16px_40px_rgba(0,0,0,0.55)] transition-all duration-200 sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-90 sm:origin-top-right ${
+      className={`fixed left-4 right-4 top-24 z-[3000] overflow-hidden rounded-xl border border-line bg-panel/98 shadow-[0_20px_50px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-xl transition-all duration-200 sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-96 sm:origin-top-right ${
         open ? 'scale-100 opacity-100 pointer-events-auto' : 'scale-95 opacity-0 pointer-events-none'
       }`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-line-soft px-4 py-3">
+      <div className="flex items-center justify-between border-b border-line px-4 py-3 bg-panel-2/60">
         <div className="flex items-center gap-2">
-          <Bell className="h-3.5 w-3.5 text-lo" strokeWidth={2} />
-          <span className="text-[13px] font-semibold">Notifications</span>
+          <Bell className="h-4 w-4 text-lo" strokeWidth={2} />
+          <span className="text-xs font-semibold text-hi">Notifications</span>
           {unreadCount > 0 && (
-            <span className="flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-red px-1 font-mono text-[9.5px] font-bold text-white tabular-nums">
+            <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-red px-1 font-mono text-xs font-bold text-white tabular-nums">
               {unreadCount}
             </span>
           )}
@@ -136,10 +136,10 @@ export default function NotificationDropdown({ open, onClose }) {
               type="button"
               onClick={markAllNotificationsRead}
               aria-label="Mark all notifications as read"
-              className="flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] text-dim hover:bg-hover hover:text-hi cursor-pointer"
+              className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-dim hover:bg-hover hover:text-hi transition-colors cursor-pointer"
               title="Mark all read"
             >
-              <CheckCheck className="h-3 w-3" strokeWidth={2} />
+              <CheckCheck className="h-3.5 w-3.5" strokeWidth={2} />
               All read
             </button>
           )}
@@ -147,17 +147,17 @@ export default function NotificationDropdown({ open, onClose }) {
             type="button"
             onClick={onClose}
             aria-label="Close notifications menu"
-            className="flex h-6 w-6 items-center justify-center rounded-md text-dim hover:bg-hover hover:text-hi cursor-pointer"
+            className="flex h-6 w-6 items-center justify-center rounded-md text-dim hover:bg-hover hover:text-hi transition-colors cursor-pointer"
           >
-            <X className="h-3 w-3" strokeWidth={2.2} />
+            <X className="h-3.5 w-3.5" strokeWidth={2.2} />
           </button>
         </div>
       </div>
 
       {/* Notification list */}
-      <div className="max-h-80 overflow-y-auto">
+      <div className="max-h-80 overflow-y-auto divide-y divide-line-soft">
         {preview.length === 0 ? (
-          <div className="py-8 text-center text-[12px] text-dim">No notifications</div>
+          <div className="py-8 text-center text-xs text-dim">No notifications</div>
         ) : (
           preview.map((n) => {
             const Icon = getNotificationIcon(n)
@@ -174,28 +174,28 @@ export default function NotificationDropdown({ open, onClose }) {
                     handleNotificationClick(n)
                   }
                 }}
-                className="group relative flex cursor-pointer items-start gap-3 border-b border-line-soft px-4 py-3 hover:bg-hover transition-colors text-left outline-none"
+                className="group relative flex cursor-pointer items-start gap-3 px-4 py-3 hover:bg-hover transition-colors text-left outline-none"
               >
                 {!n.read && (
                   <span className="absolute right-3 top-3.5 h-1.5 w-1.5 rounded-full bg-amber" />
                 )}
                 <div className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md ${cls}`}>
-                  <Icon className="h-3 w-3" strokeWidth={2.2} />
+                  <Icon className="h-3.5 w-3.5" strokeWidth={2.2} />
                 </div>
                 <div className="min-w-0 flex-1 pr-3">
-                  <div className={`text-[11.5px] leading-snug ${n.read ? 'text-lo' : 'text-hi font-medium'}`}>
+                  <div className={`text-xs leading-snug ${n.read ? 'text-lo' : 'text-hi font-medium'}`}>
                     {n.title}
                   </div>
-                  <div className="mt-0.75 flex items-center gap-1.5">
-                    <span className="text-[10.5px] font-semibold text-accent hover:underline">{n.vehicle}</span>
-                    <span className="font-mono text-[10px] text-dim tabular-nums">· {n.time}</span>
+                  <div className="mt-1 flex items-center gap-1.5">
+                    <span className="text-xs font-semibold text-accent hover:underline">{n.vehicle}</span>
+                    <span className="font-mono text-xs text-dim tabular-nums">· {n.time}</span>
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); deleteNotification(n.id) }}
                   aria-label={`Delete notification: ${n.title}`}
-                  className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded text-dim opacity-0 hover:text-red group-hover:opacity-100 hover:opacity-100 cursor-pointer"
+                  className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded text-dim opacity-0 hover:text-red group-hover:opacity-100 hover:opacity-100 transition-opacity cursor-pointer"
                 >
                   <X className="h-3 w-3" strokeWidth={2} />
                 </button>
@@ -207,14 +207,14 @@ export default function NotificationDropdown({ open, onClose }) {
 
       {/* Footer */}
       {notifications.length > 0 && (
-        <div className="flex items-center justify-between border-t border-line-soft bg-panel-2 p-0">
+        <div className="flex items-center justify-between border-t border-line bg-panel-2 p-0">
           <Link
             to="/notifications"
             onClick={handleViewAll}
-            className="flex w-full items-center justify-between px-4 py-2.5 text-[11.5px] font-semibold text-accent hover:bg-hover hover:underline transition-colors cursor-pointer tabular-nums"
+            className="flex w-full items-center justify-between px-4 py-2.5 text-xs font-semibold text-accent hover:bg-hover hover:underline transition-colors cursor-pointer tabular-nums"
           >
             <span>View all notifications ({notifications.length})</span>
-            <ChevronRight className="h-3.5 w-3.5 text-accent" strokeWidth={2.2} />
+            <ChevronRight className="h-4 w-4 text-accent" strokeWidth={2.2} />
           </Link>
         </div>
       )}

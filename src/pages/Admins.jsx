@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Topbar from '../components/Topbar'
 import { useFleet } from '../context/FleetContext'
 import { ROLES } from '../data/admins'
@@ -6,10 +6,17 @@ import { Plus, Edit2, Trash2, ShieldCheck, X, Save, Users, Check, Info } from '.
 
 export default function Admins() {
   const { admins, addAdmin, updateAdmin, deleteAdmin } = useFleet()
+  const [isLoading, setIsLoading] = useState(true)
   const [selectedAdmin, setSelectedAdmin] = useState(null)
   const [isEditing, setIsEditing] = useState(false)
   const [isAdding, setIsAdding] = useState(false)
   const [confirmDeleteId, setConfirmDeleteId] = useState(null)
+
+  useEffect(() => {
+    setIsLoading(true)
+    const timer = setTimeout(() => setIsLoading(false), 240)
+    return () => clearTimeout(timer)
+  }, [])
 
   // Form states
   const [formName, setFormName] = useState('')
@@ -100,76 +107,107 @@ export default function Admins() {
                 </tr>
               </thead>
               <tbody>
-                {admins.map((admin) => {
-                  const roleMeta = getRoleMeta(admin.role)
-                  const isPendingDelete = confirmDeleteId === admin.id
-
-                  return (
-                    <tr key={admin.id} className="hover:bg-hover group transition-colors">
-                      <td className="border-b border-line-soft px-4 py-2.5">
+                {isLoading ? (
+                  [1, 2, 3, 4, 5].map((i) => (
+                    <tr key={i} className="animate-pulse">
+                      <td className="border-b border-line-soft px-4 py-3">
                         <div className="flex items-center gap-3">
-                          <div className="flex h-8.5 w-8.5 items-center justify-center rounded-lg border border-line bg-panel-2 font-display text-[11px] font-bold text-lo">
-                            {admin.initials}
-                          </div>
-                          <div>
-                            <div className="text-[12.5px] font-semibold text-hi">{admin.name}</div>
-                            <div className="mt-0.5 text-[10.5px] text-dim">{admin.email}</div>
+                          <div className="h-8.5 w-8.5 rounded-lg bg-panel-2" />
+                          <div className="space-y-1.5">
+                            <div className="h-3.5 w-28 rounded-xs bg-panel-2" />
+                            <div className="h-2.5 w-36 rounded-xs bg-panel-2/60" />
                           </div>
                         </div>
                       </td>
-                      <td className="border-b border-line-soft px-4 py-2.5">
-                        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize ${roleMeta.bg} ${roleMeta.color}`}>
-                          {roleMeta.label}
-                        </span>
+                      <td className="border-b border-line-soft px-4 py-3">
+                        <div className="h-5 w-20 rounded-full bg-panel-2" />
                       </td>
-                      <td className="border-b border-line-soft px-4 py-2.5 font-mono text-[11.5px] text-lo">
-                        {roleMeta.scope || 'Standard Access'}
+                      <td className="border-b border-line-soft px-4 py-3">
+                        <div className="h-3.5 w-24 rounded-xs bg-panel-2" />
                       </td>
-                      <td className="border-b border-line-soft px-4 py-2.5 font-mono text-[11.5px] text-dim">
-                        {admin.joinedAt}
+                      <td className="border-b border-line-soft px-4 py-3">
+                        <div className="h-3.5 w-20 rounded-xs bg-panel-2" />
                       </td>
-                      <td className="border-b border-line-soft px-4 py-2.5 text-right">
-                        {isPendingDelete ? (
-                          <div className="flex items-center justify-end gap-1.5">
-                            <span className="text-[10px] font-medium text-red">Confirm?</span>
-                            <button
-                              onClick={() => {
-                                deleteAdmin(admin.id)
-                                setConfirmDeleteId(null)
-                              }}
-                              className="rounded bg-red/10 px-1.5 py-0.5 text-[10.5px] font-semibold text-red hover:bg-red/20 cursor-pointer"
-                            >
-                              Yes
-                            </button>
-                            <button
-                              onClick={() => setConfirmDeleteId(null)}
-                              className="rounded border border-line bg-panel-2 px-1.5 py-0.5 text-[10.5px] text-lo hover:bg-hover cursor-pointer"
-                            >
-                              No
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="flex items-center justify-end gap-2 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
-                            <button
-                              onClick={() => startEdit(admin)}
-                              className="flex h-6 w-6 items-center justify-center rounded-md border border-line bg-panel-2 text-dim hover:text-accent hover:border-accent/30 cursor-pointer"
-                              title="Edit Member Role"
-                            >
-                              <Edit2 className="h-3 w-3" strokeWidth={2} />
-                            </button>
-                            <button
-                              onClick={() => setConfirmDeleteId(admin.id)}
-                              className="flex h-6 w-6 items-center justify-center rounded-md border border-line bg-panel-2 text-dim hover:text-red hover:border-red/30 cursor-pointer"
-                              title="Delete Admin"
-                            >
-                              <Trash2 className="h-3 w-3" strokeWidth={2} />
-                            </button>
-                          </div>
-                        )}
+                      <td className="border-b border-line-soft px-4 py-3 text-right">
+                        <div className="flex justify-end gap-2">
+                          <div className="h-6 w-6 rounded-md bg-panel-2" />
+                          <div className="h-6 w-6 rounded-md bg-panel-2" />
+                        </div>
                       </td>
                     </tr>
-                  )
-                })}
+                  ))
+                ) : (
+                  admins.map((admin) => {
+                    const roleMeta = getRoleMeta(admin.role)
+                    const isPendingDelete = confirmDeleteId === admin.id
+
+                    return (
+                      <tr key={admin.id} className="hover:bg-hover group transition-colors">
+                        <td className="border-b border-line-soft px-4 py-2.5">
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-8.5 w-8.5 items-center justify-center rounded-lg border border-line bg-panel-2 font-display text-[11px] font-bold text-lo">
+                              {admin.initials}
+                            </div>
+                            <div>
+                              <div className="text-[12.5px] font-semibold text-hi">{admin.name}</div>
+                              <div className="mt-0.5 text-[10.5px] text-dim">{admin.email}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="border-b border-line-soft px-4 py-2.5">
+                          <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize ${roleMeta.bg} ${roleMeta.color}`}>
+                            {roleMeta.label}
+                          </span>
+                        </td>
+                        <td className="border-b border-line-soft px-4 py-2.5 font-mono text-[11.5px] text-lo">
+                          {roleMeta.scope || 'Standard Access'}
+                        </td>
+                        <td className="border-b border-line-soft px-4 py-2.5 font-mono text-[11.5px] text-dim">
+                          {admin.joinedAt}
+                        </td>
+                        <td className="border-b border-line-soft px-4 py-2.5 text-right">
+                          {isPendingDelete ? (
+                            <div className="flex items-center justify-end gap-1.5">
+                              <span className="text-[10px] font-medium text-red">Confirm?</span>
+                              <button
+                                onClick={() => {
+                                  deleteAdmin(admin.id)
+                                  setConfirmDeleteId(null)
+                                }}
+                                className="rounded bg-red/10 px-1.5 py-0.5 text-[10.5px] font-semibold text-red hover:bg-red/20 cursor-pointer"
+                              >
+                                Yes
+                              </button>
+                              <button
+                                onClick={() => setConfirmDeleteId(null)}
+                                className="rounded border border-line bg-panel-2 px-1.5 py-0.5 text-[10.5px] text-lo hover:bg-hover cursor-pointer"
+                              >
+                                No
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-end gap-2 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
+                              <button
+                                onClick={() => startEdit(admin)}
+                                className="flex h-6 w-6 items-center justify-center rounded-md border border-line bg-panel-2 text-dim hover:text-accent hover:border-accent/30 cursor-pointer"
+                                title="Edit Member Role"
+                              >
+                                <Edit2 className="h-3 w-3" strokeWidth={2} />
+                              </button>
+                              <button
+                                onClick={() => setConfirmDeleteId(admin.id)}
+                                className="flex h-6 w-6 items-center justify-center rounded-md border border-line bg-panel-2 text-dim hover:text-red hover:border-red/30 cursor-pointer"
+                                title="Delete Admin"
+                              >
+                                <Trash2 className="h-3 w-3" strokeWidth={2} />
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  })
+                )}
               </tbody>
             </table>
           </div>

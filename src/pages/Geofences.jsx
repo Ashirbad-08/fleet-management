@@ -41,6 +41,7 @@ export default function Geofences() {
   const mapZoom = customZoom || (mapVehicle ? 12 : 4.5)
 
   // ── Map toolbar state ────────────────────────────────────────────────────
+  const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
   const [filterOpen, setFilterOpen] = useState(false)
@@ -48,6 +49,12 @@ export default function Geofences() {
   const [fullScreenFilterOpen, setFullScreenFilterOpen] = useState(false)
   const filterRef = useRef(null)
   const fullScreenFilterRef = useRef(null)
+
+  useEffect(() => {
+    setIsLoading(true)
+    const timer = setTimeout(() => setIsLoading(false), 240)
+    return () => clearTimeout(timer)
+  }, [])
 
   const handleRefresh = (e) => {
     e.stopPropagation()
@@ -264,54 +271,77 @@ export default function Geofences() {
           </div>
 
           <div className="flex-1 overflow-y-auto p-3">
-            <div className="space-y-2">
-              {geofences.map((zone) => {
-                const isSelected = selectedFenceId === zone.id
-                const vehicleCount = getVehiclesInGeofence(zone)
-                return (
-                  <button
-                    key={zone.id}
-                    onClick={() => {
-                      setSelectedFenceId(zone.id)
-                      setCustomCenter([zone.lat, zone.lon])
-                      setCustomZoom(13)
-                    }}
-                    className={`w-full rounded-lg border p-3 text-left transition-colors ${
-                      isSelected
-                        ? 'border-accent bg-accent/5'
-                        : 'border-line-soft bg-panel-2 hover:border-line hover:bg-hover'
-                    }`}
-                  >
+            {isLoading ? (
+              <div className="space-y-2">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="animate-pulse rounded-lg border border-line-soft bg-panel-2 p-3 space-y-3">
                     <div className="flex items-start justify-between gap-3">
-                      <div className="flex min-w-0 items-start gap-2.5">
-                        <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent/15 text-accent">
-                          <MapPin className="h-4 w-4" strokeWidth={2.2} />
-                        </div>
-                        <div className="min-w-0">
-                          <div className="truncate font-display text-[13px] font-semibold">{zone.name}</div>
-                          <div className="mt-1 text-[11.5px] text-dim">{zone.type} zone</div>
+                      <div className="flex items-start gap-2.5">
+                        <div className="h-8 w-8 rounded-lg bg-panel" />
+                        <div className="space-y-1.5">
+                          <div className="h-3.5 w-24 rounded-xs bg-panel" />
+                          <div className="h-2.5 w-16 rounded-xs bg-panel/60" />
                         </div>
                       </div>
-                      <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                        zone.status === 'Active' ? 'bg-green/15 text-green' : 'bg-amber/15 text-amber'
-                      }`}>
-                        {zone.status}
-                      </span>
+                      <div className="h-4 w-12 rounded-full bg-panel" />
                     </div>
-                    <div className="mt-3 grid grid-cols-2 gap-2 text-[11.5px]">
-                      <div className="rounded-md border border-line-soft bg-panel px-2 py-1.5">
-                        <div className="text-dim">Vehicles</div>
-                        <div className="mt-0.5 font-mono text-lo">{vehicleCount}</div>
-                      </div>
-                      <div className="rounded-md border border-line-soft bg-panel px-2 py-1.5">
-                        <div className="text-dim">Alerts</div>
-                        <div className="mt-0.5 text-lo">{zone.alerts}</div>
-                      </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="h-10 rounded-md bg-panel/70" />
+                      <div className="h-10 rounded-md bg-panel/70" />
                     </div>
-                  </button>
-                )
-              })}
-            </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {geofences.map((zone) => {
+                  const isSelected = selectedFenceId === zone.id
+                  const vehicleCount = getVehiclesInGeofence(zone)
+                  return (
+                    <button
+                      key={zone.id}
+                      onClick={() => {
+                        setSelectedFenceId(zone.id)
+                        setCustomCenter([zone.lat, zone.lon])
+                        setCustomZoom(13)
+                      }}
+                      className={`w-full rounded-lg border p-3 text-left transition-colors ${
+                        isSelected
+                          ? 'border-accent bg-accent/5'
+                          : 'border-line-soft bg-panel-2 hover:border-line hover:bg-hover'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex min-w-0 items-start gap-2.5">
+                          <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent/15 text-accent">
+                            <MapPin className="h-4 w-4" strokeWidth={2.2} />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="truncate font-display text-[13px] font-semibold">{zone.name}</div>
+                            <div className="mt-1 text-[11.5px] text-dim">{zone.type} zone</div>
+                          </div>
+                        </div>
+                        <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                          zone.status === 'Active' ? 'bg-green/15 text-green' : 'bg-amber/15 text-amber'
+                        }`}>
+                          {zone.status}
+                        </span>
+                      </div>
+                      <div className="mt-3 grid grid-cols-2 gap-2 text-[11.5px]">
+                        <div className="rounded-md border border-line-soft bg-panel px-2 py-1.5">
+                          <div className="text-dim">Vehicles</div>
+                          <div className="mt-0.5 font-mono text-lo">{vehicleCount}</div>
+                        </div>
+                        <div className="rounded-md border border-line-soft bg-panel px-2 py-1.5">
+                          <div className="text-dim">Alerts</div>
+                          <div className="mt-0.5 text-lo">{zone.alerts}</div>
+                        </div>
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
           </div>
 
           <div className="border-t border-line-soft p-3 space-y-2">

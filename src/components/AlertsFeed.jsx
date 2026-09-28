@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import {
   TriangleAlert,
@@ -57,6 +57,12 @@ export default function AlertsFeed({ limit, showSearchFilter = true, showSeeAll 
   const { alerts } = useFleet()
   const [search, setSearch] = useState('')
   const [sevFilter, setSevFilter] = useState('all')
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 180)
+    return () => clearTimeout(timer)
+  }, [])
 
   const filtered = alerts.filter((a) => {
     const q = search.trim().toLowerCase()
@@ -104,7 +110,23 @@ export default function AlertsFeed({ limit, showSearchFilter = true, showSeeAll 
 
       {/* Events List + Scrolling See All Button */}
       <div className="flex-1 overflow-y-auto px-3 py-2 space-y-1.5">
-        {filtered.length === 0 ? (
+        {isLoading ? (
+          Array.from({ length: typeof limit === 'number' ? limit : 6 }).map((_, i) => (
+            <div
+              key={`skel-alert-${i}`}
+              className="animate-pulse flex items-start gap-3 rounded-xl p-2.5 bg-panel-2/30"
+            >
+              <div className="h-6 w-6 rounded-lg bg-panel-2 shrink-0" />
+              <div className="flex-1 space-y-2">
+                <div className="h-3 w-48 rounded bg-panel-2" />
+                <div className="flex items-center justify-between">
+                  <div className="h-2.5 w-20 rounded bg-panel-2/60" />
+                  <div className="h-2.5 w-12 rounded bg-panel-2/40" />
+                </div>
+              </div>
+            </div>
+          ))
+        ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-8 text-center text-dim gap-2">
             <svg className="h-10 w-10 text-dim/50" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
