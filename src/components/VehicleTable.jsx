@@ -1,7 +1,12 @@
 import { useFleet } from '../context/FleetContext'
 import { STATUS_META } from '../data/statusMeta'
+import { BatteryMedium, Gauge, MapPin } from './icons'
 
-const battColor = (b) => (b > 50 ? 'bg-green' : b > 20 ? 'bg-amber' : 'bg-red')
+const getBattStyle = (b) => {
+  if (b > 50) return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/25'
+  if (b > 20) return 'text-amber-400 bg-amber-500/10 border-amber-500/25'
+  return 'text-rose-400 bg-rose-500/10 border-rose-500/25'
+}
 
 export default function VehicleTable({ limit }) {
   const {
@@ -115,24 +120,31 @@ export default function VehicleTable({ limit }) {
 
                   {/* 5. Battery */}
                   <td className="border-b border-line-soft px-4 py-2.5">
-                    <div className="flex items-center gap-1.5">
-                      <div className="h-1.5 w-11 overflow-hidden rounded-full border border-line-soft bg-panel-2">
-                        <div
-                          className={`h-full rounded-full ${battColor(v.battery ?? 0)}`}
-                          style={{ width: `${Math.max(0, Math.min(100, v.battery ?? 0))}%` }}
-                        />
-                      </div>
-                      <span className="font-mono text-[11.5px] text-lo tabular-nums">{v.battery ?? 0}%</span>
+                    <div
+                      className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 font-mono text-[11px] font-bold tabular-nums shadow-xs ${getBattStyle(
+                        v.battery ?? 0
+                      )}`}
+                    >
+                      <BatteryMedium className="h-3.5 w-3.5 shrink-0" strokeWidth={2.4} />
+                      <span>{v.battery ?? 0}%</span>
                     </div>
                   </td>
 
                   {/* 6. Speed */}
-                  <td className="border-b border-line-soft px-4 py-2.5 font-mono text-[11.5px] text-lo tabular-nums">
-                    {displaySpeed}
+                  <td className="border-b border-line-soft px-4 py-2.5">
+                    <div className="flex items-center gap-1.5 font-mono text-[11.5px] text-lo tabular-nums">
+                      <Gauge className="h-3.5 w-3.5 shrink-0 text-dim" strokeWidth={2} />
+                      <span>{displaySpeed}</span>
+                    </div>
                   </td>
 
                   {/* 7. Location */}
-                  <td className="border-b border-line-soft px-4 py-2.5 text-[12px] text-lo">{v.location || '—'}</td>
+                  <td className="border-b border-line-soft px-4 py-2.5">
+                    <div className="flex items-center gap-1.5 text-[12px] text-lo">
+                      <MapPin className="h-3.5 w-3.5 shrink-0 text-dim" strokeWidth={2} />
+                      <span className="truncate">{v.location || '—'}</span>
+                    </div>
+                  </td>
 
                   {/* 8. Last seen */}
                   <td className="border-b border-line-soft px-4 py-2.5 font-mono text-[11.5px] text-dim tabular-nums">

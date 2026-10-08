@@ -1,9 +1,9 @@
-// Instrument-cluster style arc gauge, echoing a vehicle dashboard readout.
-// Used to visualize a device's overall health score.
+// Instrument-cluster style arc gauge, echoing a modern EV vehicle dashboard readout.
+// Scaled for comfortable presence and clarity in the vehicle drawer.
 
-const CX = 90
-const CY = 90
-const R = 68
+const CX = 85
+const CY = 80
+const R = 60
 const START_ANGLE = 210
 const SWEEP = 240
 
@@ -19,8 +19,9 @@ function arcPath(a0, a1) {
   return `M ${x0} ${y0} A ${R} ${R} 0 ${large} 1 ${x1} ${y1}`
 }
 
-export default function Gauge({ score, color }) {
-  const endAngle = START_ANGLE - (score / 100) * SWEEP
+export default function Gauge({ score = 0, color = 'var(--color-accent)', label = 'STATE OF CHARGE', unit = '%' }) {
+  const clampedScore = Math.max(0, Math.min(100, Number(score) || 0))
+  const endAngle = START_ANGLE - (clampedScore / 100) * SWEEP
 
   const ticks = []
   for (let i = 0; i <= 10; i++) {
@@ -30,20 +31,52 @@ export default function Gauge({ score, color }) {
     const y1 = CY - (R - 6) * Math.sin(rad)
     const x2 = CX + (R + 2) * Math.cos(rad)
     const y2 = CY - (R + 2) * Math.sin(rad)
-    ticks.push(<line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--color-line)" strokeWidth="2" />)
+    ticks.push(<line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--color-line)" strokeWidth="1.75" />)
   }
 
   return (
-    <svg width="180" height="150" viewBox="0 0 180 150">
-      <path d={arcPath(210, -30)} fill="none" stroke="var(--color-line-soft)" strokeWidth="10" strokeLinecap="round" />
+    <svg width="170" height="135" viewBox="0 0 170 135" className="overflow-visible">
+      {/* Background Arc */}
+      <path d={arcPath(210, -30)} fill="none" stroke="var(--color-line-soft)" strokeWidth="9.5" strokeLinecap="round" />
       {ticks}
-      <path d={arcPath(210, endAngle)} fill="none" stroke={color} strokeWidth="10" strokeLinecap="round" />
-      <circle cx={CX} cy={CY} r="4" fill={color} />
-      <text x={CX} y={CY - 10} textAnchor="middle" fontFamily="Space Grotesk" fontWeight="700" fontSize="28" fill="var(--color-hi)">
-        {score}
+      {/* Active Value Arc */}
+      {clampedScore > 0 && (
+        <path
+          d={arcPath(210, endAngle)}
+          fill="none"
+          stroke={color}
+          strokeWidth="9.5"
+          strokeLinecap="round"
+          className="transition-all duration-500 ease-out shadow-sm"
+        />
+      )}
+      <circle cx={CX} cy={CY} r="3.5" fill={color} />
+      {/* Center Numeric Value */}
+      <text
+        x={CX}
+        y={CY - 8}
+        textAnchor="middle"
+        fontFamily="Space Grotesk, sans-serif"
+        fontWeight="700"
+        fontSize="28"
+        fill="var(--color-hi)"
+        className="tabular-nums"
+      >
+        {clampedScore}
+        <tspan fontSize="15" fontWeight="500" fill="var(--color-dim)">{unit}</tspan>
       </text>
-      <text x={CX} y={CY + 15} textAnchor="middle" fontFamily="JetBrains Mono" fontSize="9" fill="var(--color-dim)">
-        HEALTH SCORE
+      {/* Gauge Label */}
+      <text
+        x={CX}
+        y={CY + 16}
+        textAnchor="middle"
+        fontFamily="JetBrains Mono, monospace"
+        fontSize="9"
+        fontWeight="600"
+        letterSpacing="0.06em"
+        fill="var(--color-dim)"
+      >
+        {label}
       </text>
     </svg>
   )

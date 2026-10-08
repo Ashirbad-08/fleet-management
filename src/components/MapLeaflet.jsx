@@ -81,7 +81,7 @@ function getTileConfig(style) {
 }
 
 export default function MapLeaflet({ vehicles = [], height = '100%', zoom = 5, center = DEFAULT_CENTER, mapStyle, geofences, hideLegend = false }) {
-  const { settings, geofences: contextGeofences, setSelectedVehicleId, sendDeviceCommand } = useFleet()
+  const { settings, geofences: contextGeofences, setSelectedVehicleId } = useFleet()
   const activeMapStyle = mapStyle || settings?.mapStyle || 'Dark Mode'
   const activeGeofences = useMemo(() => geofences || contextGeofences || [], [geofences, contextGeofences])
 
@@ -99,17 +99,10 @@ export default function MapLeaflet({ vehicles = [], height = '100%', zoom = 5, c
     window.__selectMapVehicle = (id) => {
       setSelectedVehicleId(id)
     }
-    window.__pingMapVehicle = (id) => {
-      const v = vehicles.find((veh) => veh.id === id)
-      if (v) {
-        sendDeviceCommand(v, 'restart')
-      }
-    }
     return () => {
       delete window.__selectMapVehicle
-      delete window.__pingMapVehicle
     }
-  }, [setSelectedVehicleId, sendDeviceCommand, vehicles])
+  }, [setSelectedVehicleId])
 
   // Status counts for bottom legend overlay
   const statusCounts = useMemo(() => {
@@ -238,6 +231,9 @@ export default function MapLeaflet({ vehicles = [], height = '100%', zoom = 5, c
         iconAnchor: [16, 16],
       })
 
+      const battColorHex = v.battery > 50 ? '#00ff66' : v.battery > 20 ? '#f5a623' : '#ff5c5c'
+      const battIconSvg = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="${battColorHex}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="10" x="2" y="7" rx="2" ry="2"/><line x1="22" x2="22" y1="11" y2="13"/></svg>`
+
       const tooltipContent = `
         <div style="padding:6px 10px;background:#12151b;color:#e8edf2;border:1px solid #242a33;border-radius:8px;box-shadow:0 10px 25px rgba(0,0,0,0.5);font-family:Inter,sans-serif;min-width:140px;">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;font-weight:700;">
@@ -249,11 +245,11 @@ export default function MapLeaflet({ vehicles = [], height = '100%', zoom = 5, c
           <div style="margin-top:3px;font-size:11px;color:#8b96a3;display:flex;align-items:center;gap:4px;">
             <span>${v.model}</span> · <span style="color:#e8edf2;font-family:JetBrains Mono,monospace;">${v.speed > 0 ? `${v.speed} km/h` : 'Stopped'}</span>
           </div>
-          <div style="margin-top:5px;display:flex;align-items:center;gap:6px;">
-            <div style="flex:1;height:4px;background:#181c23;border-radius:2px;overflow:hidden;border:1px solid #242a33;">
-              <div style="height:100%;width:${v.battery}%;background:${v.battery > 50 ? '#00ff66' : v.battery > 20 ? '#f5a623' : '#ff5c5c'};"></div>
-            </div>
-            <span style="font-size:10px;font-family:JetBrains Mono,monospace;color:#8b96a3;">${v.battery}%</span>
+          <div style="margin-top:6px;display:flex;align-items:center;gap:6px;">
+            <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 6px;border-radius:4px;background:${battColorHex}15;border:1px solid ${battColorHex}30;font-size:10.5px;font-weight:700;font-family:JetBrains Mono,monospace;color:${battColorHex};">
+              ${battIconSvg}
+              ${v.battery}%
+            </span>
           </div>
         </div>
       `
@@ -273,18 +269,16 @@ export default function MapLeaflet({ vehicles = [], height = '100%', zoom = 5, c
             <span style="color:#8b96a3;">Speed</span>
             <span style="font-weight:600;color:#f0f4f8;font-family:JetBrains Mono,monospace;">${v.speed > 0 ? `${v.speed} km/h` : 'Stopped'}</span>
           </div>
-          <div style="margin-top:6px;display:flex;align-items:center;gap:6px;">
-            <div style="flex:1;height:5px;background:#181c23;border-radius:3px;overflow:hidden;border:1px solid #242a33;">
-              <div style="height:100%;width:${v.battery}%;background:${v.battery > 50 ? '#00ff66' : v.battery > 20 ? '#f5a623' : '#ff5c5c'};"></div>
-            </div>
-            <span style="font-size:10px;font-family:JetBrains Mono,monospace;color:#8b96a3;">${v.battery}%</span>
+          <div style="margin-top:6px;display:flex;align-items:center;justify-content:space-between;">
+            <span style="color:#8b96a3;font-size:11px;">Battery</span>
+            <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 6px;border-radius:4px;background:${battColorHex}15;border:1px solid ${battColorHex}30;font-size:10.5px;font-weight:700;font-family:JetBrains Mono,monospace;color:${battColorHex};">
+              ${battIconSvg}
+              ${v.battery}%
+            </span>
           </div>
-          <div style="margin-top:10px;display:flex;gap:6px;padding-top:8px;border-top:1px solid #242a33;">
-            <button onclick="window.__selectMapVehicle('${v.id}')" style="flex:1;padding:6px 8px;font-size:11px;font-weight:600;background:#00ff6620;color:#00ff66;border:1px solid #00ff6640;border-radius:6px;cursor:pointer;transition:all 0.2s;">
-              View Telemetry
-            </button>
-            <button onclick="window.__pingMapVehicle('${v.id}')" style="flex:1;padding:6px 8px;font-size:11px;font-weight:600;background:#1e242d;color:#8b96a3;border:1px solid #242a33;border-radius:6px;cursor:pointer;transition:all 0.2s;">
-              Ping Device
+          <div style="margin-top:10px;padding-top:8px;border-top:1px solid #242a33;">
+            <button onclick="window.__selectMapVehicle('${v.id}')" style="width:100%;padding:6px 8px;font-size:11px;font-weight:600;background:#00ff6620;color:#00ff66;border:1px solid #00ff6640;border-radius:6px;cursor:pointer;transition:all 0.2s;text-align:center;">
+              View Telemetry Details
             </button>
           </div>
         </div>

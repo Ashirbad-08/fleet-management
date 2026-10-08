@@ -67,7 +67,7 @@ export default function TimelinePanel({ open, onClose, vehicle, events = [], onR
       <div
         aria-hidden="true"
         onClick={onClose}
-        className={`fixed inset-0 z-[59] bg-black/40 backdrop-blur-[1px] transition-opacity duration-300 xl:hidden ${
+        className={`fixed inset-0 z-[129] bg-black/40 backdrop-blur-[1px] transition-opacity duration-300 xl:hidden ${
           open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
       />
@@ -76,7 +76,7 @@ export default function TimelinePanel({ open, onClose, vehicle, events = [], onR
       <div
         role="dialog"
         aria-label="Full Device Timeline Panel"
-        className={`fixed right-0 top-0 z-[60] h-dvh w-full sm:max-w-[462px] xl:max-w-none xl:w-[462px] xl:right-[462px] xl:z-[48] flex flex-col border-l xl:border-r border-line bg-panel shadow-2xl transition-all duration-300 ease-in-out ${
+        className={`fixed right-0 top-0 z-[130] h-dvh w-full sm:max-w-[462px] xl:max-w-none xl:w-[462px] xl:right-[462px] xl:z-[125] flex flex-col border-l xl:border-r border-line bg-panel shadow-2xl transition-all duration-300 ease-in-out ${
           open
             ? 'translate-x-0 opacity-100 pointer-events-auto'
             : 'translate-x-full xl:translate-x-[calc(100%+462px)] opacity-0 pointer-events-none'

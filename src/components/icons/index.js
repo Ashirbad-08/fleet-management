@@ -68,6 +68,15 @@ export {
   Plug,
   Hash,
   CreditCard,
-  TrendingDown,
+  Briefcase,
+  Building,
+  Globe,
+  PieChart,
+  ExternalLink,
+  Share2,
+  Clipboard,
+  Settings2,
+  ClipboardCheck,
+  FileDown,
 } from 'lucide-react'
 

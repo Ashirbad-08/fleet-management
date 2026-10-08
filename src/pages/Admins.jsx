@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import Topbar from '../components/Topbar'
 import { useFleet } from '../context/FleetContext'
-import { ROLES } from '../data/admins'
-import { Plus, Edit2, Trash2, ShieldCheck, X, Save, Users, Check, Info } from '../components/icons'
+import { ROLES, DEPOT_OPTIONS } from '../data/admins'
+import { Plus, Edit2, Trash2, ShieldCheck, X, Save, Users, Check, Info, MapPin, Mail, Phone } from '../components/icons'
 
 export default function Admins() {
   const { admins, addAdmin, updateAdmin, deleteAdmin } = useFleet()
@@ -18,15 +18,23 @@ export default function Admins() {
     return () => clearTimeout(timer)
   }, [])
 
-  // Form states
+  // Form states matching requested schema
   const [formName, setFormName] = useState('')
   const [formEmail, setFormEmail] = useState('')
+  const [formPhone, setFormPhone] = useState('')
+  const [formJobTitle, setFormJobTitle] = useState('')
   const [formRole, setFormRole] = useState('operator')
+  const [formDepot, setFormDepot] = useState('All Depots (Global)')
+  const [formSendInvite, setFormSendInvite] = useState(true)
 
   const startAdd = () => {
     setFormName('')
     setFormEmail('')
+    setFormPhone('')
+    setFormJobTitle('')
     setFormRole('operator')
+    setFormDepot('All Depots (Global)')
+    setFormSendInvite(true)
     setIsAdding(true)
     setIsEditing(false)
     setSelectedAdmin(null)
@@ -34,9 +42,13 @@ export default function Admins() {
 
   const startEdit = (admin) => {
     setSelectedAdmin(admin)
-    setFormName(admin.name)
-    setFormEmail(admin.email)
+    setFormName(admin.name || '')
+    setFormEmail(admin.email || '')
+    setFormPhone(admin.phone || '')
+    setFormJobTitle(admin.jobTitle || '')
     setFormRole(admin.role || 'operator')
+    setFormDepot(admin.depot || 'All Depots (Global)')
+    setFormSendInvite(false)
     setIsEditing(true)
     setIsAdding(false)
   }
@@ -50,7 +62,11 @@ export default function Admins() {
     const data = {
       name: formName,
       email: formEmail,
+      phone: formPhone || '—',
+      jobTitle: formJobTitle || '—',
       role: formRole,
+      depot: formDepot,
+      sendInvite: formSendInvite,
       permissions: roleObj.permissions,
     }
 
@@ -69,7 +85,8 @@ export default function Admins() {
     return matched || { label: r, color: 'text-lo', bg: 'bg-panel-2', scope: 'Standard Access' }
   }
 
-  const inputCls = 'w-full rounded-md border border-line bg-panel-2 px-3 py-1.75 text-[12.5px] text-hi outline-none focus:border-line focus:outline-none'
+  const inputCls =
+    'w-full rounded-md border border-line bg-panel-2 px-3 py-1.75 text-[12.5px] text-hi outline-none focus:border-line focus:outline-none transition-colors'
 
   return (
     <div className="flex min-h-0 flex-1 flex-col md:overflow-hidden">
@@ -93,10 +110,10 @@ export default function Admins() {
           </div>
 
           <div className="flex-1 overflow-auto">
-            <table className="w-full min-w-[760px] border-collapse">
+            <table className="w-full min-w-[780px] border-collapse">
               <thead>
                 <tr>
-                  {['Member', 'Role', 'Access Scope', 'Joined', ''].map((h) => (
+                  {['Member & Details', 'Role', 'Assigned Depot / Hub', 'Joined', ''].map((h) => (
                     <th
                       key={h}
                       className="sticky top-0 z-10 border-b border-line-soft bg-panel px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wide text-dim"
@@ -145,12 +162,25 @@ export default function Admins() {
                       <tr key={admin.id} className="hover:bg-hover group transition-colors">
                         <td className="border-b border-line-soft px-4 py-2.5">
                           <div className="flex items-center gap-3">
-                            <div className="flex h-8.5 w-8.5 items-center justify-center rounded-lg border border-line bg-panel-2 font-display text-[11px] font-bold text-lo">
+                            <div className="flex h-8.5 w-8.5 items-center justify-center rounded-lg border border-line bg-panel-2 font-display text-[11px] font-bold text-lo shrink-0">
                               {admin.initials}
                             </div>
-                            <div>
-                              <div className="text-[12.5px] font-semibold text-hi">{admin.name}</div>
-                              <div className="mt-0.5 text-[10.5px] text-dim">{admin.email}</div>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-[12.5px] font-semibold text-hi truncate">{admin.name}</span>
+                                {admin.jobTitle && admin.jobTitle !== '—' && (
+                                  <span className="text-[10.5px] font-medium text-dim">• {admin.jobTitle}</span>
+                                )}
+                              </div>
+                              <div className="mt-0.5 flex items-center gap-2 text-[10.5px] text-dim">
+                                <span>{admin.email}</span>
+                                {admin.phone && admin.phone !== '—' && (
+                                  <>
+                                    <span>•</span>
+                                    <span className="font-mono">{admin.phone}</span>
+                                  </>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </td>
@@ -160,7 +190,10 @@ export default function Admins() {
                           </span>
                         </td>
                         <td className="border-b border-line-soft px-4 py-2.5 font-mono text-[11.5px] text-lo">
-                          {roleMeta.scope || 'Standard Access'}
+                          <div className="flex items-center gap-1.5">
+                            <MapPin className="h-3 w-3 text-dim shrink-0" />
+                            <span className="truncate">{admin.depot || 'All Depots (Global)'}</span>
+                          </div>
                         </td>
                         <td className="border-b border-line-soft px-4 py-2.5 font-mono text-[11.5px] text-dim">
                           {admin.joinedAt}
@@ -190,7 +223,7 @@ export default function Admins() {
                               <button
                                 onClick={() => startEdit(admin)}
                                 className="flex h-6 w-6 items-center justify-center rounded-md border border-line bg-panel-2 text-dim hover:text-accent hover:border-accent/30 cursor-pointer"
-                                title="Edit Member Role"
+                                title="Edit Member"
                               >
                                 <Edit2 className="h-3 w-3" strokeWidth={2} />
                               </button>
@@ -215,12 +248,12 @@ export default function Admins() {
 
         {/* Right Side: Add/Edit Panel */}
         {(isAdding || isEditing) && (
-          <aside className="flex max-h-[80vh] w-full flex-col overflow-y-auto rounded-xl border border-line bg-panel xl:max-h-none xl:w-105">
+          <aside className="flex max-h-[85vh] w-full flex-col overflow-y-auto rounded-xl border border-line bg-panel xl:max-h-none xl:w-110">
             <div className="flex items-center justify-between border-b border-line-soft px-5 py-3.5">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4 text-accent" strokeWidth={2} />
                 <span className="font-display text-[13.5px] font-bold">
-                  {isAdding ? 'Add Team Member' : 'Edit Member Role'}
+                  {isAdding ? 'Add Team Member' : 'Edit Member'}
                 </span>
               </div>
               <button
@@ -236,32 +269,69 @@ export default function Admins() {
             </div>
 
             <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-5 space-y-4">
+              {/* 1. Full Name * */}
               <div>
-                <label className="mb-1 block text-[10.5px] font-semibold uppercase tracking-wide text-dim">Full Name</label>
+                <label className="mb-1 block text-[10.5px] font-semibold uppercase tracking-wide text-dim">
+                  Full Name <span className="text-red-400">*</span>
+                </label>
                 <input
                   required
                   type="text"
-                  placeholder="e.g. Sneha Roy"
+                  placeholder="e.g. Rajesh Deshmukh"
                   value={formName}
                   onChange={(e) => setFormName(e.target.value)}
                   className={inputCls}
                 />
               </div>
 
+              {/* 2. Email Address * */}
               <div>
-                <label className="mb-1 block text-[10.5px] font-semibold uppercase tracking-wide text-dim">Email Address</label>
+                <label className="mb-1 block text-[10.5px] font-semibold uppercase tracking-wide text-dim">
+                  Email Address <span className="text-red-400">*</span>
+                </label>
                 <input
                   required
                   type="email"
-                  placeholder="e.g. sneha@voltfleet.com"
+                  placeholder="e.g. rajesh@fleetcontrol.io"
                   value={formEmail}
                   onChange={(e) => setFormEmail(e.target.value)}
                   className={inputCls}
                 />
               </div>
 
+              {/* 3. Phone Number (Optional) */}
               <div>
-                <label className="mb-1 block text-[10.5px] font-semibold uppercase tracking-wide text-dim">System Role</label>
+                <label className="mb-1 block text-[10.5px] font-semibold uppercase tracking-wide text-dim">
+                  Phone Number <span className="font-normal normal-case text-dim">(Optional)</span>
+                </label>
+                <input
+                  type="tel"
+                  placeholder="e.g. +91 98765 43210"
+                  value={formPhone}
+                  onChange={(e) => setFormPhone(e.target.value)}
+                  className={inputCls}
+                />
+              </div>
+
+              {/* 4. Job Title (Optional) */}
+              <div>
+                <label className="mb-1 block text-[10.5px] font-semibold uppercase tracking-wide text-dim">
+                  Job Title <span className="font-normal normal-case text-dim">(Optional)</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Shift Operations Lead"
+                  value={formJobTitle}
+                  onChange={(e) => setFormJobTitle(e.target.value)}
+                  className={inputCls}
+                />
+              </div>
+
+              {/* 5. System Role * */}
+              <div>
+                <label className="mb-1 block text-[10.5px] font-semibold uppercase tracking-wide text-dim">
+                  System Role <span className="text-red-400">*</span>
+                </label>
                 <select
                   value={formRole}
                   onChange={(e) => setFormRole(e.target.value)}
@@ -275,7 +345,41 @@ export default function Admins() {
                 </select>
               </div>
 
-              {/* Static Role Access Privileges Summary Card */}
+              {/* 6. Assigned Depot / Hub * */}
+              <div>
+                <label className="mb-1 block text-[10.5px] font-semibold uppercase tracking-wide text-dim">
+                  Assigned Depot / Hub <span className="text-red-400">*</span>
+                </label>
+                <select
+                  value={formDepot}
+                  onChange={(e) => setFormDepot(e.target.value)}
+                  className={inputCls + ' cursor-pointer'}
+                >
+                  {DEPOT_OPTIONS.map((dep) => (
+                    <option key={dep} value={dep}>
+                      {dep}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 7. Send email invitation with magic login link */}
+              <div className="rounded-lg border border-line-soft bg-panel-2/40 p-3">
+                <label className="flex items-start gap-2.5 text-[12px] text-hi cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={formSendInvite}
+                    onChange={(e) => setFormSendInvite(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 rounded border-line bg-panel-2 text-accent accent-accent focus:ring-0 cursor-pointer"
+                  />
+                  <div className="flex flex-col">
+                    <span className="font-medium text-hi">Send email invitation with magic login link</span>
+                    <span className="text-[10.5px] text-dim">An onboarding email with password setup instructions will be dispatched.</span>
+                  </div>
+                </label>
+              </div>
+
+              {/* Role Access Privileges Summary Card */}
               {(() => {
                 const currentRoleMeta = ROLES.find((r) => r.value === formRole) || ROLES[2]
                 return (

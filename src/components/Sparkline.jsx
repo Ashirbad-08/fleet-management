@@ -1,39 +1,42 @@
 import { useState, useRef, useCallback } from 'react'
 
-export default function Sparkline({ data, color }) {
+export default function Sparkline({ data, labels, color = 'var(--color-accent)' }) {
+  const points = Array.isArray(data) ? data : data?.points || []
+  const timeLabels = labels || (Array.isArray(data) ? null : data?.labels) || points.map((_, i) => {
+    const daysAgo = points.length - 1 - i
+    return daysAgo === 0 ? 'Today' : `${daysAgo}d ago`
+  })
+
   const w = 420
-  const h = 56
-  const pad = 4
-  const max = Math.max(...data)
-  const min = Math.min(...data)
+  const h = 60
+  const pad = 6
+
+  const validPoints = points.length > 0 ? points : [50]
+  const max = Math.max(...validPoints)
+  const min = Math.min(...validPoints)
+  const avg = Math.round(validPoints.reduce((a, b) => a + b, 0) / validPoints.length)
   const range = max - min || 1
 
   const svgRef = useRef(null)
-  const [hovered, setHovered] = useState(null) // { index, x, y, value }
+  const [hovered, setHovered] = useState(null) // { index, x, y, value, time }
 
-  const coords = data.map((d, i) => ({
-    x: pad + (i / (data.length - 1)) * (w - pad * 2),
+  const coords = validPoints.map((d, i) => ({
+    x: pad + (i / Math.max(1, validPoints.length - 1)) * (w - pad * 2),
     y: h - pad - ((d - min) / range) * (h - pad * 2),
     value: d,
+    time: timeLabels[i] || `Day ${i + 1}`,
   }))
 
-  const points = coords.map((c) => `${c.x},${c.y}`).join(' ')
-  const areaPoints = `${pad},${h - pad} ${points} ${w - pad},${h - pad}`
-
-  // Time labels: spread over 24h — last point = now
-  const timeLabels = data.map((_, i) => {
-    const hoursAgo = Math.round(((data.length - 1 - i) / (data.length - 1)) * 24)
-    return hoursAgo === 0 ? 'Now' : `${hoursAgo}h ago`
-  })
+  const polyPoints = coords.map((c) => `${c.x},${c.y}`).join(' ')
+  const areaPoints = `${pad},${h - pad} ${polyPoints} ${w - pad},${h - pad}`
 
   const handleMouseMove = useCallback(
     (e) => {
       const svg = svgRef.current
-      if (!svg) return
+      if (!svg || coords.length === 0) return
       const rect = svg.getBoundingClientRect()
       const svgX = ((e.clientX - rect.left) / rect.width) * w
 
-      // Find the nearest data point
       let closest = 0
       let minDist = Infinity
       coords.forEach((c, i) => {
@@ -44,17 +47,21 @@ export default function Sparkline({ data, color }) {
         }
       })
 
-      setHovered({ index: closest, ...coords[closest], time: timeLabels[closest] })
+      setHovered({ index: closest, ...coords[closest] })
     },
-    [coords, timeLabels]
+    [coords, w]
   )
 
   const handleMouseLeave = () => setHovered(null)
 
-  // Tooltip position clamped so it never overflows left/right
-  const tooltipW = 80 // estimated px width of tooltip
+  const tooltipW = 90
   const tooltipXPercent = hovered ? (hovered.x / w) * 100 : 50
-  const tooltipLeftClamped = `clamp(0px, calc(${tooltipXPercent}% - ${tooltipW / 2}px), calc(100% - ${tooltipW}px))`
+  const tooltipLeftClamped = `clamp(4px, calc(${tooltipXPercent}% - ${tooltipW / 2}px), calc(100% - ${tooltipW + 4}px))`
+
+  const startLabel = timeLabels[0] || '30d ago'
+  const midIndex = Math.floor(timeLabels.length / 2)
+  const midLabel = timeLabels[midIndex] || '15d ago'
+  const endLabel = timeLabels[timeLabels.length - 1] || 'Today'
 
   return (
     <div className="relative select-none" onMouseLeave={handleMouseLeave}>
@@ -67,15 +74,37 @@ export default function Sparkline({ data, color }) {
         className="overflow-visible cursor-crosshair"
         onMouseMove={handleMouseMove}
       >
-        {/* Area fill */}
-        <polygon points={areaPoints} fill={color} opacity="0.08" />
+        <defs>
+          <linearGradient id={`spark-grad-${color.replace(/[^a-zA-Z0-9]/g, '')}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={color} stopOpacity="0.22" />
+            <stop offset="100%" stopColor={color} stopOpacity="0.0" />
+          </linearGradient>
+        </defs>
 
-        {/* Line */}
+        {/* Area fill */}
+        <polygon
+          points={areaPoints}
+          fill={`url(#spark-grad-${color.replace(/[^a-zA-Z0-9]/g, '')})`}
+        />
+
+        {/* Soft grid line */}
+        <line
+          x1={pad}
+          y1={h / 2}
+          x2={w - pad}
+          y2={h / 2}
+          stroke="currentColor"
+          strokeWidth="0.75"
+          strokeDasharray="4 4"
+          className="text-line-soft opacity-60"
+        />
+
+        {/* Trend Line */}
         <polyline
-          points={points}
+          points={polyPoints}
           fill="none"
           stroke={color}
-          strokeWidth="2"
+          strokeWidth="2.2"
           strokeLinejoin="round"
           strokeLinecap="round"
         />
@@ -88,20 +117,18 @@ export default function Sparkline({ data, color }) {
             x2={hovered.x}
             y2={h - pad}
             stroke={color}
-            strokeWidth="1"
+            strokeWidth="1.2"
             strokeDasharray="3 3"
-            opacity="0.5"
+            opacity="0.6"
           />
         )}
 
         {/* Dot on hovered point */}
         {hovered && (
           <>
-            {/* Glow ring */}
-            <circle cx={hovered.x} cy={hovered.y} r="6" fill={color} opacity="0.15" />
-            {/* Inner dot */}
+            <circle cx={hovered.x} cy={hovered.y} r="7" fill={color} opacity="0.2" />
             <circle cx={hovered.x} cy={hovered.y} r="3.5" fill={color} />
-            <circle cx={hovered.x} cy={hovered.y} r="1.5" fill="white" />
+            <circle cx={hovered.x} cy={hovered.y} r="1.5" fill="#ffffff" />
           </>
         )}
       </svg>
@@ -109,39 +136,54 @@ export default function Sparkline({ data, color }) {
       {/* Tooltip */}
       {hovered && (
         <div
-          className="pointer-events-none absolute -top-9 z-10"
+          className="pointer-events-none absolute -top-10 z-20"
           style={{ left: tooltipLeftClamped }}
         >
           <div
-            className="flex flex-col items-center gap-0.5 rounded-lg border border-line bg-panel px-2.5 py-1.5 shadow-lg"
-            style={{ borderColor: `${color}44` }}
+            className="flex flex-col items-center gap-0.5 rounded-lg border border-line bg-panel px-2.5 py-1 shadow-lg backdrop-blur-md"
+            style={{ borderColor: `${color}55` }}
           >
-            <span className="font-mono text-[13px] font-bold tabular-nums" style={{ color }}>
-              {hovered.value}%
-            </span>
-            <span className="font-mono text-[9.5px] text-dim tabular-nums leading-none">
+            <div className="flex items-center gap-1">
+              <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: color }} />
+              <span className="font-mono text-[12.5px] font-bold tabular-nums" style={{ color }}>
+                {hovered.value}%
+              </span>
+            </div>
+            <span className="font-mono text-[9px] text-dim tabular-nums leading-none">
               {hovered.time}
             </span>
           </div>
-          {/* Caret */}
           <div className="flex justify-center">
             <div
               className="h-1.5 w-1.5 rotate-45 border-b border-r border-line bg-panel"
-              style={{ borderColor: `${color}44` }}
+              style={{ borderColor: `${color}55` }}
             />
           </div>
         </div>
       )}
 
-      {/* Min / Max annotation */}
-      <div className="mt-1 flex items-center justify-between px-0.5">
-        <span className="font-mono text-[9.5px] text-dim tabular-nums">
-          Low: <span className="text-hi font-semibold">{min}%</span>
-        </span>
-        <span className="font-mono text-[9.5px] text-dim tabular-nums">
-          High: <span className="text-hi font-semibold">{max}%</span>
-        </span>
+      {/* Timeline markers & monthly stats */}
+      <div className="mt-2 flex items-center justify-between border-t border-line-soft/60 pt-1.5 px-0.5">
+        <div className="flex items-center gap-2">
+          <span className="font-mono text-[9.5px] text-dim">
+            Min: <span className="text-hi font-semibold">{min}%</span>
+          </span>
+          <span className="text-line-soft">•</span>
+          <span className="font-mono text-[9.5px] text-dim">
+            Avg: <span className="text-accent font-semibold">{avg}%</span>
+          </span>
+          <span className="text-line-soft">•</span>
+          <span className="font-mono text-[9.5px] text-dim">
+            Max: <span className="text-hi font-semibold">{max}%</span>
+          </span>
+        </div>
+        <div className="flex items-center gap-2 font-mono text-[9px] text-dim">
+          <span>{startLabel}</span>
+          <span>→</span>
+          <span className="text-lo font-medium">{endLabel}</span>
+        </div>
       </div>
     </div>
   )
 }
+

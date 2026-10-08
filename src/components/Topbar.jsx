@@ -16,6 +16,7 @@ import {
   Download,
   Power,
   ChevronRight,
+  BatteryMedium,
 } from './icons'
 import { useFleet } from '../context/FleetContext'
 import NotificationDropdown from './NotificationDropdown'
@@ -502,16 +503,14 @@ export default function Topbar({ title, subtitle }) {
 
                           <div className="flex items-center gap-2 shrink-0">
                             {/* Battery indicator */}
-                            <div className="hidden sm:flex items-center gap-1 font-mono text-[10.5px] text-lo">
-                              <div className="h-1.5 w-7 overflow-hidden rounded-full border border-line bg-panel-2">
-                                <div
-                                  className={`h-full rounded-full ${
-                                    v.battery > 50 ? 'bg-green' : v.battery > 20 ? 'bg-amber' : 'bg-red'
-                                  }`}
-                                  style={{ width: `${v.battery}%` }}
-                                />
-                              </div>
-                              <span>{v.battery}%</span>
+                            <div className="hidden sm:flex items-center gap-1 rounded-md border border-line-soft bg-panel-2 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-lo">
+                              <BatteryMedium
+                                className={`h-3 w-3 ${
+                                  v.battery > 50 ? 'text-emerald-400' : v.battery > 20 ? 'text-amber-400' : 'text-rose-400'
+                                }`}
+                                strokeWidth={2.4}
+                              />
+                              <span className="tabular-nums">{v.battery}%</span>
                             </div>
 
                             {/* Status Pill */}

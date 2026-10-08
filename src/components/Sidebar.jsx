@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutGrid, Truck, Cpu, TriangleAlert, MapPin, UploadCloud, Settings, Users, Bell, Leaf, Power } from './icons'
+import { LayoutGrid, Truck, Cpu, TriangleAlert, MapPin, Settings, Users, Bell, Leaf, Power } from './icons'
 import { useFleet } from '../context/FleetContext'
 
 const NAV_ITEMS = [
@@ -9,7 +9,6 @@ const NAV_ITEMS = [
   { to: '/esg', label: 'ESG Savings', icon: Leaf },
   { to: '/alerts', label: 'Alerts', icon: TriangleAlert, countKey: 'critical' },
   { to: '/geofences', label: 'Geofences', icon: MapPin },
-  { to: '/firmware', label: 'Firmware', icon: UploadCloud },
   { to: '/admins', label: 'Admins', icon: Users },
   { to: '/notifications', label: 'Notifications', icon: Bell, countKey: 'unread' },
 ]

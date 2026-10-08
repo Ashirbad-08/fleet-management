@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom'
 import Topbar from '../components/Topbar'
 import StatsRow from '../components/StatsRow'
 import VehicleQuickRibbon from '../components/VehicleQuickRibbon'
-import BatteryDistributionWidget from '../components/BatteryDistributionWidget'
+import FleetStatusDonutCard from '../components/FleetStatusDonutCard'
+import FleetHourlyTripsCard from '../components/FleetHourlyTripsCard'
 import FleetOperationsEsgCard from '../components/FleetOperationsEsgCard'
 import MapLeaflet from '../components/MapLeaflet'
 import AlertsFeed from '../components/AlertsFeed'
@@ -52,12 +53,17 @@ export default function Dashboard() {
 
   // Close full screen on Escape key
   useEffect(() => {
+    if (!fullScreenMap) return
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape') setFullScreenMap(false)
+      if (e.key === 'Escape') {
+        e.stopImmediatePropagation()
+        e.stopPropagation()
+        setFullScreenMap(false)
+      }
     }
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [])
+    window.addEventListener('keydown', handleKeyDown, true)
+    return () => window.removeEventListener('keydown', handleKeyDown, true)
+  }, [fullScreenMap])
 
   const currentFilterObj = FILTER_OPTIONS.find((o) => o.key === statusFilter) || FILTER_OPTIONS[0]
 
@@ -76,7 +82,7 @@ export default function Dashboard() {
           {/* Aesthetic Fleet Tracking Map Container */}
           <div className="flex h-[22rem] sm:h-[25rem] flex-col overflow-hidden rounded-xl border border-line bg-panel relative shadow-sm">
             {/* Professional Header Bar */}
-            <div className="flex items-center justify-between border-b border-line-soft px-4 py-3 shrink-0 bg-panel/40">
+            <div className="flex items-center justify-between border-b border-line-soft px-4 py-2  shrink-0 bg-panel/40">
               <div className="flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-accent animate-pulse" />
                 <div className="font-display text-sm font-semibold text-hi">Fleet tracking map</div>
@@ -198,9 +204,12 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Operational & Battery Intelligence Cards Row */}
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 mt-4 pb-6">
-          <BatteryDistributionWidget />
+        {/* Operational Intelligence & Activity Sections */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+          <FleetStatusDonutCard />
+          <FleetHourlyTripsCard />
+        </div>
+        <div className="mt-4 pb-6">
           <FleetOperationsEsgCard />
         </div>
       </div>

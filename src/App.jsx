@@ -9,7 +9,6 @@ import Vehicles from './pages/Vehicles'
 import Devices from './pages/Devices'
 import AlertsPage from './pages/AlertsPage'
 import Geofences from './pages/Geofences'
-import Firmware from './pages/Firmware'
 import Settings from './pages/Settings'
 import Admins from './pages/Admins'
 import NotificationsPage from './pages/NotificationsPage'
@@ -45,7 +44,6 @@ export default function App() {
           <Route path="/esg" element={<EsgPage />} />
           <Route path="/alerts" element={<AlertsPage />} />
           <Route path="/geofences" element={<Geofences />} />
-          <Route path="/firmware" element={<Firmware />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/admins" element={<Admins />} />
           <Route path="/notifications" element={<NotificationsPage />} />

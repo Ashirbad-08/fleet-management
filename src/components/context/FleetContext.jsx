@@ -545,32 +545,17 @@ export function FleetProvider({ children }) {
   const sendDeviceCommand = useCallback(
     (vehicle, action) => {
       const messages = {
-        firmware: `Firmware update queued for ${vehicle.deviceId}`,
-        restart: `Restart command sent to ${vehicle.deviceId}`,
-        lock: `Lock command sent to ${vehicle.name}`,
-        unlock: `Unlock command sent to ${vehicle.name}`,
-        deactivate: `${vehicle.name} flagged for maintenance`,
+        firmware: `Firmware update queued for ${vehicle.deviceId || vehicle.name}`,
       }
 
-      if (action === 'lock' || action === 'unlock') {
-        updateVehicle(vehicle.id, { locked: action === 'lock' })
-      } else if (action === 'deactivate') {
-        updateVehicle(vehicle.id, { status: 'alert' })
-        addLiveEvent('critical', vehicle.name, 'Flagged for maintenance by operator', true)
-      } else if (action === 'restart') {
-        updateVehicle(vehicle.id, { status: 'offline', lastSeen: 'Just now' })
-        setTimeout(() => {
-          updateVehicle(vehicle.id, { status: 'online' })
-          addLiveEvent('info', vehicle.name, 'Device restarted and connected', false)
-        }, 3000)
-      } else if (action === 'firmware') {
+      if (action === 'firmware') {
         // Trigger simulated progression
         setUpdatingVehicles((prev) => ({ ...prev, [vehicle.id]: 0 }))
       }
 
       showToast(messages[action] ?? 'Command sent')
     },
-    [showToast, updateVehicle, addLiveEvent],
+    [showToast],
   )
 
   // ── Firmware Progress Simulation Loop ─────────────────────────────────────

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import Topbar from '../components/Topbar'
 import { useFleet, TIMEZONE_OPTIONS, getTimezoneIana } from '../context/FleetContext'
 import {
@@ -8,10 +9,28 @@ import {
   ShieldCheck,
   Eye,
   EyeOff,
+  Phone,
+  Briefcase,
+  MapPin,
+  Mail,
+  Building,
+  Globe,
+  ExternalLink,
 } from '../components/icons'
 
 export default function Settings() {
-  const { settings, updateSettings, showToast } = useFleet()
+  const navigate = useNavigate()
+  const { settings, updateSettings, admins, showToast } = useFleet()
+  const currentAdmin = admins?.[0] || {
+    id: 'A-001',
+    name: 'Rajesh Deshmukh',
+    email: 'rajesh@fleetcontrol.io',
+    phone: '+91 98765 43210',
+    jobTitle: 'Fleet Operations Director',
+    depot: 'Pune Central Depot',
+    role: 'superadmin',
+    initials: 'RD',
+  }
   const [activeTab, setActiveTab] = useState('general') // 'general', 'alerts', 'security'
   const [isLoading, setIsLoading] = useState(true)
 
@@ -624,27 +643,84 @@ export default function Settings() {
           {activeTab === 'security' && (
             <div className="space-y-6">
               {/* Current Admin Account Card */}
-              <div className="overflow-hidden rounded-xl border border-line bg-panel">
+              <div className="overflow-hidden rounded-xl border border-line bg-panel shadow-xs">
                 <div className="border-b border-line-soft px-5 py-4 flex items-center justify-between">
-                  <h2 className="font-display text-[14px] font-semibold text-hi">Current Account & Role</h2>
+                  <h2 className="font-display text-[14px] font-semibold text-hi">Current Account & Identity</h2>
                   <span className="rounded bg-accent/15 px-2 py-0.5 text-[10px] font-semibold text-accent uppercase">
                     Super Admin
                   </span>
                 </div>
-                <div className="p-5">
+                <div className="p-5 space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-lg border border-line-soft bg-panel-2 p-4">
                     <div className="flex items-center gap-3.5">
                       <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent/15 font-display text-[14px] font-bold text-accent border border-accent/30">
-                        RD
+                        {currentAdmin?.initials || 'RD'}
                       </div>
                       <div>
-                        <div className="text-[13.5px] font-semibold text-hi">Rajesh Deshmukh</div>
-                        <div className="text-[11.5px] text-dim">admin@electrie.io</div>
+                        <div className="text-[13.5px] font-semibold text-hi">{currentAdmin?.name || 'Rajesh Deshmukh'}</div>
+                        <div className="text-[11.5px] text-dim">{currentAdmin?.email || 'rajesh@fleetcontrol.io'}</div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1.5 text-[11.5px] text-dim">
-                      <ShieldCheck className="h-4 w-4 text-green" />
-                      <span>Role-Based Access Control (RBAC) Enforced</span>
+                    <button
+                      type="button"
+                      onClick={() => navigate('/profile')}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-accent/30 bg-accent/10 px-3 py-1.5 text-[11.5px] font-semibold text-accent hover:bg-accent/20 transition-colors cursor-pointer self-start sm:self-auto"
+                    >
+                      <span>View & Edit Full Profile</span>
+                      <ExternalLink className="h-3 w-3" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Contact & Organization Details Card */}
+              <div className="overflow-hidden rounded-xl border border-line bg-panel shadow-xs">
+                <div className="border-b border-line-soft px-5 py-3.5 flex items-center justify-between bg-panel-2/30">
+                  <div className="flex items-center gap-2">
+                    <Briefcase className="h-4 w-4 text-accent" strokeWidth={2.2} />
+                    <h2 className="font-display text-[13.5px] font-bold text-hi">Contact & Organization Details</h2>
+                  </div>
+                  <span className="text-[10.5px] font-mono text-dim uppercase">Profile Master</span>
+                </div>
+
+                <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex items-start gap-3 rounded-lg border border-line-soft bg-panel-2 p-3">
+                    <Phone className="h-4 w-4 text-accent mt-0.5 shrink-0" strokeWidth={2} />
+                    <div>
+                      <div className="text-[11px] text-dim">Phone Number</div>
+                      <div className="font-mono text-[12.5px] font-semibold text-hi">
+                        {currentAdmin?.phone || '+91 98765 43210'}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 rounded-lg border border-line-soft bg-panel-2 p-3">
+                    <Briefcase className="h-4 w-4 text-accent mt-0.5 shrink-0" strokeWidth={2} />
+                    <div>
+                      <div className="text-[11px] text-dim">Job Title</div>
+                      <div className="text-[12.5px] font-semibold text-hi">
+                        {currentAdmin?.jobTitle || 'Fleet Operations Director'}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 rounded-lg border border-line-soft bg-panel-2 p-3">
+                    <MapPin className="h-4 w-4 text-accent mt-0.5 shrink-0" strokeWidth={2} />
+                    <div>
+                      <div className="text-[11px] text-dim">Assigned Depot / Hub</div>
+                      <div className="text-[12.5px] font-semibold text-hi">
+                        {currentAdmin?.depot || 'Pune Central Depot'}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 rounded-lg border border-line-soft bg-panel-2 p-3">
+                    <Mail className="h-4 w-4 text-accent mt-0.5 shrink-0" strokeWidth={2} />
+                    <div>
+                      <div className="text-[11px] text-dim">Email Address</div>
+                      <div className="font-mono text-[12.5px] font-semibold text-hi truncate">
+                        {currentAdmin?.email || 'rajesh@fleetcontrol.io'}
+                      </div>
                     </div>
                   </div>
                 </div>

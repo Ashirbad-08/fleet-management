@@ -1,9 +1,21 @@
 // Mock admin data — in production fetch from your auth/permissions service.
+export const DEPOT_OPTIONS = [
+  'All Depots (Global)',
+  'Pune Central Depot',
+  'Okhla Service Yard',
+  'Bengaluru Ring Hub',
+  'Prenzlauer Berg Depot',
+  'Mitte Central Logistics',
+]
+
 export const admins = [
   {
     id: 'A-001',
     name: 'Rajesh Deshmukh',
     email: 'rajesh@fleetcontrol.io',
+    phone: '+91 98765 43210',
+    jobTitle: 'Fleet Operations Director',
+    depot: 'All Depots (Global)',
     role: 'superadmin',
     initials: 'RD',
     joinedAt: '2024-01-15',
@@ -19,6 +31,9 @@ export const admins = [
     id: 'A-002',
     name: 'Priya Nair',
     email: 'priya@fleetcontrol.io',
+    phone: '+91 98234 56789',
+    jobTitle: 'Depot Fleet Manager',
+    depot: 'Pune Central Depot',
     role: 'admin',
     initials: 'PN',
     joinedAt: '2024-03-20',
@@ -34,6 +49,9 @@ export const admins = [
     id: 'A-003',
     name: 'Arjun Mehta',
     email: 'arjun@fleetcontrol.io',
+    phone: '+91 97112 34567',
+    jobTitle: 'Shift Operations Lead',
+    depot: 'Okhla Service Yard',
     role: 'operator',
     initials: 'AM',
     joinedAt: '2024-06-10',
@@ -49,6 +67,9 @@ export const admins = [
     id: 'A-004',
     name: 'Sneha Kapoor',
     email: 'sneha@fleetcontrol.io',
+    phone: '+91 99887 65432',
+    jobTitle: 'Live Telemetry Monitor',
+    depot: 'Bengaluru Ring Hub',
     role: 'operator',
     initials: 'SK',
     joinedAt: '2024-08-05',
