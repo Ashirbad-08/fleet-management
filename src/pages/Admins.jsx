@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import Topbar from '../components/Topbar'
 import { useFleet } from '../context/FleetContext'
-import { ROLES, DEPOT_OPTIONS } from '../data/admins'
+import { ROLES, DEPOT_OPTIONS, PERMISSION_MATRIX } from '../data/admins'
 import { Plus, Edit2, Trash2, ShieldCheck, X, Save, Users, Check, Info, MapPin, Mail, Phone } from '../components/icons'
 
 export default function Admins() {
@@ -11,6 +11,7 @@ export default function Admins() {
   const [isEditing, setIsEditing] = useState(false)
   const [isAdding, setIsAdding] = useState(false)
   const [confirmDeleteId, setConfirmDeleteId] = useState(null)
+  const [showMatrixModal, setShowMatrixModal] = useState(false)
 
   useEffect(() => {
     setIsLoading(true)
@@ -440,6 +441,112 @@ export default function Admins() {
           </aside>
         )}
       </div>
+      {/* -- Updated Accessibility & Permission Matrix Modal -- */}
+      {showMatrixModal && (
+        <>
+          <div
+            onClick={() => setShowMatrixModal(false)}
+            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-[2px] transition-opacity"
+          />
+          <div className="fixed left-1/2 top-1/2 z-50 max-h-[92dvh] w-[calc(100vw-2rem)] max-w-4xl -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-xl border border-line bg-panel shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-line-soft px-5 py-3.5 bg-panel-2/30">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent/15 text-accent">
+                  <ShieldCheck className="h-4 w-4" strokeWidth={2.2} />
+                </div>
+                <div>
+                  <span className="font-display text-[14.5px] font-bold text-hi">
+                    Updated Accessibility & Permission Matrix
+                  </span>
+                  <p className="text-[11px] text-dim">
+                    Role-based capabilities across fleet modules (Firmware rollout & remote lock commands removed)
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowMatrixModal(false)}
+                aria-label="Close modal"
+                className="flex h-7 w-7 items-center justify-center rounded-md border border-line bg-panel-2 text-lo hover:bg-hover hover:text-hi cursor-pointer"
+              >
+                <X className="h-3.5 w-3.5" strokeWidth={2.2} />
+              </button>
+            </div>
+
+            {/* Role Scope Highlights */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 border-b border-line-soft bg-panel-2/20">
+              {ROLES.map((r) => (
+                <div key={r.value} className="rounded-lg border border-line-soft bg-panel p-3 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className={`font-display text-[12px] font-bold ${r.color}`}>{r.label}</span>
+                    <span className={`rounded px-1.5 py-0.5 text-[9.5px] font-semibold ${r.bg} ${r.color}`}>
+                      {r.scope}
+                    </span>
+                  </div>
+                  <p className="text-[10.5px] text-dim leading-relaxed">{r.description}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Matrix Table */}
+            <div className="flex-1 overflow-auto p-4">
+              <table className="w-full text-left text-[11.5px] border-collapse">
+                <thead>
+                  <tr className="border-b border-line-soft text-[10.5px] font-semibold uppercase text-dim bg-panel-2/60">
+                    <th className="px-3.5 py-2.5">Feature / UI Module</th>
+                    <th className="px-3.5 py-2.5 text-accent">Super Admin</th>
+                    <th className="px-3.5 py-2.5 text-green">Admin (Fleet Mgr)</th>
+                    <th className="px-3.5 py-2.5 text-amber">Operator (Monitor)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-line-soft/60 font-sans">
+                  {PERMISSION_MATRIX.map((row, idx) => {
+                    const badgeCls = (val) => {
+                      if (val.includes('Full') || val.includes('Add, Edit, Delete'))
+                        return 'text-accent font-semibold'
+                      if (val.includes('Restricted') || val.includes('No Access'))
+                        return 'text-rose-400 font-medium'
+                      if (val.includes('View Only') || val.includes('Read Only'))
+                        return 'text-amber-400 font-medium'
+                      return 'text-lo'
+                    }
+
+                    return (
+                      <tr key={idx} className="hover:bg-panel-2/40 transition-colors">
+                        <td className="px-3.5 py-2.5 font-medium text-hi">{row.module}</td>
+                        <td className={`px-3.5 py-2.5 ${badgeCls(row.superadmin)}`}>
+                          {row.superadmin}
+                        </td>
+                        <td className={`px-3.5 py-2.5 ${badgeCls(row.admin)}`}>
+                          {row.admin}
+                        </td>
+                        <td className={`px-3.5 py-2.5 ${badgeCls(row.operator)}`}>
+                          {row.operator}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex items-center justify-between border-t border-line-soft bg-panel-2/30 px-5 py-3">
+              <span className="text-[11px] text-dim">
+                Permissions are aligned with current frontend capabilities.
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowMatrixModal(false)}
+                className="rounded-lg bg-accent/20 px-4 py-1.5 text-[12px] font-medium text-accent hover:bg-accent/30 cursor-pointer transition-colors"
+              >
+                Close Matrix
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }
