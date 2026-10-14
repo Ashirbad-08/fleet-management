@@ -5,7 +5,6 @@ import MapLeaflet from '../MapLeaflet'
 export default function VehicleFullscreenMap({
   open,
   selectedVehicle,
-  mapKey,
   onRefreshMap,
   onClose,
 }) {
@@ -64,7 +63,6 @@ export default function VehicleFullscreenMap({
         </div>
         <div className="min-h-0 flex-1">
           <MapLeaflet
-            key={`full-${mapKey}`}
             vehicles={[selectedVehicle]}
             center={[selectedVehicle.lat || 20.5937, selectedVehicle.lon || 78.9629]}
             zoom={14}

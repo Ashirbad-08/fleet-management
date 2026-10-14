@@ -27,6 +27,7 @@ import Gauge from '../../Gauge'
 import Sparkline from '../../Sparkline'
 import MapLeaflet from '../../MapLeaflet'
 import { seedTrips } from '../../../data/tripsData'
+import { useFleet } from '../../../context/FleetContext'
 
 export default function LiveTelemetryTab({
   selectedVehicle,
@@ -35,8 +36,6 @@ export default function LiveTelemetryTab({
   updatingVehicles,
   settings,
   battData,
-  mapKey,
-  setMapKey,
   onOpenFullscreenMap,
   onOpenHistoryModal,
   onOpenTimelineModal,
@@ -46,6 +45,7 @@ export default function LiveTelemetryTab({
   onRefreshTimeline,
   openOnMap,
 }) {
+  const { refreshTelemetry } = useFleet()
   const [copiedId, setCopiedId] = useState(false)
   const [sharedLocation, setSharedLocation] = useState(false)
 
@@ -437,7 +437,7 @@ export default function LiveTelemetryTab({
               </span>
               <button
                 type="button"
-                onClick={() => setMapKey((k) => k + 1)}
+                onClick={() => refreshTelemetry?.()}
                 title="Refresh map"
                 aria-label="Refresh mini map"
                 className="flex h-5.5 w-5.5 items-center justify-center rounded border border-line bg-panel text-lo hover:bg-hover hover:text-accent transition-colors cursor-pointer"
@@ -459,7 +459,6 @@ export default function LiveTelemetryTab({
           <div className="border-b border-line-soft p-4 bg-panel">
             <div className="relative h-44 w-full overflow-hidden rounded-xl border border-line-soft shadow-inner">
               <MapLeaflet
-                key={mapKey}
                 vehicles={[selectedVehicle]}
                 center={[selectedVehicle.lat || 20.5937, selectedVehicle.lon || 78.9629]}
                 zoom={13}

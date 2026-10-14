@@ -62,6 +62,7 @@ export default function VehicleDrawer() {
     deleteVehicle,
     settings,
     updatingVehicles,
+    refreshTelemetry,
   } = useFleet()
   const navigate = useNavigate()
   const open = Boolean(selectedVehicle)
@@ -76,7 +77,6 @@ export default function VehicleDrawer() {
   const [historyModalOpen, setHistoryModalOpen] = useState(false)
   const [timelineModalOpen, setTimelineModalOpen] = useState(false)
   const [mapFullscreen, setMapFullscreen] = useState(false)
-  const [mapKey, setMapKey] = useState(0)
 
   // Live Telemetry & Timeline States
   const [timelineEvents, setTimelineEvents] = useState([])
@@ -304,8 +304,6 @@ export default function VehicleDrawer() {
                 updatingVehicles={updatingVehicles}
                 settings={settings}
                 battData={battData}
-                mapKey={mapKey}
-                setMapKey={setMapKey}
                 onOpenFullscreenMap={() => {
                   setHistoryModalOpen(false)
                   setTimelineModalOpen(false)
@@ -366,8 +364,7 @@ export default function VehicleDrawer() {
       <VehicleFullscreenMap
         open={mapFullscreen}
         selectedVehicle={selectedVehicle}
-        mapKey={mapKey}
-        onRefreshMap={() => setMapKey((k) => k + 1)}
+        onRefreshMap={() => refreshTelemetry?.()}
         onClose={() => setMapFullscreen(false)}
       />
 

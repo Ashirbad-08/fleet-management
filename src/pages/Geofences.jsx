@@ -24,6 +24,7 @@ export default function Geofences() {
     statusFilter,
     setStatusFilter,
     showToast,
+    refreshTelemetry,
   } = useFleet()
 
   const [searchParams] = useSearchParams()
@@ -43,7 +44,6 @@ export default function Geofences() {
   // ── Map toolbar state ────────────────────────────────────────────────────
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
-  const [refreshKey, setRefreshKey] = useState(0)
   const [filterOpen, setFilterOpen] = useState(false)
   const [fullScreenMap, setFullScreenMap] = useState(false)
   const [fullScreenFilterOpen, setFullScreenFilterOpen] = useState(false)
@@ -59,7 +59,7 @@ export default function Geofences() {
   const handleRefresh = (e) => {
     e.stopPropagation()
     setIsRefreshing(true)
-    setRefreshKey((k) => k + 1)
+    if (refreshTelemetry) refreshTelemetry()
     if (showToast) showToast('Geofence map refreshed')
     setTimeout(() => setIsRefreshing(false), 600)
   }
@@ -251,7 +251,7 @@ export default function Geofences() {
             </div>
 
             {/* Leaflet Map */}
-            <MapLeaflet key={refreshKey} vehicles={visibleVehicles} height="100%" zoom={mapZoom} center={mapCenter} geofences={geofences} />
+            <MapLeaflet vehicles={visibleVehicles} height="100%" zoom={mapZoom} center={mapCenter} geofences={geofences} />
           </div>
         </div>
 
@@ -582,7 +582,7 @@ export default function Geofences() {
               </div>
             </div>
 
-            <MapLeaflet key={`fs-${refreshKey}`} vehicles={visibleVehicles} height="100%" zoom={mapZoom} center={mapCenter} geofences={geofences} />
+            <MapLeaflet vehicles={visibleVehicles} height="100%" zoom={mapZoom} center={mapCenter} geofences={geofences} />
           </div>
         </div>
       )}

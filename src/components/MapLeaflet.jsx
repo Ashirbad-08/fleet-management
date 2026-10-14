@@ -142,6 +142,26 @@ export default function MapLeaflet({ vehicles = [], height = '100%', zoom = 5, c
     }
   }, [leafletReady]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Automatically handle container resizing (fullscreen toggling, panel opening) without remounting
+  useEffect(() => {
+    if (!leafletReady || !containerRef.current) return
+    const container = containerRef.current
+    let resizeTimer = null
+    const observer = new ResizeObserver(() => {
+      clearTimeout(resizeTimer)
+      resizeTimer = setTimeout(() => {
+        if (mapRef.current) {
+          mapRef.current.invalidateSize({ pan: false })
+        }
+      }, 60)
+    })
+    observer.observe(container)
+    return () => {
+      clearTimeout(resizeTimer)
+      observer.disconnect()
+    }
+  }, [leafletReady])
+
   // Handle tile layer updates
   useEffect(() => {
     if (!leafletReady || !mapRef.current) return
@@ -186,10 +206,12 @@ export default function MapLeaflet({ vehicles = [], height = '100%', zoom = 5, c
     })
   }, [leafletReady, activeGeofences])
 
+  const centerLat = center?.[0]
+  const centerLng = center?.[1]
   useEffect(() => {
-    if (!leafletReady || !mapRef.current) return
-    mapRef.current.setView(center, zoom)
-  }, [center, leafletReady, zoom])
+    if (!leafletReady || !mapRef.current || centerLat === undefined || centerLng === undefined) return
+    mapRef.current.setView([centerLat, centerLng], zoom)
+  }, [centerLat, centerLng, leafletReady, zoom])
 
   // Update vehicle markers
   useEffect(() => {

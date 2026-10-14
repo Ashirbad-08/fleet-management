@@ -20,9 +20,8 @@ const FILTER_OPTIONS = [
 ]
 
 export default function Dashboard() {
-  const { filteredVehicles, vehicles, statusFilter, setStatusFilter, showToast } = useFleet()
+  const { filteredVehicles, vehicles, statusFilter, setStatusFilter, showToast, refreshTelemetry } = useFleet()
   const [isRefreshing, setIsRefreshing] = useState(false)
-  const [refreshKey, setRefreshKey] = useState(0)
   const [filterOpen, setFilterOpen] = useState(false)
   const [fullScreenMap, setFullScreenMap] = useState(false)
   const [fullScreenFilterOpen, setFullScreenFilterOpen] = useState(false)
@@ -32,7 +31,7 @@ export default function Dashboard() {
   const handleRefresh = (e) => {
     e.stopPropagation()
     setIsRefreshing(true)
-    setRefreshKey((k) => k + 1)
+    if (refreshTelemetry) refreshTelemetry()
     if (showToast) showToast('Map telemetry refreshed')
     setTimeout(() => setIsRefreshing(false), 600)
   }
@@ -190,7 +189,7 @@ export default function Dashboard() {
               </div>
 
               {/* Leaflet Map */}
-              <MapLeaflet key={refreshKey} vehicles={filteredVehicles} height="100%" />
+              <MapLeaflet vehicles={filteredVehicles} height="100%" />
             </div>
           </div>
 
@@ -304,7 +303,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <MapLeaflet key={refreshKey} vehicles={filteredVehicles} height="100%" />
+            <MapLeaflet vehicles={filteredVehicles} height="100%" />
           </div>
         </div>
       )}

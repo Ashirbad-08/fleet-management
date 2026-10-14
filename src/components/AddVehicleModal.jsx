@@ -11,29 +11,49 @@ import {
   AlertCircle,
   CheckCheck,
   Truck,
+  Cpu,
+  Zap,
+  Users,
+  ShieldCheck,
+  Radio,
+  Plug,
 } from './icons'
 import { useFleet } from '../context/FleetContext'
 
 const INITIAL_FORM_DATA = {
+  // 1. Identity & Connectivity
   name: '',
   plate: '',
+  deviceId: '',
   model: '',
   type: '4 Wheeler',
-  driver: '',
-  driverPhone: '',
   status: 'online',
-  battery: 100,
-  rangeKm: 80,
+
+  // 2. Battery & Hardware Profile
   batterySerial: '',
   batteryCapacityKwh: 12.8,
+  batteryCapacityAh: 80,
   batteryChemistry: 'LFP',
-  insuranceExpiry: '2026-12-31',
-  chassisNumber: '',
+  batteryType: 'Fixed',
+  chargerVariant: 'On Board',
+  chargerCapacity: '3.3 kW',
+  battery: 100,
+  rangeKm: 80,
+
+  // 3. Operations & Assignment
+  location: '',
+  driver: '',
+  driverPhone: '',
   hubSupervisorName: '',
   hubSupervisorPhone: '',
-  location: '',
+  clientName: '',
   lat: 12.9716,
   lon: 77.5946,
+
+  // 4. Compliance & Expiries
+  chassisNumber: '',
+  insuranceExpiry: '2026-12-31',
+  fitnessExpiry: '2027-12-31',
 }
 
 const inputCls =
@@ -95,6 +115,8 @@ function mapRowsToVehicles(headers, rows) {
     if (['name', 'vehiclename', 'vehicle', 'title'].includes(norm)) headerMap.name = index
     else if (['plate', 'licenseplate', 'regno', 'registration', 'plateno', 'number', 'platenumber'].includes(norm))
       headerMap.plate = index
+    else if (['deviceid', 'imei', 'deviceimei', 'device', 'trackerid', 'trackerimei', 'iotid'].includes(norm))
+      headerMap.deviceId = index
     else if (['model', 'vehiclemodel', 'carmodel', 'evmodel'].includes(norm)) headerMap.model = index
     else if (['type', 'vehicletype', 'category', 'wheels'].includes(norm)) headerMap.type = index
     else if (['driver', 'drivername', 'pilot', 'operator'].includes(norm)) headerMap.driver = index
@@ -109,16 +131,28 @@ function mapRowsToVehicles(headers, rows) {
       headerMap.batterySerial = index
     else if (['batterycapacitykwh', 'capacitykwh', 'kwh', 'packkwh', 'capacity', 'batterycapacity'].includes(norm))
       headerMap.batteryCapacityKwh = index
+    else if (['batterycapacityah', 'capacityah', 'ah', 'packah'].includes(norm))
+      headerMap.batteryCapacityAh = index
     else if (['batterychemistry', 'chemistry', 'celltype'].includes(norm))
       headerMap.batteryChemistry = index
+    else if (['batterytype', 'mounttype', 'mountingtype'].includes(norm))
+      headerMap.batteryType = index
+    else if (['chargervariant', 'chargertype', 'charger'].includes(norm))
+      headerMap.chargerVariant = index
+    else if (['chargercapacity', 'chargerkw', 'chargerrating'].includes(norm))
+      headerMap.chargerCapacity = index
     else if (['insuranceexpiry', 'insuranceexpirydate', 'insurancedate', 'insurancevalidity'].includes(norm))
       headerMap.insuranceExpiry = index
+    else if (['fitnessexpiry', 'fitnessdate', 'fitnessexpirydate', 'fitnessvalidity'].includes(norm))
+      headerMap.fitnessExpiry = index
     else if (['chassisnumber', 'chassisno', 'chassis', 'vin', 'frameno'].includes(norm))
       headerMap.chassisNumber = index
     else if (['hubsupervisorname', 'supervisorname', 'supervisor', 'hubsupervisor', 'hubhead'].includes(norm))
       headerMap.hubSupervisorName = index
     else if (['hubsupervisorphone', 'supervisorphoneno', 'supervisorcontact', 'hubphone', 'supervisormobile'].includes(norm))
       headerMap.hubSupervisorPhone = index
+    else if (['clientname', 'client', 'account', 'customer', 'customername'].includes(norm))
+      headerMap.clientName = index
     else if (['location', 'city', 'depot', 'address', 'hub', 'currentlocation'].includes(norm))
       headerMap.location = index
     else if (['lat', 'latitude'].includes(norm)) headerMap.lat = index
@@ -163,6 +197,7 @@ function mapRowsToVehicles(headers, rows) {
         _tempId: `tmp-${Date.now()}-${idx}`,
         name: name || `Vehicle ${idx + 1}`,
         plate: plate || `IN-${Math.floor(10 + Math.random() * 89)} AB ${Math.floor(1000 + Math.random() * 8999)}`,
+        deviceId: getVal('deviceId') || `IOT-${Math.floor(10000 + Math.random() * 90000)}`,
         model: model || 'Commercial EV',
         type,
         driver: getVal('driver') || 'Unassigned',
@@ -172,11 +207,17 @@ function mapRowsToVehicles(headers, rows) {
         rangeKm: Math.max(0, rangeKm),
         batterySerial: getVal('batterySerial') || `BAT-2026-X${idx + 10}`,
         batteryCapacityKwh: Number(getVal('batteryCapacityKwh')) || 12.8,
+        batteryCapacityAh: Number(getVal('batteryCapacityAh')) || 80,
         batteryChemistry: getVal('batteryChemistry') || 'LFP',
+        batteryType: getVal('batteryType') || 'Fixed',
+        chargerVariant: getVal('chargerVariant') || 'On Board',
+        chargerCapacity: getVal('chargerCapacity') || '3.3 kW',
         insuranceExpiry: getVal('insuranceExpiry') || '2026-12-31',
+        fitnessExpiry: getVal('fitnessExpiry') || '2027-12-31',
         chassisNumber: getVal('chassisNumber') || `ME4GG8700P${100000 + idx}`,
         hubSupervisorName: getVal('hubSupervisorName') || 'Rajesh Kumar',
         hubSupervisorPhone: getVal('hubSupervisorPhone') || '+91 98111 22334',
+        clientName: getVal('clientName') || 'Central Fleet',
         location: getVal('location') || 'Fleet Central Hub',
         lat,
         lon,
@@ -214,12 +255,15 @@ export default function AddVehicleModal({ open, onClose }) {
 
   const handleSingleSubmit = (e) => {
     e.preventDefault()
-    if (!formData.name || !formData.plate || !formData.model) return
+    if (!formData.name || !formData.plate || !formData.deviceId || !formData.model || !formData.type) return
     addVehicle({
       ...formData,
+      deviceId: formData.deviceId || `IOT-${Math.floor(10000 + Math.random() * 90000)}`,
       type: formData.type || '4 Wheeler',
-      battery: Number(formData.battery),
-      rangeKm: Number(formData.rangeKm),
+      battery: Number(formData.battery) || 100,
+      rangeKm: Number(formData.rangeKm) || 80,
+      batteryCapacityKwh: Number(formData.batteryCapacityKwh) || 12.8,
+      batteryCapacityAh: Number(formData.batteryCapacityAh) || 80,
       lat: Number(formData.lat) || 12.9716,
       lon: Number(formData.lon) || 77.5946,
     })
@@ -231,30 +275,36 @@ export default function AddVehicleModal({ open, onClose }) {
     const headers = [
       'Name',
       'Plate',
+      'Device IMEI',
       'Model',
       'Type',
-      'Driver',
-      'Driver Phone',
       'Status',
-      'Battery',
-      'RangeKm',
       'Battery Serial',
       'Capacity kWh',
+      'Capacity Ah',
       'Chemistry',
-      'Insurance Expiry',
-      'Chassis VIN',
+      'Charger Variant',
+      'Charger Capacity',
+      'Hub Location',
+      'Driver',
+      'Driver Phone',
       'Hub Supervisor',
       'Supervisor Phone',
-      'Location',
+      'Client Name',
+      'Chassis VIN',
+      'Insurance Expiry',
+      'Fitness Expiry',
+      'Battery %',
+      'RangeKm',
       'Latitude',
       'Longitude',
     ]
     const sampleRows = [
-      ['Hauler 15', 'MH12 AB 9988', 'Tata Ace EV', '4 Wheeler', 'Rajesh K.', '+91 98765 43210', 'online', '88', '75', 'BAT-2026-X10', '14.2', 'LFP', '2026-12-31', 'ME4GG8700P102931', 'Suresh Nair', '+91 98111 22331', 'Pune Depot 1', '18.5204', '73.8567'],
-      ['Courier 09', 'DL3C BB 1022', 'Mahindra eSupro', '4 Wheeler', 'Amit S.', '+91 98765 43211', 'idle', '65', '50', 'BAT-2026-X11', '12.8', 'LFP', '2026-11-30', 'ME4GG8700P102932', 'Manish Gupta', '+91 98111 22332', 'Okhla Hub, Delhi', '28.5355', '77.2588'],
-      ['Express 03', 'KA04 MZ 4491', 'Ather 450X EV', '2 Wheeler', 'Vikas N.', '+91 98765 43212', 'online', '92', '80', 'BAT-2026-X12', '3.7', 'NMC', '2027-01-15', 'ME4GG8700P102933', 'Anand Rao', '+91 98111 22333', 'Indiranagar, Blr', '12.9784', '77.6408'],
-      ['Cargo 3W 05', 'TN07 CZ 9931', 'Piaggio Ape E-City', '3 Wheeler', 'M. Selvam', '+91 98765 43213', 'online', '95', '72', 'BAT-2026-X13', '8.0', 'LFP', '2026-10-20', 'ME4GG8700P102934', 'R. Krishnan', '+91 98111 22334', 'Guindy, Chennai', '13.0067', '80.2025'],
-      ['Reefer 04', 'GJ01 KX 4421', 'Ashok Leyland Dost', '4 Wheeler', 'P. Patel', '+91 98765 43214', 'alert', '24', '18', 'BAT-2026-X14', '15.5', 'LFP', '2026-09-30', 'ME4GG8700P102935', 'Dipak Mehta', '+91 98111 22335', 'Vatva GIDC', '22.9784', '72.5987'],
+      ['Hauler 15', 'MH12 AB 9988', '860123045678901', 'Tata Ace EV', '4 Wheeler', 'online', 'BAT-2026-X10', '14.2', '80', 'LFP', 'On Board', '3.3 kW', 'Pune Depot 1', 'Rajesh K.', '+91 98765 43210', 'Suresh Nair', '+91 98111 22331', 'IKEA', 'ME4GG8700P102931', '2026-12-31', '2027-12-31', '88', '75', '18.5204', '73.8567'],
+      ['Courier 09', 'DL3C BB 1022', '860123045678902', 'Mahindra eSupro', '4 Wheeler', 'idle', 'BAT-2026-X11', '12.8', '75', 'LFP', 'Off Board', '35 Amps', 'Okhla Hub, Delhi', 'Amit S.', '+91 98765 43211', 'Manish Gupta', '+91 98111 22332', 'Amazon', 'ME4GG8700P102932', '2026-11-30', '2027-10-31', '65', '50', '28.5355', '77.2588'],
+      ['Express 03', 'KA04 MZ 4491', '860123045678903', 'Ather 450X EV', '2 Wheeler', 'online', 'BAT-2026-X12', '3.7', '40', 'NMC', 'Off Board', '15 Amps', 'Indiranagar, Blr', 'Vikas N.', '+91 98765 43212', 'Anand Rao', '+91 98111 22333', 'Zepto', 'ME4GG8700P102933', '2027-01-15', '2028-01-15', '92', '80', '12.9784', '77.6408'],
+      ['Cargo 3W 05', 'TN07 CZ 9931', '860123045678904', 'Piaggio Ape E-City', '3 Wheeler', 'online', 'BAT-2026-X13', '8.0', '60', 'LFP', 'On Board', '3.0 kW', 'Guindy, Chennai', 'M. Selvam', '+91 98765 43213', 'R. Krishnan', '+91 98111 22334', 'DHL', 'ME4GG8700P102934', '2026-10-20', '2027-09-20', '95', '72', '13.0067', '80.2025'],
+      ['Reefer 04', 'GJ01 KX 4421', '860123045678905', 'Ashok Leyland Dost', '4 Wheeler', 'alert', 'BAT-2026-X14', '15.5', '90', 'LFP', 'On Board', '3.3 kW', 'Vatva GIDC', 'P. Patel', '+91 98765 43214', 'Dipak Mehta', '+91 98111 22335', 'Amul', 'ME4GG8700P102935', '2026-09-30', '2027-08-30', '24', '18', '22.9784', '72.5987'],
     ]
 
     const csvContent =
@@ -345,7 +395,7 @@ export default function AddVehicleModal({ open, onClose }) {
       />
       <div
         className={`fixed left-1/2 top-1/2 z-50 max-h-[92dvh] w-[calc(100vw-2rem)] ${
-          isBulkTab ? 'max-w-3xl' : 'max-w-md'
+          isBulkTab ? 'max-w-3xl' : 'max-w-2xl'
         } -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-xl border border-line bg-panel shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all`}
       >
         {/* Modal Header */}
@@ -409,162 +459,387 @@ export default function AddVehicleModal({ open, onClose }) {
         {/* Modal Body */}
         {tab === 'single' ? (
           <form onSubmit={handleSingleSubmit} className="max-h-[calc(92dvh-8.5rem)] space-y-4 overflow-y-auto p-5">
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div>
-                <label className="mb-1 block text-[10.5px] font-semibold uppercase tracking-wide text-dim">
-                  Name
-                </label>
-                <input
-                  required
-                  type="text"
-                  placeholder="e.g. Courier 21"
-                  value={formData.name}
-                  onChange={updateField('name')}
-                  className={inputCls}
-                />
+            {/* Section 1: Identity & Connectivity */}
+            <div className="rounded-xl border border-line-soft bg-panel-2/40 p-4 space-y-3">
+              <div className="flex items-center gap-2 border-b border-line-soft/60 pb-2.5">
+                <span className="flex h-5 w-5 items-center justify-center rounded bg-accent/15 text-accent">
+                  <Cpu className="h-3 w-3" strokeWidth={2.5} />
+                </span>
+                <span className="font-display text-[12px] font-bold uppercase tracking-wider text-hi">
+                  1. Identity & Connectivity
+                </span>
+                <span className="ml-auto text-[10px] text-accent font-medium">Core Identifiers (All Required *)</span>
               </div>
-              <div>
-                <label className="mb-1 block text-[10.5px] font-semibold uppercase tracking-wide text-dim">
-                  License Plate
-                </label>
-                <input
-                  required
-                  type="text"
-                  placeholder="e.g. DL3C AY 9982"
-                  value={formData.plate}
-                  onChange={updateField('plate')}
-                  className={inputCls}
-                />
-              </div>
-            </div>
 
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <div>
-                <label className="mb-1 block text-[10.5px] font-semibold uppercase tracking-wide text-dim">
-                  Vehicle Type
-                </label>
-                <select
-                  value={formData.type}
-                  onChange={updateField('type')}
-                  className={inputCls + ' cursor-pointer'}
-                >
-                  <option value="2 Wheeler">2 Wheeler</option>
-                  <option value="3 Wheeler">3 Wheeler</option>
-                  <option value="4 Wheeler">4 Wheeler</option>
-                </select>
-              </div>
-              <div>
-                <label className="mb-1 block text-[10.5px] font-semibold uppercase tracking-wide text-dim">
-                  Model
-                </label>
-                <input
-                  required
-                  type="text"
-                  placeholder="e.g. Mahindra eSupro"
-                  value={formData.model}
-                  onChange={updateField('model')}
-                  className={inputCls}
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-[10.5px] font-semibold uppercase tracking-wide text-dim">
-                  Driver Name
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Amit Sen"
-                  value={formData.driver}
-                  onChange={updateField('driver')}
-                  className={inputCls}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div>
-                <label className="mb-1 block text-[10.5px] font-semibold uppercase tracking-wide text-dim">
-                  Driver Phone
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. +91 98765 43210"
-                  value={formData.driverPhone}
-                  onChange={updateField('driverPhone')}
-                  className={inputCls}
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-[10.5px] font-semibold uppercase tracking-wide text-dim">
-                  Status
-                </label>
-                <select
-                  value={formData.status}
-                  onChange={updateField('status')}
-                  className={inputCls + ' cursor-pointer'}
-                >
-                  <option value="online">Online</option>
-                  <option value="idle">Idle</option>
-                  <option value="alert">Alert</option>
-                  <option value="offline">Offline</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Battery Hardware Section */}
-            <div className="rounded-lg border border-line-soft bg-panel-2/30 p-3 space-y-2.5">
-              <div className="text-[10.5px] font-semibold uppercase tracking-wider text-accent">
-                Battery Pack & Hardware
-              </div>
-              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-[10px] text-dim">Battery Serial No.</label>
+                  <label className="mb-1 block text-[10.5px] font-semibold uppercase tracking-wide text-dim">
+                    Vehicle Name <span className="text-accent">*</span>
+                  </label>
+                  <input
+                    required
+                    type="text"
+                    placeholder="e.g. Hauler 15"
+                    value={formData.name}
+                    onChange={updateField('name')}
+                    className={inputCls}
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-[10.5px] font-semibold uppercase tracking-wide text-dim">
+                    License Plate <span className="text-accent">*</span>
+                  </label>
+                  <input
+                    required
+                    type="text"
+                    placeholder="e.g. MH12 AB 9988"
+                    value={formData.plate}
+                    onChange={updateField('plate')}
+                    className={inputCls}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div>
+                  <label className="mb-1 block text-[10.5px] font-semibold uppercase tracking-wide text-dim">
+                    Device IMEI / ID <span className="text-accent">*</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      required
+                      type="text"
+                      placeholder="e.g. 860123045678901"
+                      value={formData.deviceId}
+                      onChange={updateField('deviceId')}
+                      className={inputCls}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="mb-1 block text-[10.5px] font-semibold uppercase tracking-wide text-dim">
+                    Make / Model <span className="text-accent">*</span>
+                  </label>
+                  <input
+                    required
+                    type="text"
+                    placeholder="e.g. Tata Ace EV"
+                    value={formData.model}
+                    onChange={updateField('model')}
+                    className={inputCls}
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-[10.5px] font-semibold uppercase tracking-wide text-dim">
+                    Vehicle Type <span className="text-accent">*</span>
+                  </label>
+                  <select
+                    required
+                    value={formData.type}
+                    onChange={updateField('type')}
+                    className={inputCls + ' cursor-pointer'}
+                  >
+                    <option value="2 Wheeler">2 Wheeler</option>
+                    <option value="3 Wheeler">3 Wheeler</option>
+                    <option value="4 Wheeler">4 Wheeler</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Section 2: Battery & Hardware Profile */}
+            <div className="rounded-xl border border-line-soft bg-panel-2/40 p-4 space-y-3">
+              <div className="flex items-center gap-2 border-b border-line-soft/60 pb-2.5">
+                <span className="flex h-5 w-5 items-center justify-center rounded bg-amber/15 text-amber">
+                  <Zap className="h-3 w-3" strokeWidth={2.5} />
+                </span>
+                <span className="font-display text-[12px] font-bold uppercase tracking-wider text-hi">
+                  2. Battery & Hardware Profile
+                </span>
+                <span className="ml-auto text-[10px] text-amber font-medium">Pack & Power Specs</span>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div>
+                  <label className="mb-1 block text-[10px] font-medium text-dim">
+                    Battery Serial No.
+                  </label>
                   <input
                     type="text"
-                    placeholder="e.g. BAT-2026-X12"
+                    placeholder="e.g. BAT-2026-X10"
                     value={formData.batterySerial}
                     onChange={updateField('batterySerial')}
                     className={inputCls}
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-[10px] text-dim">Capacity (kWh)</label>
+                  <label className="mb-1 block text-[10px] font-medium text-dim">
+                    Pack Capacity (kWh)
+                  </label>
                   <input
                     type="number"
                     step="0.1"
-                    placeholder="12.8"
+                    placeholder="14.2"
                     value={formData.batteryCapacityKwh}
                     onChange={updateField('batteryCapacityKwh')}
                     className={inputCls}
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-[10px] text-dim">Chemistry</label>
+                  <label className="mb-1 block text-[10px] font-medium text-dim">
+                    Pack Capacity (Ah)
+                  </label>
+                  <input
+                    type="number"
+                    step="1"
+                    placeholder="80"
+                    value={formData.batteryCapacityAh}
+                    onChange={updateField('batteryCapacityAh')}
+                    className={inputCls}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div>
+                  <label className="mb-1 block text-[10px] font-medium text-dim">
+                    Chemistry
+                  </label>
                   <select
                     value={formData.batteryChemistry}
                     onChange={updateField('batteryChemistry')}
                     className={inputCls + ' cursor-pointer'}
                   >
-                    <option value="LFP">LFP</option>
-                    <option value="NMC">NMC</option>
+                    <option value="LFP">LFP (Lithium Iron Phosphate)</option>
+                    <option value="NMC">NMC (Nickel Manganese Cobalt)</option>
                     <option value="Solid State">Solid State</option>
-                    <option value="LTO">LTO</option>
+                    <option value="LTO">LTO (Lithium Titanate)</option>
                   </select>
+                </div>
+                <div>
+                  <label className="mb-1 block text-[10px] font-medium text-dim">
+                    Charger Variant
+                  </label>
+                  <select
+                    value={formData.chargerVariant}
+                    onChange={updateField('chargerVariant')}
+                    className={inputCls + ' cursor-pointer'}
+                  >
+                    <option value="On Board">On Board Charger</option>
+                    <option value="Off Board">Off Board Charger</option>
+                    <option value="DC Fast Station">DC Fast Station</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1 block text-[10px] font-medium text-dim">
+                    Charger Capacity / Rating
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 3.3 kW or 35 Amps"
+                    value={formData.chargerCapacity}
+                    onChange={updateField('chargerCapacity')}
+                    className={inputCls}
+                  />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 pt-1 border-t border-line-soft/40">
                 <div>
-                  <label className="mb-1 block text-[10px] text-dim">Chassis / VIN Number</label>
+                  <label className="mb-1 block text-[10px] font-medium text-dim">
+                    Initial Battery % (SoC)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={formData.battery}
+                    onChange={updateField('battery')}
+                    className={inputCls}
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-[10px] font-medium text-dim">
+                    Estimated Range (km)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={formData.rangeKm}
+                    onChange={updateField('rangeKm')}
+                    className={inputCls}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Section 3: Operations & Assignment */}
+            <div className="rounded-xl border border-line-soft bg-panel-2/40 p-4 space-y-3">
+              <div className="flex items-center gap-2 border-b border-line-soft/60 pb-2.5">
+                <span className="flex h-5 w-5 items-center justify-center rounded bg-emerald-500/15 text-emerald-400">
+                  <Users className="h-3 w-3" strokeWidth={2.5} />
+                </span>
+                <span className="font-display text-[12px] font-bold uppercase tracking-wider text-hi">
+                  3. Operations & Assignment
+                </span>
+                <span className="ml-auto text-[10px] text-emerald-400 font-medium">Depot & People</span>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-[10px] font-medium text-dim">
+                    Hub / Depot Location
+                  </label>
                   <input
                     type="text"
-                    placeholder="e.g. ME4GG8700P102938"
+                    placeholder="e.g. Pune Depot 1"
+                    value={formData.location}
+                    onChange={updateField('location')}
+                    className={inputCls}
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-[10px] font-medium text-dim">
+                    Client / Account Name
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. IKEA / Amazon / Zepto"
+                    value={formData.clientName}
+                    onChange={updateField('clientName')}
+                    className={inputCls}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-[10px] font-medium text-dim">
+                    Driver Name
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Rajesh K."
+                    value={formData.driver}
+                    onChange={updateField('driver')}
+                    className={inputCls}
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-[10px] font-medium text-dim">
+                    Driver Phone
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. +91 98765 43210"
+                    value={formData.driverPhone}
+                    onChange={updateField('driverPhone')}
+                    className={inputCls}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-[10px] font-medium text-dim">
+                    Hub Supervisor Name
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Suresh Nair"
+                    value={formData.hubSupervisorName}
+                    onChange={updateField('hubSupervisorName')}
+                    className={inputCls}
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-[10px] font-medium text-dim">
+                    Hub Supervisor Phone
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. +91 98111 22331"
+                    value={formData.hubSupervisorPhone}
+                    onChange={updateField('hubSupervisorPhone')}
+                    className={inputCls}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 pt-1 border-t border-line-soft/40">
+                <div>
+                  <label className="mb-1 block text-[10px] font-medium text-dim">
+                    Initial Status
+                  </label>
+                  <select
+                    value={formData.status}
+                    onChange={updateField('status')}
+                    className={inputCls + ' cursor-pointer'}
+                  >
+                    <option value="online">Online</option>
+                    <option value="idle">Idle</option>
+                    <option value="alert">Alert</option>
+                    <option value="offline">Offline</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1 block text-[10px] font-medium text-dim">
+                    Hub Latitude
+                  </label>
+                  <input
+                    type="number"
+                    step="any"
+                    placeholder="e.g. 18.5204"
+                    value={formData.lat}
+                    onChange={updateField('lat')}
+                    className={inputCls}
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-[10px] font-medium text-dim">
+                    Hub Longitude
+                  </label>
+                  <input
+                    type="number"
+                    step="any"
+                    placeholder="e.g. 73.8567"
+                    value={formData.lon}
+                    onChange={updateField('lon')}
+                    className={inputCls}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Section 4: Compliance & Expiries */}
+            <div className="rounded-xl border border-line-soft bg-panel-2/40 p-4 space-y-3">
+              <div className="flex items-center gap-2 border-b border-line-soft/60 pb-2.5">
+                <span className="flex h-5 w-5 items-center justify-center rounded bg-blue-500/15 text-blue-400">
+                  <ShieldCheck className="h-3 w-3" strokeWidth={2.5} />
+                </span>
+                <span className="font-display text-[12px] font-bold uppercase tracking-wider text-hi">
+                  4. Compliance & Expiries
+                </span>
+                <span className="ml-auto text-[10px] text-blue-400 font-medium">Legal & Validity</span>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div>
+                  <label className="mb-1 block text-[10px] font-medium text-dim">
+                    Chassis / VIN Number
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. ME4GG8700P102931"
                     value={formData.chassisNumber}
                     onChange={updateField('chassisNumber')}
                     className={inputCls}
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-[10px] text-dim">Insurance Expiry Date</label>
+                  <label className="mb-1 block text-[10px] font-medium text-dim">
+                    Insurance Expiry Date
+                  </label>
                   <input
                     type="date"
                     value={formData.insuranceExpiry}
@@ -572,103 +847,17 @@ export default function AddVehicleModal({ open, onClose }) {
                     className={inputCls}
                   />
                 </div>
-              </div>
-            </div>
-
-            {/* Hub & Operations Section */}
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div>
-                <label className="mb-1 block text-[10.5px] font-semibold uppercase tracking-wide text-dim">
-                  Hub Supervisor Name
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Rajesh Kumar"
-                  value={formData.hubSupervisorName}
-                  onChange={updateField('hubSupervisorName')}
-                  className={inputCls}
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-[10.5px] font-semibold uppercase tracking-wide text-dim">
-                  Hub Supervisor Phone
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. +91 98111 22334"
-                  value={formData.hubSupervisorPhone}
-                  onChange={updateField('hubSupervisorPhone')}
-                  className={inputCls}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <div>
-                <label className="mb-1 block text-[10.5px] font-semibold uppercase tracking-wide text-dim">
-                  Initial Battery %
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={formData.battery}
-                  onChange={updateField('battery')}
-                  className={inputCls}
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-[10.5px] font-semibold uppercase tracking-wide text-dim">
-                  Est. Range (km)
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  value={formData.rangeKm}
-                  onChange={updateField('rangeKm')}
-                  className={inputCls}
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-[10.5px] font-semibold uppercase tracking-wide text-dim">
-                  Hub / Location
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Depot 3, Sector 5"
-                  value={formData.location}
-                  onChange={updateField('location')}
-                  className={inputCls}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div>
-                <label className="mb-1 block text-[10.5px] font-semibold uppercase tracking-wide text-dim">
-                  Latitude
-                </label>
-                <input
-                  type="number"
-                  step="any"
-                  placeholder="e.g. 12.9716"
-                  value={formData.lat}
-                  onChange={updateField('lat')}
-                  className={inputCls}
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-[10.5px] font-semibold uppercase tracking-wide text-dim">
-                  Longitude
-                </label>
-                <input
-                  type="number"
-                  step="any"
-                  placeholder="e.g. 77.5946"
-                  value={formData.lon}
-                  onChange={updateField('lon')}
-                  className={inputCls}
-                />
+                <div>
+                  <label className="mb-1 block text-[10px] font-medium text-dim">
+                    Fitness Expiry Date
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.fitnessExpiry}
+                    onChange={updateField('fitnessExpiry')}
+                    className={inputCls}
+                  />
+                </div>
               </div>
             </div>
 
@@ -682,7 +871,7 @@ export default function AddVehicleModal({ open, onClose }) {
               </button>
               <button
                 type="submit"
-                className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-accent/20 py-2 text-[12.5px] font-medium text-accent hover:bg-accent/30 cursor-pointer"
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-accent/20 py-2 text-[12.5px] font-medium text-accent hover:bg-accent/30 cursor-pointer shadow-sm"
               >
                 <Save className="h-4 w-4" strokeWidth={2} />
                 Register Vehicle

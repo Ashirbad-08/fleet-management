@@ -591,6 +591,96 @@ export function FleetProvider({ children }) {
   // ── Telemetry & Geofence Simulator Loop ───────────────────────────────────
   const prevPositions = useRef({}) // tracks { `${vehicleId}-${geofenceId}`: isInside }
 
+  const simulateTelemetryTick = useCallback((intervalMs = 6000) => {
+    setVehicles((prevVehicles) => {
+      return prevVehicles.map((v) => {
+        if (v.status !== 'online') return v
+
+        // 1. Move position slightly
+        const dLat = (Math.random() - 0.5) * 0.002
+        const dLon = (Math.random() - 0.5) * 0.002
+        const nextLat = v.lat + dLat
+        const nextLon = v.lon + dLon
+
+        // 2. Adjust speed slightly
+        let nextSpeed = v.speed + Math.round((Math.random() - 0.5) * 10)
+        if (nextSpeed < 10) nextSpeed = 15
+        if (nextSpeed > 100) nextSpeed = 95
+
+        // 3. Decrement battery
+        let nextBattery = v.battery - (Math.random() > 0.6 ? 1 : 0)
+        if (nextBattery <= 0) nextBattery = 0
+        const nextStatus = nextBattery === 0 ? 'offline' : v.status
+
+        // 4. Increment odometer
+        const hoursElapsed = intervalMs / 3600000
+        const addedKm = nextSpeed * hoursElapsed
+        const nextOdometer = parseFloat((v.odometerKm + addedKm).toFixed(2))
+
+        // 5. Update battery temp
+        let nextTemp = v.batteryTempC + (Math.random() > 0.5 ? 1 : -1)
+        if (nextTemp < 20) nextTemp = 20
+        if (nextTemp > 50) nextTemp = 50
+
+        // Create updated vehicle object
+        const updated = {
+          ...v,
+          lat: nextLat,
+          lon: nextLon,
+          speed: nextSpeed,
+          battery: nextBattery,
+          status: nextStatus,
+          odometerKm: nextOdometer,
+          batteryTempC: nextTemp,
+          lastSeen: 'Just now',
+        }
+
+        // Trigger overspeed alerts (Actionable policy warning)
+        if (nextSpeed > settings.overspeed && v.speed <= settings.overspeed) {
+          addLiveEvent('warning', v.name, `Overspeed alert: running at ${nextSpeed} km/h (limit: ${settings.overspeed} km/h)`, true)
+        }
+
+        // Trigger low battery alerts (Actionable critical warning)
+        if (nextBattery < settings.lowBattery && v.battery >= settings.lowBattery) {
+          addLiveEvent('critical', v.name, `Critical battery warning: ${nextBattery}% charge remaining`, true)
+        }
+
+        // Trigger high battery temperature alerts (Actionable thermal critical warning)
+        if (settings.highBatteryTemp && nextTemp > settings.highBatteryTemp && v.batteryTempC <= settings.highBatteryTemp) {
+          addLiveEvent('critical', v.name, `Thermal alert: Battery reached ${nextTemp}°C (Threshold: ${settings.highBatteryTemp}°C)`, true)
+        }
+
+        // Geofence Intersection Check (Low-level telemetry: sent only to alerts & live feed)
+        geofences.forEach((g) => {
+          if (g.status !== 'Active') return
+          // Calculate distance in km (approx 111.12 km per degree lat)
+          const distKm = Math.sqrt(Math.pow(nextLat - g.lat, 2) + Math.pow(nextLon - g.lon, 2)) * 111.12
+          const isInside = distKm <= g.radius
+          const cacheKey = `${v.id}-${g.id}`
+          const wasInside = prevPositions.current[cacheKey] ?? false
+
+          if (isInside && !wasInside) {
+            prevPositions.current[cacheKey] = true
+            if (settings.geofenceEntry) {
+              addLiveEvent('info', v.name, `Geofence entered: ${g.name}`, false)
+            }
+          } else if (!isInside && wasInside) {
+            prevPositions.current[cacheKey] = false
+            if (settings.geofenceExit) {
+              addLiveEvent('info', v.name, `Geofence exited: ${g.name}`, false)
+            }
+          }
+        })
+
+        return updated
+      })
+    })
+  }, [settings, geofences, addLiveEvent])
+
+  const refreshTelemetry = useCallback(() => {
+    simulateTelemetryTick(10000)
+  }, [simulateTelemetryTick])
+
   useEffect(() => {
     // Determine interval time based on settings.refreshInterval
     let intervalMs = 6000
@@ -601,93 +691,11 @@ export function FleetProvider({ children }) {
     else if (settings.refreshInterval === 'Manual') return // no loop
 
     const timer = setInterval(() => {
-      setVehicles((prevVehicles) => {
-        return prevVehicles.map((v) => {
-          if (v.status !== 'online') return v
-
-          // 1. Move position slightly
-          const dLat = (Math.random() - 0.5) * 0.002
-          const dLon = (Math.random() - 0.5) * 0.002
-          const nextLat = v.lat + dLat
-          const nextLon = v.lon + dLon
-
-          // 2. Adjust speed slightly
-          let nextSpeed = v.speed + Math.round((Math.random() - 0.5) * 10)
-          if (nextSpeed < 10) nextSpeed = 15
-          if (nextSpeed > 100) nextSpeed = 95
-
-          // 3. Decrement battery
-          let nextBattery = v.battery - (Math.random() > 0.6 ? 1 : 0)
-          if (nextBattery <= 0) nextBattery = 0
-          const nextStatus = nextBattery === 0 ? 'offline' : v.status
-
-          // 4. Increment odometer
-          const hoursElapsed = intervalMs / 3600000
-          const addedKm = nextSpeed * hoursElapsed
-          const nextOdometer = parseFloat((v.odometerKm + addedKm).toFixed(2))
-
-          // 5. Update battery temp
-          let nextTemp = v.batteryTempC + (Math.random() > 0.5 ? 1 : -1)
-          if (nextTemp < 20) nextTemp = 20
-          if (nextTemp > 50) nextTemp = 50
-
-          // Create updated vehicle object
-          const updated = {
-            ...v,
-            lat: nextLat,
-            lon: nextLon,
-            speed: nextSpeed,
-            battery: nextBattery,
-            status: nextStatus,
-            odometerKm: nextOdometer,
-            batteryTempC: nextTemp,
-            lastSeen: 'Just now',
-          }
-
-          // Trigger overspeed alerts (Actionable policy warning)
-          if (nextSpeed > settings.overspeed && v.speed <= settings.overspeed) {
-            addLiveEvent('warning', v.name, `Overspeed alert: running at ${nextSpeed} km/h (limit: ${settings.overspeed} km/h)`, true)
-          }
-
-          // Trigger low battery alerts (Actionable critical warning)
-          if (nextBattery < settings.lowBattery && v.battery >= settings.lowBattery) {
-            addLiveEvent('critical', v.name, `Critical battery warning: ${nextBattery}% charge remaining`, true)
-          }
-
-          // Trigger high battery temperature alerts (Actionable thermal critical warning)
-          if (settings.highBatteryTemp && nextTemp > settings.highBatteryTemp && v.batteryTempC <= settings.highBatteryTemp) {
-            addLiveEvent('critical', v.name, `Thermal alert: Battery reached ${nextTemp}°C (Threshold: ${settings.highBatteryTemp}°C)`, true)
-          }
-
-          // Geofence Intersection Check (Low-level telemetry: sent only to alerts & live feed)
-          geofences.forEach((g) => {
-            if (g.status !== 'Active') return
-            // Calculate distance in km (approx 111.12 km per degree lat)
-            const distKm = Math.sqrt(Math.pow(nextLat - g.lat, 2) + Math.pow(nextLon - g.lon, 2)) * 111.12
-            const isInside = distKm <= g.radius
-            const cacheKey = `${v.id}-${g.id}`
-            const wasInside = prevPositions.current[cacheKey] ?? false
-
-            if (isInside && !wasInside) {
-              prevPositions.current[cacheKey] = true
-              if (settings.geofenceEntry) {
-                addLiveEvent('info', v.name, `Geofence entered: ${g.name}`, false)
-              }
-            } else if (!isInside && wasInside) {
-              prevPositions.current[cacheKey] = false
-              if (settings.geofenceExit) {
-                addLiveEvent('info', v.name, `Geofence exited: ${g.name}`, false)
-              }
-            }
-          })
-
-          return updated
-        })
-      })
+      simulateTelemetryTick(intervalMs)
     }, intervalMs)
 
     return () => clearInterval(timer)
-  }, [settings, geofences, addLiveEvent])
+  }, [settings.refreshInterval, simulateTelemetryTick])
 
   const value = {
     vehicles,
@@ -735,6 +743,8 @@ export function FleetProvider({ children }) {
     isAuthenticated,
     login,
     logout,
+    // Telemetry Refresh
+    refreshTelemetry,
     // Commands
     sendDeviceCommand,
     updateSettings,
