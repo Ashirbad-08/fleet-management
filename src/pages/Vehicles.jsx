@@ -12,7 +12,7 @@ export default function Vehicles() {
   const exportToCSV = (data) => {
     const headers = [
       'ID', 'Name', 'Plate', 'Type', 'Model', 'Driver', 'Status', 
-      'Device ID', 'Firmware', 'Battery', 'Health', 'Speed (km/h)', 
+      'Device ID', 'SIM Number', 'Firmware', 'Battery', 'Health', 'Speed (km/h)', 
       'Range (km)', 'Location', 'Latitude', 'Longitude', 'Odometer (km)'
     ]
     const rows = data.map(v => [

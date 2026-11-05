@@ -1,11 +1,12 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutGrid, Truck, Cpu, TriangleAlert, MapPin, Settings, Users, Bell, Leaf, Power } from './icons'
+import { LayoutGrid, Truck, Cpu, FileText, TriangleAlert, MapPin, Settings, Users, Bell, Leaf, Power } from './icons'
 import { useFleet } from '../context/FleetContext'
 
 const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: LayoutGrid, end: true },
   { to: '/vehicles', label: 'Vehicles', icon: Truck, countKey: 'total' },
   { to: '/devices', label: 'Devices', icon: Cpu },
+  { to: '/reports', label: 'Reports', icon: FileText },
   { to: '/esg', label: 'ESG Savings', icon: Leaf },
   { to: '/alerts', label: 'Alerts', icon: TriangleAlert, countKey: 'critical' },
   { to: '/geofences', label: 'Geofences', icon: MapPin },

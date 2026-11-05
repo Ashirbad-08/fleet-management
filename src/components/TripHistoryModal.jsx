@@ -15,7 +15,7 @@ import {
 } from './icons'
 import { seedTrips } from '../data/tripsData'
 
-export default function TripHistoryPanel({ open, onClose, vehicle, trips }) {
+export default function TripHistoryPanel({ open, onClose, vehicle, trips, activePlaybackTrip, onStartPlayback, onStopPlayback }) {
   const [search, setSearch] = useState('')
   const [dateFilter, setDateFilter] = useState('all') // 'all' | 'today' | 'yesterday' | 'week' | 'month' | 'custom'
   const [customDate, setCustomDate] = useState('')
@@ -266,6 +266,21 @@ export default function TripHistoryPanel({ open, onClose, vehicle, trips }) {
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-[10.5px] text-dim tabular-nums">{t.time}</span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            if (activePlaybackTrip?.id === t.id) {
+                              onStopPlayback?.()
+                            } else {
+                              onStartPlayback?.(t)
+                            }
+                          }}
+                          title="Route Playback on Map"
+                          className="flex h-6 w-6 items-center justify-center rounded-md border border-line-soft bg-panel-2 text-lo hover:border-accent hover:text-accent transition-all cursor-pointer"
+                        >
+                          <Play className="h-3 w-3 fill-current ml-0.5" />
+                        </button>
                         <div className="flex h-5 w-5 items-center justify-center rounded text-dim group-hover:text-hi">
                           {isExpanded ? (
                             <ChevronUp className="h-3.5 w-3.5" />

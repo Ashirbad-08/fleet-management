@@ -4,14 +4,16 @@ import { useFleet } from '../context/FleetContext'
 import { STATUS_META } from '../data/statusMeta'
 import { fetchTimelineDetailsByIMEI } from '../services/api'
 import { seedTrips } from '../data/tripsData'
-import TripHistoryPanel from './TripHistoryModal'
-import TimelinePanel from './TimelineModal'
+import { Map, FileText } from './icons'
 
 // Modular Vehicle Drawer subcomponents
 import VehicleDrawerHeader from './vehicle-drawer/VehicleDrawerHeader'
 import VehicleDrawerTabs from './vehicle-drawer/VehicleDrawerTabs'
 import EditVehicleForm from './vehicle-drawer/EditVehicleForm'
+import VehicleLeftMap from './vehicle-drawer/VehicleLeftMap'
 import LiveTelemetryTab from './vehicle-drawer/tabs/LiveTelemetryTab'
+import TripsTab from './vehicle-drawer/tabs/TripsTab'
+import TimelineTab from './vehicle-drawer/tabs/TimelineTab'
 import BatterySpecsTab from './vehicle-drawer/tabs/BatterySpecsTab'
 import PassportTab from './vehicle-drawer/tabs/PassportTab'
 import ChargingTab from './vehicle-drawer/tabs/ChargingTab'
@@ -19,7 +21,6 @@ import ComplianceDocsTab from './vehicle-drawer/tabs/ComplianceDocsTab'
 import ParkingTab from './vehicle-drawer/tabs/ParkingTab'
 import DriverContactsTab from './vehicle-drawer/tabs/DriverContactsTab'
 import ManageTab from './vehicle-drawer/tabs/ManageTab'
-import VehicleFullscreenMap from './vehicle-drawer/VehicleFullscreenMap'
 
 function genMonthlySeries(vehicle, n = 30) {
   if (!vehicle) return { points: [], labels: [] }
@@ -67,16 +68,18 @@ export default function VehicleDrawer() {
   const navigate = useNavigate()
   const open = Boolean(selectedVehicle)
 
-  // Drawer Tabs: 'telemetry' | 'specs' | 'passport' | 'charging' | 'compliance' | 'contacts'
+  // Drawer Tabs: 'telemetry' | 'trips' | 'timeline' | 'specs' | 'passport' | 'charging' | 'compliance' | 'contacts' | 'parking' | 'manage'
   const [drawerTab, setDrawerTab] = useState('telemetry')
   const [editing, setEditing] = useState(false)
   const [editForm, setEditForm] = useState({})
   const [confirmDelete, setConfirmDelete] = useState(false)
 
-  // Modal / Overlay States
-  const [historyModalOpen, setHistoryModalOpen] = useState(false)
-  const [timelineModalOpen, setTimelineModalOpen] = useState(false)
-  const [mapFullscreen, setMapFullscreen] = useState(false)
+  // Mobile View Toggle: 'drawer' | 'map'
+  const [mobileTab, setMobileTab] = useState('drawer')
+  // Left Map Pane toggle: user can close map and keep drawer open
+  const [showMap, setShowMap] = useState(true)
+  // Active Route Playback trip object
+  const [activePlaybackTrip, setActivePlaybackTrip] = useState(null)
 
   // Live Telemetry & Timeline States
   const [timelineEvents, setTimelineEvents] = useState([])
@@ -117,6 +120,9 @@ export default function VehicleDrawer() {
   useEffect(() => {
     if (selectedVehicle) {
       setDrawerTab('telemetry')
+      setMobileTab('drawer')
+      setShowMap(true)
+      setActivePlaybackTrip(null)
       loadTimeline()
     }
   }, [selectedVehicle?.id, loadTimeline])
@@ -125,40 +131,55 @@ export default function VehicleDrawer() {
     setSelectedVehicleId(null)
     setEditing(false)
     setConfirmDelete(false)
-    setHistoryModalOpen(false)
-    setTimelineModalOpen(false)
-    setMapFullscreen(false)
     setChargingFilter('today')
     setChargingCustomDate('')
     setExpandedSessionId(null)
     setDrawerTab('telemetry')
+    setMobileTab('drawer')
+    setShowMap(true)
+    setActivePlaybackTrip(null)
   }
 
-  // Handle Escape key to close overlays smoothly with capture phase
+  const handleCloseMap = () => {
+    setShowMap(false)
+    setMobileTab('drawer')
+  }
+
+  const handleToggleMap = () => {
+    setShowMap((prev) => {
+      const next = !prev
+      if (next && typeof window !== 'undefined' && window.innerWidth < 640) {
+        setMobileTab('map')
+      }
+      return next
+    })
+  }
+
+  const handleStartPlayback = (trip) => {
+    setActivePlaybackTrip(trip)
+    setShowMap(true)
+    if (typeof window !== 'undefined' && window.innerWidth < 640) {
+      setMobileTab('map')
+    }
+  }
+
+  const handleStopPlayback = () => {
+    setActivePlaybackTrip(null)
+  }
+
+  // Handle Escape key to close smoothly
   useEffect(() => {
     if (!open) return
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
         e.stopImmediatePropagation()
         e.stopPropagation()
-        if (mapFullscreen) {
-          setMapFullscreen(false)
-          return
-        }
-        if (historyModalOpen) {
-          setHistoryModalOpen(false)
-          return
-        }
-        if (timelineModalOpen) {
-          setTimelineModalOpen(false)
-          return
-        }
         close()
       }
     }
     window.addEventListener('keydown', handleKeyDown, true)
     return () => window.removeEventListener('keydown', handleKeyDown, true)
-  }, [mapFullscreen, historyModalOpen, timelineModalOpen, open])
+  }, [open])
 
   const battData = useMemo(() => {
     if (!selectedVehicle) return { points: [], labels: [] }
@@ -181,6 +202,7 @@ export default function VehicleDrawer() {
       hubSupervisorName: selectedVehicle.hubSupervisorName ?? '',
       hubSupervisorPhone: selectedVehicle.hubSupervisorPhone ?? '',
       chassisNumber: selectedVehicle.chassisNumber ?? '',
+      simNumber: selectedVehicle.simNumber ?? '',
       batteryTempC: selectedVehicle.batteryTempC ?? '',
       voltageV: selectedVehicle.voltageV ?? '',
       currentA: selectedVehicle.currentA ?? '',
@@ -205,6 +227,7 @@ export default function VehicleDrawer() {
       hubSupervisorName: editForm.hubSupervisorName,
       hubSupervisorPhone: editForm.hubSupervisorPhone,
       chassisNumber: editForm.chassisNumber,
+      simNumber: editForm.simNumber,
       batteryTempC: Number(editForm.batteryTempC),
       voltageV: Number(editForm.voltageV),
       currentA: Number(editForm.currentA),
@@ -223,28 +246,82 @@ export default function VehicleDrawer() {
 
   return (
     <>
-      {/* Backdrop — only on desktop (drawer mode) */}
-      <div
-        onClick={() => {
-          if (historyModalOpen || timelineModalOpen) return
-          close()
-        }}
-        aria-hidden="true"
-        className={`fixed inset-0 z-[115] bg-black/60 backdrop-blur-xs transition-opacity duration-300 hidden sm:block ${
-          open ? 'opacity-100 pointer-events-auto' : 'pointer-events-none opacity-0'
-        }`}
-      />
+      {/* 1. Fullscreen Live Map on the Left Side of the Vehicle Drawer */}
+      {open && selectedVehicle && showMap && (
+        <div
+          style={{
+            position: 'fixed',
+            top: '10px',
+            bottom: '10px',
+            left: '10px',
+            right: 'calc(462px + 10px)',
+            zIndex: 110,
+          }}
+          className="hidden sm:flex flex-col bg-base overflow-hidden border border-line rounded-xl shadow-2xl"
+        >
+          <VehicleLeftMap
+            selectedVehicle={selectedVehicle}
+            onClose={handleCloseMap}
+            onRefresh={refreshTelemetry}
+            activePlaybackTrip={activePlaybackTrip}
+            onStopPlayback={handleStopPlayback}
+          />
+        </div>
+      )}
 
-      {/* Main Container: Full page on mobile, right drawer on desktop */}
+      {/* Backdrop overlay behind drawer and map */}
+      {open && (
+        <div
+          role="presentation"
+          aria-hidden="true"
+          onClick={close}
+          className={`hidden sm:block fixed inset-0 transition-opacity cursor-pointer ${
+            showMap ? 'z-[105] bg-black/60 backdrop-blur-xs' : 'z-[115] bg-black/40 backdrop-blur-[2px]'
+          }`}
+        />
+      )}
+
+      {/* Mobile Map View when mobileTab === 'map' */}
+      {open && selectedVehicle && mobileTab === 'map' && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            zIndex: 125,
+          }}
+          className="flex sm:hidden flex-col bg-base overflow-hidden"
+        >
+          <VehicleLeftMap
+            selectedVehicle={selectedVehicle}
+            onClose={handleCloseMap}
+            onRefresh={refreshTelemetry}
+            activePlaybackTrip={activePlaybackTrip}
+            onStopPlayback={handleStopPlayback}
+          />
+        </div>
+      )}
+
+      {/* 2. Main Vehicle Drawer on the Right */}
       <aside
         role="dialog"
         aria-label="Vehicle Details & Controls"
         onClick={(e) => e.stopPropagation()}
-        className={`fixed inset-0 sm:inset-y-0 sm:left-auto sm:right-0 z-[120] h-dvh w-full sm:w-[462px] overflow-y-auto bg-panel sm:border-l sm:border-line sm:shadow-2xl pb-12 sm:pb-6 transition-all duration-300 ease-in-out ${
+        style={{
+          width: '462px',
+          position: 'fixed',
+          top: 0,
+          bottom: 0,
+          right: 0,
+          zIndex: 120,
+        }}
+        className={`h-dvh max-w-full overflow-y-auto bg-panel sm:border-l sm:border-line sm:shadow-2xl pb-12 sm:pb-6 transition-all duration-300 ease-in-out ${
           open
             ? 'translate-x-0 opacity-100 pointer-events-auto'
             : 'translate-x-full opacity-0 pointer-events-none'
-        }`}
+        } ${mobileTab === 'map' ? 'hidden sm:block' : 'block'}`}
       >
         {selectedVehicle && (
           <>
@@ -252,6 +329,8 @@ export default function VehicleDrawer() {
             <VehicleDrawerHeader
               selectedVehicle={selectedVehicle}
               editing={editing}
+              showMap={showMap}
+              onToggleMap={handleToggleMap}
               onToggleEdit={() => {
                 if (editing) {
                   setEditing(false)
@@ -269,6 +348,8 @@ export default function VehicleDrawer() {
                 setDrawerTab(tabId)
                 setEditing(false)
               }}
+              tripsCount={seedTrips.length}
+              timelineCount={timelineEvents.length || 10}
             />
 
             {/* Firmware Updating Progress Banner */}
@@ -296,95 +377,120 @@ export default function VehicleDrawer() {
                 onSave={saveEdit}
                 onCancel={() => setEditing(false)}
               />
-            ) : drawerTab === 'telemetry' ? (
-              <LiveTelemetryTab
-                selectedVehicle={selectedVehicle}
-                meta={meta}
-                telemetryLoading={telemetryLoading}
-                updatingVehicles={updatingVehicles}
-                settings={settings}
-                battData={battData}
-                onOpenFullscreenMap={() => {
-                  setHistoryModalOpen(false)
-                  setTimelineModalOpen(false)
-                  setMapFullscreen(true)
-                }}
-                onOpenHistoryModal={() => {
-                  setMapFullscreen(false)
-                  setTimelineModalOpen(false)
-                  setHistoryModalOpen(true)
-                }}
-                onOpenTimelineModal={() => {
-                  setMapFullscreen(false)
-                  setHistoryModalOpen(false)
-                  setTimelineModalOpen(true)
-                }}
-                timelineEvents={timelineEvents}
-                timelineLoading={timelineLoading}
-                timelineError={timelineError}
-                onRefreshTimeline={loadTimeline}
-                openOnMap={openOnMap}
-                confirmDelete={confirmDelete}
-                setConfirmDelete={setConfirmDelete}
-                onDeleteVehicle={deleteVehicle}
-              />
-            ) : drawerTab === 'specs' ? (
-              <BatterySpecsTab selectedVehicle={selectedVehicle} onStartEdit={startEdit} />
-            ) : drawerTab === 'compliance' ? (
-              <ComplianceDocsTab selectedVehicle={selectedVehicle} />
-            ) : drawerTab === 'parking' ? (
-              <ParkingTab selectedVehicle={selectedVehicle} />
-            ) : drawerTab === 'passport' ? (
-              <PassportTab selectedVehicle={selectedVehicle} />
-            ) : drawerTab === 'charging' ? (
-              <ChargingTab
-                selectedVehicle={selectedVehicle}
-                chargingFilter={chargingFilter}
-                setChargingFilter={setChargingFilter}
-                chargingCustomDate={chargingCustomDate}
-                setChargingCustomDate={setChargingCustomDate}
-                expandedSessionId={expandedSessionId}
-                setExpandedSessionId={setExpandedSessionId}
-                dateInputRef={dateInputRef}
-              />
-            ) : drawerTab === 'manage' ? (
-              <ManageTab
-                selectedVehicle={selectedVehicle}
-                onStartEdit={startEdit}
-                onDeleteVehicle={deleteVehicle}
-              />
             ) : (
-              <DriverContactsTab selectedVehicle={selectedVehicle} />
+              <>
+                <div style={{ display: drawerTab === 'telemetry' ? 'block' : 'none' }}>
+                  <LiveTelemetryTab
+                    selectedVehicle={selectedVehicle}
+                    meta={meta}
+                    telemetryLoading={telemetryLoading}
+                    updatingVehicles={updatingVehicles}
+                    settings={settings}
+                    battData={battData}
+                    onSelectTab={setDrawerTab}
+                    timelineEvents={timelineEvents}
+                    timelineLoading={timelineLoading}
+                    timelineError={timelineError}
+                    onRefreshTimeline={loadTimeline}
+                    openOnMap={openOnMap}
+                    confirmDelete={confirmDelete}
+                    setConfirmDelete={setConfirmDelete}
+                    onDeleteVehicle={deleteVehicle}
+                    activePlaybackTrip={activePlaybackTrip}
+                    onStartPlayback={handleStartPlayback}
+                    onStopPlayback={handleStopPlayback}
+                  />
+                </div>
+
+                {drawerTab === 'trips' && (
+                  <TripsTab
+                    vehicle={selectedVehicle}
+                    trips={seedTrips}
+                    activePlaybackTrip={activePlaybackTrip}
+                    onStartPlayback={handleStartPlayback}
+                    onStopPlayback={handleStopPlayback}
+                  />
+                )}
+
+                {drawerTab === 'timeline' && (
+                  <TimelineTab
+                    vehicle={selectedVehicle}
+                    events={timelineEvents}
+                    onRefresh={loadTimeline}
+                    loading={timelineLoading}
+                    error={timelineError}
+                  />
+                )}
+
+                {drawerTab === 'specs' && (
+                  <BatterySpecsTab selectedVehicle={selectedVehicle} onStartEdit={startEdit} />
+                )}
+                {drawerTab === 'charging' && (
+                  <ChargingTab
+                    selectedVehicle={selectedVehicle}
+                    chargingFilter={chargingFilter}
+                    setChargingFilter={setChargingFilter}
+                    chargingCustomDate={chargingCustomDate}
+                    setChargingCustomDate={setChargingCustomDate}
+                    expandedSessionId={expandedSessionId}
+                    setExpandedSessionId={setExpandedSessionId}
+                    dateInputRef={dateInputRef}
+                  />
+                )}
+                {drawerTab === 'parking' && (
+                  <ParkingTab selectedVehicle={selectedVehicle} />
+                )}
+                {drawerTab === 'compliance' && (
+                  <ComplianceDocsTab selectedVehicle={selectedVehicle} />
+                )}
+                {drawerTab === 'passport' && (
+                  <PassportTab selectedVehicle={selectedVehicle} />
+                )}
+                {drawerTab === 'contacts' && (
+                  <DriverContactsTab selectedVehicle={selectedVehicle} />
+                )}
+                {drawerTab === 'manage' && (
+                  <ManageTab
+                    selectedVehicle={selectedVehicle}
+                    onStartEdit={startEdit}
+                    onDeleteVehicle={deleteVehicle}
+                  />
+                )}
+              </>
             )}
           </>
         )}
       </aside>
 
-      {/* Expanded Full-Screen Map Overlay */}
-      <VehicleFullscreenMap
-        open={mapFullscreen}
-        selectedVehicle={selectedVehicle}
-        onRefreshMap={() => refreshTelemetry?.()}
-        onClose={() => setMapFullscreen(false)}
-      />
-
-      {/* Slide-out Full Trip History Panel */}
-      <TripHistoryPanel
-        open={historyModalOpen}
-        onClose={() => setHistoryModalOpen(false)}
-        vehicle={selectedVehicle}
-        trips={seedTrips}
-      />
-
-      {/* Slide-out Full Device Timeline Panel */}
-      <TimelinePanel
-        open={timelineModalOpen}
-        onClose={() => setTimelineModalOpen(false)}
-        vehicle={selectedVehicle}
-        events={timelineEvents}
-        onRefresh={loadTimeline}
-        loading={timelineLoading}
-      />
+      {/* Mobile Floating View Switcher: Quick toggle between Map & Details on small viewports */}
+      {open && (
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[130] flex sm:hidden items-center rounded-full border border-line bg-panel-2/95 p-1 backdrop-blur-md shadow-2xl">
+          <button
+            type="button"
+            onClick={() => setMobileTab('map')}
+            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+              mobileTab === 'map'
+                ? 'bg-accent text-black shadow-xs font-bold'
+                : 'text-lo hover:text-hi'
+            }`}
+          >
+            <Map className="h-3.5 w-3.5" />
+            <span>Live Map</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobileTab('drawer')}
+            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
+              mobileTab === 'drawer'
+                ? 'bg-accent text-black shadow-xs font-bold'
+                : 'text-lo hover:text-hi'
+            }`}
+          >
+            <FileText className="h-3.5 w-3.5" />
+            <span>Vehicle Info</span>
+          </button>
+        </div>
+      )}
     </>
   )
 }

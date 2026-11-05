@@ -80,7 +80,16 @@ function getTileConfig(style) {
   }
 }
 
-export default function MapLeaflet({ vehicles = [], height = '100%', zoom = 5, center = DEFAULT_CENTER, mapStyle, geofences, hideLegend = false }) {
+export default function MapLeaflet({
+  vehicles = [],
+  height = '100%',
+  zoom = 5,
+  center = DEFAULT_CENTER,
+  mapStyle,
+  geofences,
+  hideLegend = false,
+  playbackData = null,
+}) {
   const { settings, geofences: contextGeofences, setSelectedVehicleId } = useFleet()
   const activeMapStyle = mapStyle || settings?.mapStyle || 'Dark Mode'
   const activeGeofences = useMemo(() => geofences || contextGeofences || [], [geofences, contextGeofences])
@@ -93,6 +102,10 @@ export default function MapLeaflet({ vehicles = [], height = '100%', zoom = 5, c
   const tileLayerRef = useRef(null)
   const [active, setActive] = useState(false)
   const overlayRef = useRef(null)
+
+  // Refs for Route Playback layers
+  const playbackLayerGroupRef = useRef(null)
+  const lastPlaybackTripIdRef = useRef(null)
 
   // Register window handlers for popup action buttons
   useEffect(() => {
@@ -210,8 +223,11 @@ export default function MapLeaflet({ vehicles = [], height = '100%', zoom = 5, c
   const centerLng = center?.[1]
   useEffect(() => {
     if (!leafletReady || !mapRef.current || centerLat === undefined || centerLng === undefined) return
-    mapRef.current.setView([centerLat, centerLng], zoom)
-  }, [centerLat, centerLng, leafletReady, zoom])
+    // Only set view if not currently in playback mode
+    if (!playbackData?.route) {
+      mapRef.current.setView([centerLat, centerLng], zoom)
+    }
+  }, [centerLat, centerLng, leafletReady, zoom, playbackData?.route])
 
   // Update vehicle markers
   useEffect(() => {
@@ -221,6 +237,9 @@ export default function MapLeaflet({ vehicles = [], height = '100%', zoom = 5, c
 
     markersRef.current.forEach((m) => m.remove())
     markersRef.current = []
+
+    // If playback is active, hide static markers so animated route vehicle is the focal point
+    if (playbackData?.route) return
 
     // Track coordinates to apply slight offset jitter for overlapping markers in depot yards
     const coordCounts = {}
@@ -321,7 +340,148 @@ export default function MapLeaflet({ vehicles = [], height = '100%', zoom = 5, c
 
       markersRef.current.push(marker)
     })
-  }, [leafletReady, vehicles])
+  }, [leafletReady, vehicles, playbackData?.route])
+
+  // Route Playback on Map Layer Handler
+  useEffect(() => {
+    if (!leafletReady || !mapRef.current) return
+    const L = window.L
+    const map = mapRef.current
+
+    // If playback is stopped, clean up playback layers
+    if (!playbackData?.route) {
+      if (playbackLayerGroupRef.current) {
+        playbackLayerGroupRef.current.remove()
+        playbackLayerGroupRef.current = null
+      }
+      lastPlaybackTripIdRef.current = null
+      return
+    }
+
+    const { route, currentIndex = 0 } = playbackData
+    const currentPoint = route.points[currentIndex] || route.points[0]
+    const tripId = route.trip.id || route.trip.tripNumber
+
+    // If new playback route is loaded
+    if (!playbackLayerGroupRef.current || lastPlaybackTripIdRef.current !== tripId) {
+      if (playbackLayerGroupRef.current) {
+        playbackLayerGroupRef.current.remove()
+      }
+
+      const layerGroup = L.featureGroup().addTo(map)
+      playbackLayerGroupRef.current = layerGroup
+      lastPlaybackTripIdRef.current = tripId
+
+      // 1. Path Underglow
+      L.polyline(route.waypoints, {
+        color: '#00ff66',
+        weight: 9,
+        opacity: 0.18,
+        lineCap: 'round',
+        lineJoin: 'round',
+      }).addTo(layerGroup)
+
+      // 2. Base Planned Route Line (dashed sky blue)
+      L.polyline(route.waypoints, {
+        color: '#38bdf8',
+        weight: 4,
+        opacity: 0.45,
+        dashArray: '6, 8',
+        lineCap: 'round',
+        lineJoin: 'round',
+      }).addTo(layerGroup)
+
+      // 3. Traveled Line (solid high-contrast neon green)
+      const traveledLine = L.polyline(route.waypoints.slice(0, currentIndex + 1), {
+        color: '#00ff66',
+        weight: 5,
+        opacity: 0.95,
+        lineCap: 'round',
+        lineJoin: 'round',
+      }).addTo(layerGroup)
+      layerGroup._traveledLine = traveledLine
+
+      // 4. Start Pin (A)
+      const startIcon = L.divIcon({
+        html: `
+          <div style="display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#00ff66;color:#080a0d;font-weight:900;font-family:Inter,sans-serif;font-size:12px;border:2.5px solid #080a0d;box-shadow:0 0 14px rgba(0,255,102,0.85);">
+            A
+          </div>
+        `,
+        iconSize: [28, 28],
+        iconAnchor: [14, 14],
+      })
+      L.marker(route.waypoints[0], { icon: startIcon })
+        .addTo(layerGroup)
+        .bindTooltip(`<strong>Start:</strong> ${route.trip.from}`, {
+          direction: 'top',
+          offset: [0, -10],
+          opacity: 0.95,
+        })
+
+      // 5. Destination Pin (B)
+      const endIcon = L.divIcon({
+        html: `
+          <div style="display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#ff5c5c;color:#ffffff;font-weight:900;font-family:Inter,sans-serif;font-size:12px;border:2.5px solid #080a0d;box-shadow:0 0 14px rgba(255,92,92,0.85);">
+            B
+          </div>
+        `,
+        iconSize: [28, 28],
+        iconAnchor: [14, 14],
+      })
+      L.marker(route.waypoints[route.waypoints.length - 1], { icon: endIcon })
+        .addTo(layerGroup)
+        .bindTooltip(`<strong>Destination:</strong> ${route.trip.to}`, {
+          direction: 'top',
+          offset: [0, -10],
+          opacity: 0.95,
+        })
+
+      // 6. Playback Vehicle Marker
+      const vehicleIcon = L.divIcon({
+        html: `
+          <div style="position:relative;display:flex;align-items:center;justify-content:center;width:40px;height:40px;">
+            <div style="position:absolute;width:40px;height:40px;border-radius:50%;background:#00ff66;opacity:0.3;animation:leaflet-ping 1.5s infinite;"></div>
+            <div style="position:relative;width:26px;height:26px;border-radius:50%;background:#00ff66;border:2.5px solid #080a0d;box-shadow:0 0 16px rgba(0,255,102,0.9);display:flex;align-items:center;justify-content:center;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#080a0d" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="3 11 22 2 13 21 11 13 3 11"/>
+              </svg>
+            </div>
+          </div>
+        `,
+        iconSize: [40, 40],
+        iconAnchor: [20, 20],
+      })
+      const vehicleMarker = L.marker([currentPoint.lat, currentPoint.lon], { icon: vehicleIcon })
+        .addTo(layerGroup)
+        .bindTooltip(`<strong>${route.trip.tripNumber}</strong>: ${currentPoint.speed} km/h · ${currentPoint.battery}%`, {
+          permanent: true,
+          direction: 'top',
+          offset: [0, -16],
+          opacity: 0.95,
+        })
+      layerGroup._vehicleMarker = vehicleMarker
+
+      // Auto-fit bounds to display the entire route in the viewport
+      map.fitBounds(L.latLngBounds(route.waypoints), {
+        padding: [60, 60],
+        maxZoom: 16,
+        animate: true,
+      })
+    } else {
+      // Fast incremental updates during playback ticks / scrub
+      const layerGroup = playbackLayerGroupRef.current
+      if (layerGroup._traveledLine) {
+        layerGroup._traveledLine.setLatLngs(route.waypoints.slice(0, currentIndex + 1))
+      }
+      if (layerGroup._vehicleMarker) {
+        layerGroup._vehicleMarker.setLatLng([currentPoint.lat, currentPoint.lon])
+        layerGroup._vehicleMarker.setTooltipContent(
+          `<strong>${route.trip.tripNumber}</strong>: ${currentPoint.speed} km/h · ${currentPoint.battery}%`
+        )
+      }
+    }
+  }, [leafletReady, playbackData])
 
   useEffect(() => {
     const handler = (e) => {
@@ -377,8 +537,8 @@ export default function MapLeaflet({ vehicles = [], height = '100%', zoom = 5, c
         className="rounded-xl overflow-hidden"
       />
 
-      {/* Floating Bottom Fleet Status Legend Overlay */}
-      {!hideLegend && (
+      {/* Floating Bottom Fleet Status Legend Overlay (hidden during active playback to give room for player) */}
+      {!hideLegend && !playbackData?.route && (
         <div className="absolute bottom-3 left-3 z-10 flex flex-wrap items-center gap-3 rounded-xl border border-line/80 bg-panel-2/85 px-3.5 py-2 backdrop-blur-md shadow-lg">
           <div className="flex items-center gap-1.5 text-xs font-medium text-hi">
             <span className="h-2 w-2 rounded-full bg-accent" />

@@ -2,9 +2,8 @@ import { useState } from 'react'
 import {
   Cpu,
   Zap,
-  Map,
   RotateCw,
-  Maximize2,
+  X,
   History,
   Navigation,
   Radio,
@@ -22,10 +21,11 @@ import {
   MapPin,
   ExternalLink,
   TrendingUp,
+  Play,
+  Pause,
 } from '../../icons'
 import Gauge from '../../Gauge'
 import Sparkline from '../../Sparkline'
-import MapLeaflet from '../../MapLeaflet'
 import { seedTrips } from '../../../data/tripsData'
 import { useFleet } from '../../../context/FleetContext'
 
@@ -36,7 +36,7 @@ export default function LiveTelemetryTab({
   updatingVehicles,
   settings,
   battData,
-  onOpenFullscreenMap,
+  onSelectTab,
   onOpenHistoryModal,
   onOpenTimelineModal,
   timelineEvents,
@@ -44,10 +44,15 @@ export default function LiveTelemetryTab({
   timelineError,
   onRefreshTimeline,
   openOnMap,
+  activePlaybackTrip = null,
+  onStartPlayback,
+  onStopPlayback,
 }) {
   const { refreshTelemetry } = useFleet()
   const [copiedId, setCopiedId] = useState(false)
   const [sharedLocation, setSharedLocation] = useState(false)
+  const [showAllTrips, setShowAllTrips] = useState(false)
+  const [showAllTimeline, setShowAllTimeline] = useState(false)
 
   const handleOpenGoogleMaps = () => {
     const lat = selectedVehicle.lat
@@ -407,70 +412,7 @@ export default function LiveTelemetryTab({
         </div>
       )}
 
-      {/* Live Location Mini Map */}
-      {telemetryLoading ? (
-        <div className="animate-pulse">
-          <div className="flex items-center justify-between border-b border-line-soft bg-panel-2/60 px-5 py-2">
-            <div className="h-3.5 w-24 rounded bg-panel-2" />
-            <div className="h-3 w-20 rounded bg-panel-2/60" />
-          </div>
-          <div className="border-b border-line-soft p-4 bg-panel">
-            <div className="h-44 w-full rounded-xl bg-panel-2/50 flex items-center justify-center">
-              <div className="h-6 w-24 rounded bg-panel-2" />
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div>
-          <div className="flex items-center justify-between border-b border-line-soft bg-panel-2/60 px-5 py-2">
-            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-hi">
-              <span className="flex h-4 w-4 items-center justify-center rounded bg-accent/15 text-accent">
-                <Map className="h-2.5 w-2.5" strokeWidth={2.5} />
-              </span>
-              <span>Live Location</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-[10px] text-dim tabular-nums">
-                {selectedVehicle.lat
-                  ? `${selectedVehicle.lat.toFixed(4)}, ${selectedVehicle.lon.toFixed(4)}`
-                  : 'No GPS Fix'}
-              </span>
-              <button
-                type="button"
-                onClick={() => refreshTelemetry?.()}
-                title="Refresh map"
-                aria-label="Refresh mini map"
-                className="flex h-5.5 w-5.5 items-center justify-center rounded border border-line bg-panel text-lo hover:bg-hover hover:text-accent transition-colors cursor-pointer"
-              >
-                <RotateCw className="h-2.5 w-2.5" strokeWidth={2} />
-              </button>
-              <button
-                type="button"
-                onClick={onOpenFullscreenMap}
-                title="Open full map"
-                aria-label="Open full screen vehicle map"
-                className="flex h-5.5 w-5.5 items-center justify-center rounded border border-line bg-panel text-lo hover:bg-hover hover:text-accent transition-colors cursor-pointer"
-              >
-                <Maximize2 className="h-2.5 w-2.5" strokeWidth={2} />
-              </button>
-            </div>
-          </div>
-
-          <div className="border-b border-line-soft p-4 bg-panel">
-            <div className="relative h-44 w-full overflow-hidden rounded-xl border border-line-soft shadow-inner">
-              <MapLeaflet
-                vehicles={[selectedVehicle]}
-                center={[selectedVehicle.lat || 20.5937, selectedVehicle.lon || 78.9629]}
-                zoom={13}
-                height="100%"
-                hideLegend
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Recent Trips */}
+      {/* Trips Section (Inline & Expandable) */}
       {telemetryLoading ? (
         <div className="animate-pulse">
           <div className="flex items-center justify-between border-b border-line-soft bg-panel-2/60 px-5 py-2">
@@ -495,15 +437,24 @@ export default function LiveTelemetryTab({
               <span className="flex h-4 w-4 items-center justify-center rounded bg-accent/15 text-accent">
                 <History className="h-2.5 w-2.5" strokeWidth={2.5} />
               </span>
-              <span>Recent Trips</span>
+              <span>Trips History</span>
             </div>
-            <span className="font-mono text-[9.5px] text-dim uppercase">{seedTrips.length} Total Trips</span>
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-[9.5px] text-dim uppercase">{seedTrips.length} Total Trips</span>
+              <button
+                type="button"
+                onClick={() => onSelectTab?.('trips')}
+                className="text-[10px] text-accent font-semibold hover:underline cursor-pointer"
+              >
+                Open Tab →
+              </button>
+            </div>
           </div>
 
           <div className="border-b border-line-soft px-5 py-3 bg-panel-2/15 space-y-2">
-            {/* Top 3 Recent Trips - Minimalist Design */}
+            {/* Trips List - Top 3 or Full Expanded */}
             <div className="space-y-2">
-              {seedTrips.slice(0, 3).map((trip, idx) => (
+              {(showAllTrips ? seedTrips : seedTrips.slice(0, 3)).map((trip, idx) => (
                 <div
                   key={trip.id || idx}
                   className="rounded-lg border border-line-soft/70 bg-panel p-2.5 transition-all hover:border-line hover:bg-panel-2/40 shadow-2xs"
@@ -523,6 +474,36 @@ export default function LiveTelemetryTab({
 
                     <div className="flex items-center gap-2 font-mono text-[10px] tabular-nums">
                       <span className="text-dim">{trip.time}</span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          const isThisTripPlaying = Boolean(
+                            activePlaybackTrip &&
+                              (activePlaybackTrip.id === trip.id || activePlaybackTrip.tripNumber === trip.tripNumber)
+                          )
+                          if (isThisTripPlaying) {
+                            onStopPlayback?.()
+                          } else {
+                            onStartPlayback?.(trip)
+                          }
+                        }}
+                        title="Route Playback on Map"
+                        aria-label="Route Playback on Map"
+                        className={`flex h-5 w-5 items-center justify-center rounded border transition-all cursor-pointer ${
+                          activePlaybackTrip &&
+                          (activePlaybackTrip.id === trip.id || activePlaybackTrip.tripNumber === trip.tripNumber)
+                            ? 'border-accent bg-accent text-black font-bold shadow-xs'
+                            : 'border-line-soft bg-panel-2 text-lo hover:border-accent/40 hover:bg-accent/15 hover:text-accent'
+                        }`}
+                      >
+                        {activePlaybackTrip &&
+                        (activePlaybackTrip.id === trip.id || activePlaybackTrip.tripNumber === trip.tripNumber) ? (
+                          <Pause className="h-2.5 w-2.5 fill-current" />
+                        ) : (
+                          <Play className="h-2.5 w-2.5 fill-current ml-0.5" />
+                        )}
+                      </button>
                       {trip.batteryUsed && (
                         <span className="text-emerald-400 font-medium bg-emerald-500/10 px-1.5 py-0.25 rounded border border-emerald-500/20">
                           {trip.batteryUsed}
@@ -557,19 +538,28 @@ export default function LiveTelemetryTab({
               ))}
             </div>
 
-            <button
-              type="button"
-              onClick={onOpenHistoryModal}
-              className="flex w-full items-center justify-center gap-2 rounded-xl border border-accent/30 bg-accent/10 py-2 text-[12px] font-semibold text-accent hover:bg-accent/20 transition-all cursor-pointer shadow-xs mt-1"
-            >
-              <History className="h-3.5 w-3.5" />
-              View Full History ({seedTrips.length} Trips)
-            </button>
+            <div className="flex items-center gap-2 mt-1">
+              <button
+                type="button"
+                onClick={() => setShowAllTrips((prev) => !prev)}
+                className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-line bg-panel py-2 text-[11.5px] font-semibold text-lo hover:text-hi hover:bg-hover transition-all cursor-pointer shadow-2xs"
+              >
+                <span>{showAllTrips ? 'Show Less (3 Trips)' : `Show All ${seedTrips.length} Trips Inline`}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onSelectTab?.('trips')}
+                className="flex items-center justify-center gap-1.5 rounded-xl border border-accent/30 bg-accent/10 px-3 py-2 text-[11.5px] font-semibold text-accent hover:bg-accent/20 transition-all cursor-pointer shadow-xs"
+              >
+                <History className="h-3 w-3" />
+                <span>Full Trips Tab</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Device Timeline */}
+      {/* Device Timeline Section (Inline & Expandable) */}
       <div>
         <div className="flex items-center justify-between border-b border-line-soft bg-panel-2/60 px-5 py-2">
           <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-hi">
@@ -594,6 +584,13 @@ export default function LiveTelemetryTab({
                 className={`h-2.5 w-2.5 ${timelineLoading ? 'animate-spin text-accent' : ''}`}
                 strokeWidth={2}
               />
+            </button>
+            <button
+              type="button"
+              onClick={() => onSelectTab?.('timeline')}
+              className="text-[10px] text-accent font-semibold hover:underline cursor-pointer"
+            >
+              Open Tab →
             </button>
           </div>
         </div>
@@ -624,7 +621,7 @@ export default function LiveTelemetryTab({
             </div>
           ) : (
             <div className="space-y-2">
-              {timelineEvents.slice(0, 5).map((evt) => {
+              {(showAllTimeline ? timelineEvents : timelineEvents.slice(0, 5)).map((evt) => {
                 const sevColor =
                   evt.severity === 'critical'
                     ? 'var(--color-red)'
@@ -656,14 +653,23 @@ export default function LiveTelemetryTab({
                 )
               })}
 
-              <button
-                type="button"
-                onClick={onOpenTimelineModal}
-                className="flex w-full items-center justify-center gap-2 rounded-xl border border-accent/30 bg-accent/10 py-2 text-[12px] font-semibold text-accent hover:bg-accent/20 transition-all cursor-pointer shadow-xs mt-2"
-              >
-                <Radio className="h-3.5 w-3.5" />
-                View Full Timeline ({timelineEvents.length} Events)
-              </button>
+              <div className="flex items-center gap-2 mt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAllTimeline((prev) => !prev)}
+                  className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-line bg-panel py-2 text-[11.5px] font-semibold text-lo hover:text-hi hover:bg-hover transition-all cursor-pointer shadow-2xs"
+                >
+                  <span>{showAllTimeline ? 'Show Less (5 Events)' : `Show All ${timelineEvents.length} Events Inline`}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onSelectTab?.('timeline')}
+                  className="flex items-center justify-center gap-1.5 rounded-xl border border-accent/30 bg-accent/10 px-3 py-2 text-[11.5px] font-semibold text-accent hover:bg-accent/20 transition-all cursor-pointer shadow-xs"
+                >
+                  <Radio className="h-3 w-3" />
+                  <span>Full Timeline Tab</span>
+                </button>
+              </div>
             </div>
           )}
         </div>

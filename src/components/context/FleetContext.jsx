@@ -546,6 +546,10 @@ export function FleetProvider({ children }) {
     (vehicle, action) => {
       const messages = {
         firmware: `Firmware update queued for ${vehicle.deviceId || vehicle.name}`,
+        reboot: `Restart signal dispatched to ${vehicle.deviceId || vehicle.name}`,
+        ping: `Diagnostic ping ACK received from ${vehicle.deviceId || vehicle.name} (18ms)`,
+        lock: `Security lock command sent to ${vehicle.deviceId || vehicle.name}`,
+        unlock: `Security unlock command sent to ${vehicle.deviceId || vehicle.name}`,
       }
 
       if (action === 'firmware') {

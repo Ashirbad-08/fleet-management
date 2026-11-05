@@ -1,6 +1,13 @@
-import { X, Edit2, MapPin, ChevronLeft } from '../icons'
+import { X, MapPin, ChevronLeft, Map } from '../icons'
 
-export default function VehicleDrawerHeader({ selectedVehicle, editing, onToggleEdit, onClose }) {
+export default function VehicleDrawerHeader({
+  selectedVehicle,
+  editing,
+  onToggleEdit,
+  onClose,
+  showMap,
+  onToggleMap,
+}) {
   if (!selectedVehicle) return null
 
   const locLabel = selectedVehicle.location || selectedVehicle.city || null
@@ -12,7 +19,7 @@ export default function VehicleDrawerHeader({ selectedVehicle, editing, onToggle
         : null
 
   return (
-    <div className="flex items-center justify-between border-b border-line-soft bg-panel px-4 py-3 sm:px-5 sm:py-4">
+    <div className="flex items-center justify-between border-b border-line-soft bg-panel px-4 py-3 sm:px-5 sm:py-3.5">
       <div className="flex items-center gap-2.5 min-w-0">
         {/* Mobile-only page Back button */}
         <button
@@ -50,26 +57,30 @@ export default function VehicleDrawerHeader({ selectedVehicle, editing, onToggle
       </div>
 
       <div className="flex items-center gap-1.5 shrink-0 ml-2">
-        <button
-          type="button"
-          onClick={onToggleEdit}
-          aria-label={editing ? 'Close edit form' : 'Edit vehicle telemetry and specs'}
-          title={editing ? 'Cancel editing' : 'Edit vehicle'}
-          className={`flex h-7 w-7 items-center justify-center rounded-md border transition-colors cursor-pointer ${
-            editing
-              ? 'border-accent bg-accent/20 text-accent'
-              : 'border-line bg-panel-2 text-lo hover:bg-hover hover:text-accent'
-          }`}
-        >
-          <Edit2 className="h-3 w-3" strokeWidth={2} />
-        </button>
+        {/* Toggle Left Map View button */}
+        {onToggleMap && (
+          <button
+            type="button"
+            onClick={onToggleMap}
+            aria-label={showMap ? 'Close map pane' : 'Open map pane'}
+            title={showMap ? 'Close map (view drawer only)' : 'Show map on left side'}
+            className={`flex h-7 items-center gap-1.5 px-2.5 rounded-md border text-[11px] font-semibold transition-all cursor-pointer ${
+              showMap
+                ? 'border-accent/40 bg-accent/15 text-accent shadow-xs'
+                : 'border-line bg-panel-2 text-lo hover:border-line hover:bg-hover hover:text-hi'
+            }`}
+          >
+            <Map className="h-3 w-3" strokeWidth={2.2} />
+            <span className="hidden xs:inline">{showMap ? 'Close Map' : 'Open Map'}</span>
+          </button>
+        )}
 
         {/* Desktop-only Close button */}
         <button
           type="button"
           onClick={onClose}
-          aria-label="Close drawer"
-          title="Close"
+          aria-label="Close vehicle drawer"
+          title="Close all"
           className="hidden sm:flex h-7 w-7 items-center justify-center rounded-md border border-line bg-panel-2 text-lo hover:bg-hover hover:text-hi transition-colors cursor-pointer"
         >
           <X className="h-3.5 w-3.5" strokeWidth={2.2} />

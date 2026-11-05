@@ -2,6 +2,9 @@ export const seedTrips = [
   {
     id: '842',
     tripNumber: 'Trip #842',
+    vehicleId: 'V-102',
+    vehicleName: 'Hauler 07',
+    plate: 'MH12 AB 1234',
     endedAgo: 'Ended 1h 15m ago',
     time: 'Today, 14:20',
     date: '2026-10-05',
@@ -25,6 +28,9 @@ export const seedTrips = [
   {
     id: '841',
     tripNumber: 'Trip #841',
+    vehicleId: 'V-102',
+    vehicleName: 'Hauler 07',
+    plate: 'MH12 AB 1234',
     time: 'Today, 10:15',
     date: '2026-10-05',
     dateCategory: 'today',
@@ -47,6 +53,9 @@ export const seedTrips = [
   {
     id: '840',
     tripNumber: 'Trip #840',
+    vehicleId: 'V-114',
+    vehicleName: 'Courier 12',
+    plate: 'WB19 CJ 5521',
     time: 'Today, 06:40',
     date: '2026-10-05',
     dateCategory: 'today',
@@ -69,6 +78,9 @@ export const seedTrips = [
   {
     id: '839',
     tripNumber: 'Trip #839',
+    vehicleId: 'V-114',
+    vehicleName: 'Courier 12',
+    plate: 'WB19 CJ 5521',
     time: 'Yesterday, 18:05',
     date: '2026-10-04',
     dateCategory: 'yesterday',
@@ -91,6 +103,9 @@ export const seedTrips = [
   {
     id: '838',
     tripNumber: 'Trip #838',
+    vehicleId: 'V-098',
+    vehicleName: 'Reefer 03',
+    plate: 'DL8C AF 7742',
     time: 'Yesterday, 13:30',
     date: '2026-10-04',
     dateCategory: 'yesterday',
@@ -113,6 +128,9 @@ export const seedTrips = [
   {
     id: '837',
     tripNumber: 'Trip #837',
+    vehicleId: 'V-098',
+    vehicleName: 'Reefer 03',
+    plate: 'DL8C AF 7742',
     time: 'Yesterday, 08:50',
     date: '2026-10-04',
     dateCategory: 'yesterday',
@@ -135,6 +153,9 @@ export const seedTrips = [
   {
     id: '836',
     tripNumber: 'Trip #836',
+    vehicleId: 'V-105',
+    vehicleName: 'Cargo Van 01',
+    plate: 'KA01 MJ 3319',
     time: '03 Oct, 16:45',
     date: '2026-10-03',
     dateCategory: 'week',
@@ -157,6 +178,9 @@ export const seedTrips = [
   {
     id: '835',
     tripNumber: 'Trip #835',
+    vehicleId: 'V-105',
+    vehicleName: 'Cargo Van 01',
+    plate: 'KA01 MJ 3319',
     time: '03 Oct, 11:20',
     date: '2026-10-03',
     dateCategory: 'week',
@@ -179,6 +203,9 @@ export const seedTrips = [
   {
     id: '834',
     tripNumber: 'Trip #834',
+    vehicleId: 'V-102',
+    vehicleName: 'Hauler 07',
+    plate: 'MH12 AB 1234',
     time: '02 Oct, 15:10',
     date: '2026-10-02',
     dateCategory: 'week',
@@ -201,6 +228,9 @@ export const seedTrips = [
   {
     id: '833',
     tripNumber: 'Trip #833',
+    vehicleId: 'V-114',
+    vehicleName: 'Courier 12',
+    plate: 'WB19 CJ 5521',
     time: '01 Oct, 09:30',
     date: '2026-10-01',
     dateCategory: 'week',
@@ -223,6 +253,9 @@ export const seedTrips = [
   {
     id: '832',
     tripNumber: 'Trip #832',
+    vehicleId: 'V-098',
+    vehicleName: 'Reefer 03',
+    plate: 'DL8C AF 7742',
     time: '28 Sep, 17:15',
     date: '2026-09-28',
     dateCategory: 'month',
@@ -245,6 +278,9 @@ export const seedTrips = [
   {
     id: '831',
     tripNumber: 'Trip #831',
+    vehicleId: 'V-105',
+    vehicleName: 'Cargo Van 01',
+    plate: 'KA01 MJ 3319',
     time: '25 Sep, 12:00',
     date: '2026-09-25',
     dateCategory: 'month',

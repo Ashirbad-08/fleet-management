@@ -86,6 +86,19 @@ button:focus {
   font-variant-numeric: tabular-nums;
 }
 
+/* Hide scrollbars while preserving scroll functionality */
+.scrollbar-none,
+.no-scrollbar {
+  -ms-overflow-style: none !important; /* IE and Edge */
+  scrollbar-width: none !important; /* Firefox */
+}
+.scrollbar-none::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important; /* Chrome, Safari and Opera */
+  width: 0 !important;
+  height: 0 !important;
+}
+
 @keyframes pulse-dot {
   0%,
   100% {
@@ -98,4 +111,3 @@ button:focus {
 .animate-pulse-dot {
   animation: pulse-dot 2s infinite;
 }
-

@@ -7,6 +7,7 @@ import Toast from './components/Toast'
 import Dashboard from './pages/Dashboard'
 import Vehicles from './pages/Vehicles'
 import Devices from './pages/Devices'
+import Reports from './pages/Reports'
 import AlertsPage from './pages/AlertsPage'
 import Geofences from './pages/Geofences'
 import Settings from './pages/Settings'
@@ -41,6 +42,7 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/vehicles" element={<Vehicles />} />
           <Route path="/devices" element={<Devices />} />
+          <Route path="/reports" element={<Reports />} />
           <Route path="/esg" element={<EsgPage />} />
           <Route path="/alerts" element={<AlertsPage />} />
           <Route path="/geofences" element={<Geofences />} />

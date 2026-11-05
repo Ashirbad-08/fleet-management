@@ -219,6 +219,15 @@ export default function EditVehicleForm({
             </select>
           </div>
           <div>
+            <label className="mb-1 block text-[10px] text-dim">SIM Card Number / Phone</label>
+            <input
+              type="text"
+              value={editForm.simNumber || ''}
+              onChange={(e) => setEditForm((f) => ({ ...f, simNumber: e.target.value }))}
+              className={inputCls}
+            />
+          </div>
+          <div>
             <label className="mb-1 block text-[10px] text-dim">Chassis / VIN</label>
             <input
               type="text"

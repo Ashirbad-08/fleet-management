@@ -25,6 +25,7 @@ const INITIAL_FORM_DATA = {
   name: '',
   plate: '',
   deviceId: '',
+  simNumber: '',
   model: '',
   type: '4 Wheeler',
   status: 'online',
@@ -117,6 +118,7 @@ function mapRowsToVehicles(headers, rows) {
       headerMap.plate = index
     else if (['deviceid', 'imei', 'deviceimei', 'device', 'trackerid', 'trackerimei', 'iotid'].includes(norm))
       headerMap.deviceId = index
+    else if (['sim', 'simnumber', 'simno', 'simcard', 'simcardno', 'simcardnumber', 'simphoneno', 'iccid'].includes(norm)) headerMap.simNumber = index
     else if (['model', 'vehiclemodel', 'carmodel', 'evmodel'].includes(norm)) headerMap.model = index
     else if (['type', 'vehicletype', 'category', 'wheels'].includes(norm)) headerMap.type = index
     else if (['driver', 'drivername', 'pilot', 'operator'].includes(norm)) headerMap.driver = index
@@ -197,6 +199,7 @@ function mapRowsToVehicles(headers, rows) {
         _tempId: `tmp-${Date.now()}-${idx}`,
         name: name || `Vehicle ${idx + 1}`,
         plate: plate || `IN-${Math.floor(10 + Math.random() * 89)} AB ${Math.floor(1000 + Math.random() * 8999)}`,
+        simNumber: getVal('simNumber') || '',
         deviceId: getVal('deviceId') || `IOT-${Math.floor(10000 + Math.random() * 90000)}`,
         model: model || 'Commercial EV',
         type,
@@ -258,6 +261,7 @@ export default function AddVehicleModal({ open, onClose }) {
     if (!formData.name || !formData.plate || !formData.deviceId || !formData.model || !formData.type) return
     addVehicle({
       ...formData,
+      simNumber: formData.simNumber || '',
       deviceId: formData.deviceId || `IOT-${Math.floor(10000 + Math.random() * 90000)}`,
       type: formData.type || '4 Wheeler',
       battery: Number(formData.battery) || 100,
@@ -276,6 +280,7 @@ export default function AddVehicleModal({ open, onClose }) {
       'Name',
       'Plate',
       'Device IMEI',
+      'SIM Card Number',
       'Model',
       'Type',
       'Status',
@@ -500,7 +505,7 @@ export default function AddVehicleModal({ open, onClose }) {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
                   <label className="mb-1 block text-[10.5px] font-semibold uppercase tracking-wide text-dim">
                     Device IMEI / ID <span className="text-accent">*</span>
@@ -516,6 +521,22 @@ export default function AddVehicleModal({ open, onClose }) {
                     />
                   </div>
                 </div>
+                <div>
+                  <label className="mb-1 block text-[10.5px] font-semibold uppercase tracking-wide text-dim">
+                    SIM Card Number / Phone <span className="text-accent">*</span>
+                  </label>
+                  <input
+                    required
+                    type="text"
+                    placeholder="e.g. +91 98201 44521"
+                    value={formData.simNumber}
+                    onChange={updateField('simNumber')}
+                    className={inputCls}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
                   <label className="mb-1 block text-[10.5px] font-semibold uppercase tracking-wide text-dim">
                     Make / Model <span className="text-accent">*</span>
