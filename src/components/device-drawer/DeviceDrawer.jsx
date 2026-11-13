@@ -1,12 +1,10 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   X,
   Radio,
   Cpu,
   Wifi,
   Zap,
-  Gauge,
-  MapPin,
   Clock,
   RotateCw,
   Terminal,
@@ -18,11 +16,10 @@ import {
   Clipboard,
   ClipboardCheck,
   ChevronRight,
-  ExternalLink,
 } from '../icons'
 import { STATUS_META } from '../../data/statusMeta'
 import { fetchTimelineDetailsByIMEI } from '../../services/api'
-import { useFleet } from '../context/FleetContext'
+import { useFleet } from '../../context/FleetContext'
 
 export default function DeviceDrawer({
   device,
@@ -154,6 +151,8 @@ export default function DeviceDrawer({
 
       {/* Drawer Panel */}
       <aside
+        data-component="DeviceDrawer"
+        data-slot="device-drawer"
         role="dialog"
         aria-label="Device Hardware & Telemetry Details"
         onClick={(e) => e.stopPropagation()}
@@ -176,6 +175,7 @@ export default function DeviceDrawer({
                 </span>
                 <button
                   type="button"
+                  data-action="copy-device-id"
                   onClick={() => copyToClipboard(device.deviceId, 'deviceId')}
                   title="Copy Device ID"
                   className="text-dim hover:text-accent transition-colors"
@@ -205,6 +205,7 @@ export default function DeviceDrawer({
 
             <button
               type="button"
+              data-action="close-device-drawer"
               onClick={onClose}
               title="Close drawer"
               className="flex h-7 w-7 items-center justify-center rounded-lg border border-line bg-panel-2 text-lo hover:bg-hover hover:text-hi transition-colors cursor-pointer"
@@ -218,6 +219,7 @@ export default function DeviceDrawer({
         <div className="flex items-center border-b border-line bg-panel text-[11.5px] font-semibold text-lo shrink-0">
           <button
             type="button"
+            data-action="switch-device-tab"
             onClick={() => setActiveTab('overview')}
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 border-b-2 transition-all cursor-pointer ${
               activeTab === 'overview'
@@ -231,6 +233,7 @@ export default function DeviceDrawer({
 
           <button
             type="button"
+            data-action="switch-device-tab"
             onClick={() => setActiveTab('timeline')}
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 border-b-2 transition-all cursor-pointer ${
               activeTab === 'timeline'
@@ -244,6 +247,7 @@ export default function DeviceDrawer({
 
           <button
             type="button"
+            data-action="switch-device-tab"
             onClick={() => setActiveTab('packets')}
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 border-b-2 transition-all cursor-pointer ${
               activeTab === 'packets'
@@ -464,7 +468,7 @@ export default function DeviceDrawer({
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
-                    onClick={() => sendDeviceCommand(device, 'ping')}
+                    data-action="ping-heartbeat" onClick={() => sendDeviceCommand(device, 'ping')}
                     className="flex items-center justify-center gap-1.5 rounded-lg border border-line bg-panel px-3 py-2 text-xs font-semibold text-lo hover:border-accent hover:text-hi transition-all cursor-pointer shadow-2xs"
                   >
                     <RefreshCw className="h-3.5 w-3.5 text-sky-400" />
@@ -473,7 +477,7 @@ export default function DeviceDrawer({
 
                   <button
                     type="button"
-                    onClick={() => sendDeviceCommand(device, 'reboot')}
+                    data-action="reboot-tracker" onClick={() => sendDeviceCommand(device, 'reboot')}
                     className="flex items-center justify-center gap-1.5 rounded-lg border border-line bg-panel px-3 py-2 text-xs font-semibold text-lo hover:border-red/40 hover:text-red transition-all cursor-pointer shadow-2xs"
                   >
                     <RotateCw className="h-3.5 w-3.5 text-amber" />
@@ -485,7 +489,7 @@ export default function DeviceDrawer({
                   <button
                     type="button"
                     disabled={isUpdating}
-                    onClick={() => sendDeviceCommand(device, 'firmware')}
+                    data-action="push-ota-firmware" onClick={() => sendDeviceCommand(device, 'firmware')}
                     className="w-full flex items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2.5 text-xs font-bold text-black hover:bg-green disabled:opacity-50 transition-all cursor-pointer shadow-xs"
                   >
                     <Cpu className="h-3.5 w-3.5" />
@@ -505,7 +509,7 @@ export default function DeviceDrawer({
                 </span>
                 <button
                   type="button"
-                  onClick={loadTimeline}
+                  data-action="refresh-device-timeline" onClick={loadTimeline}
                   disabled={timelineLoading}
                   className="flex items-center gap-1 text-[11px] text-accent hover:underline cursor-pointer"
                 >

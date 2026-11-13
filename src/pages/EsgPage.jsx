@@ -97,13 +97,13 @@ export default function EsgPage() {
   const maxCo2 = useMemo(() => Math.max(...activeData.chart.map(c => c.co2)), [activeData])
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col md:overflow-hidden">
+    <div data-component="EsgPage" data-slot="page-layout" className="flex min-h-0 flex-1 flex-col md:overflow-hidden">
       <Topbar title="ESG Savings Calculator" subtitle="Calculate & track environmental impact of your EV fleet" />
 
       <div className="flex flex-1 flex-col overflow-y-auto px-4 pb-24 pt-5 sm:px-6 md:pb-5 space-y-4.5">
         
         {/* Controls Bar */}
-        <div className="flex flex-col gap-3 rounded-xl border border-line bg-panel p-4 sm:flex-row sm:items-center sm:justify-between shadow-sm">
+        <div data-slot="controls-bar" className="flex flex-col gap-3 rounded-xl border border-line bg-panel p-4 sm:flex-row sm:items-center sm:justify-between shadow-sm">
           <div className="flex flex-wrap items-center gap-3">
             <div>
               <label className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-dim">Period (Days)</label>
@@ -140,7 +140,7 @@ export default function EsgPage() {
           </div>
 
           <button
-            onClick={handleCalculate}
+            data-action="calculate-esg-impact" onClick={handleCalculate}
             className="flex items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2 text-[12px] font-bold text-black transition-all hover:bg-accent/90 cursor-pointer shadow-md shadow-accent/20 active:scale-98"
           >
             <RotateCw className={`h-4 w-4 ${isCalculating ? 'animate-spin' : ''}`} strokeWidth={2.5} />
@@ -165,7 +165,7 @@ export default function EsgPage() {
         ) : (
           <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 xl:grid-cols-4">
             {/* Card 1: CO2 Avoided */}
-            <div className="group rounded-xl border border-line bg-panel p-4.5 transition-all hover:border-accent/40 hover:bg-panel-2/50">
+            <div data-slot="kpi-metric-card" className="group rounded-xl border border-line bg-panel p-4.5 transition-all hover:border-accent/40 hover:bg-panel-2/50">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-semibold uppercase tracking-wider text-dim">CO₂ Avoided</span>
                 <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent/15 text-accent border border-accent/20">
@@ -182,7 +182,7 @@ export default function EsgPage() {
             </div>
 
             {/* Card 2: Diesel Saved */}
-            <div className="group rounded-xl border border-line bg-panel p-4.5 transition-all hover:border-accent/40 hover:bg-panel-2/50">
+            <div data-slot="kpi-metric-card" className="group rounded-xl border border-line bg-panel p-4.5 transition-all hover:border-accent/40 hover:bg-panel-2/50">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-semibold uppercase tracking-wider text-dim">Diesel Saved</span>
                 <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent/15 text-accent border border-accent/20">
@@ -199,7 +199,7 @@ export default function EsgPage() {
             </div>
 
             {/* Card 3: Trees Equivalent */}
-            <div className="group rounded-xl border border-line bg-panel p-4.5 transition-all hover:border-accent/40 hover:bg-panel-2/50">
+            <div data-slot="kpi-metric-card" className="group rounded-xl border border-line bg-panel p-4.5 transition-all hover:border-accent/40 hover:bg-panel-2/50">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-semibold uppercase tracking-wider text-dim">Trees Equivalent</span>
                 <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent/15 text-accent border border-accent/20">
@@ -216,7 +216,7 @@ export default function EsgPage() {
             </div>
 
             {/* Card 4: Cost Savings */}
-            <div className="group rounded-xl border border-line bg-panel p-4.5 transition-all hover:border-accent/40 hover:bg-panel-2/50">
+            <div data-slot="kpi-metric-card" className="group rounded-xl border border-line bg-panel p-4.5 transition-all hover:border-accent/40 hover:bg-panel-2/50">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-semibold uppercase tracking-wider text-dim">Cost Savings</span>
                 <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent/15 text-accent border border-accent/20">

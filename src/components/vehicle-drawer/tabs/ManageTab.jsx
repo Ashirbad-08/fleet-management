@@ -113,7 +113,7 @@ export default function ManageTab({
           {/* Download CSV */}
           <button
             type="button"
-            onClick={handleDownloadReport}
+            data-action="download-vehicle-report" onClick={handleDownloadReport}
             className={`w-full flex items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-[12.5px] font-semibold transition-all cursor-pointer ${
               reportDownloaded
                 ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-400'
@@ -160,7 +160,7 @@ export default function ManageTab({
 
           <button
             type="button"
-            onClick={onStartEdit}
+            data-action="start-edit-vehicle" onClick={onStartEdit}
             className="w-full flex items-center justify-center gap-2 rounded-lg border border-line bg-panel-2 px-3 py-2.5 text-[12.5px] font-semibold text-hi hover:border-accent/40 hover:text-accent hover:bg-accent/5 transition-all cursor-pointer"
           >
             <Edit2 className="h-3.5 w-3.5" strokeWidth={2} />
@@ -200,7 +200,7 @@ export default function ManageTab({
               <div className="flex gap-2">
                 <button
                   type="button"
-                  onClick={() => onDeleteVehicle(selectedVehicle.id)}
+                  data-action="delete-vehicle" onClick={() => onDeleteVehicle(selectedVehicle.id)}
                   className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-red/20 border border-red/30 px-3 py-2 text-[12px] font-semibold text-red hover:bg-red/30 cursor-pointer transition-all"
                 >
                   <Trash2 className="h-3.5 w-3.5" strokeWidth={2} />
@@ -218,7 +218,7 @@ export default function ManageTab({
           ) : (
             <button
               type="button"
-              onClick={() => setConfirmDelete(true)}
+              data-action="confirm-delete-vehicle" onClick={() => setConfirmDelete(true)}
               className="w-full flex items-center justify-center gap-2 rounded-lg border border-red/20 bg-red/5 px-3 py-2.5 text-[12px] font-semibold text-red/70 hover:border-red/50 hover:bg-red/10 hover:text-red transition-all cursor-pointer"
             >
               <Trash2 className="h-3.5 w-3.5" strokeWidth={2} />

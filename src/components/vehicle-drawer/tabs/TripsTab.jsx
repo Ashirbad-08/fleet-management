@@ -96,7 +96,7 @@ export default function TripsTab({
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div data-component="TripsTab" className="flex flex-col h-full">
       {/* 1. Header Title & Stats Strip */}
       <div className="flex items-center justify-between border-b border-line-soft px-4 py-3 bg-panel-2/40">
         <div className="flex items-center gap-2">
@@ -114,7 +114,7 @@ export default function TripsTab({
         </div>
 
         <button
-          onClick={handleExportCSV}
+          data-action="export-trips-csv" onClick={handleExportCSV}
           title="Export trips to CSV"
           className="flex items-center gap-1.5 rounded-lg border border-line bg-panel px-2.5 py-1 text-[11px] font-medium text-lo hover:bg-hover hover:text-hi transition-colors cursor-pointer shadow-2xs"
         >
@@ -135,6 +135,7 @@ export default function TripsTab({
           <button
             key={tab.id}
             type="button"
+            data-action="filter-trips-date"
             onClick={() => {
               setDateFilter(tab.id)
               setCustomDate('')
@@ -264,6 +265,7 @@ export default function TripsTab({
                       {/* Play Icon Button on each trip history card */}
                       <button
                         type="button"
+                        data-action="toggle-trip-playback"
                         onClick={(e) => {
                           e.stopPropagation()
                           if (isThisTripPlaying) {

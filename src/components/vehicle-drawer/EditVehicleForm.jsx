@@ -252,7 +252,7 @@ export default function EditVehicleForm({
       <div className="flex gap-2 pt-2">
         <button
           type="button"
-          onClick={onSave}
+          data-action="save-vehicle-edit" onClick={onSave}
           className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-accent/15 px-3 py-2 text-[12.5px] font-medium text-accent hover:bg-accent/25 cursor-pointer"
         >
           <Save className="h-3.5 w-3.5" strokeWidth={2} />
@@ -260,7 +260,7 @@ export default function EditVehicleForm({
         </button>
         <button
           type="button"
-          onClick={onCancel}
+          data-action="cancel-vehicle-edit" onClick={onCancel}
           className="flex flex-1 items-center justify-center rounded-lg border border-line bg-panel-2 px-3 py-2 text-[12.5px] font-medium text-lo hover:bg-hover cursor-pointer"
         >
           Cancel

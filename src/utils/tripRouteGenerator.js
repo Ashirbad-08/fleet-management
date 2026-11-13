@@ -78,7 +78,30 @@ export function generateTripRoute(vehicle, trip, numPoints = 50) {
     waypoints.push([Number(lat.toFixed(6)), Number(lon.toFixed(6))])
   }
 
+  // Calculate smooth vehicle heading for each point with continuous angle unwrapping for curves
+  let prevHeading = 0
+  for (let i = 0; i < points.length; i++) {
+    if (i < points.length - 1) {
+      const p1 = points[i]
+      const p2 = points[i + 1]
+      const dLon = (p2.lon - p1.lon) * Math.cos(((p1.lat + p2.lat) / 2) * (Math.PI / 180))
+      const dLat = p2.lat - p1.lat
+      const rawHeading = (Math.atan2(dLon, dLat) * (180 / Math.PI) + 360) % 360
+      if (i === 0) {
+        prevHeading = rawHeading
+      } else {
+        // Unwrapping ensures shortest angular path (< 180 deg) when turning across North (0/360 boundary)
+        const diff = ((rawHeading - (prevHeading % 360) + 540) % 360) - 180
+        prevHeading = prevHeading + diff
+      }
+      points[i].heading = Math.round(prevHeading)
+    } else {
+      points[i].heading = points[i - 1]?.heading ?? 0
+    }
+  }
+
   return {
+    vehicle,
     trip,
     waypoints,
     points,

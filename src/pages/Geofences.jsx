@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import Topbar from '../components/Topbar'
 import MapLeaflet from '../components/MapLeaflet'
-import { Edit2, MapPin, Plus, RotateCw, Filter, ChevronDown, Check, Maximize2, Minimize2 } from '../components/icons'
+import { Edit2, MapPin, Plus, RotateCw, Filter, ChevronDown, Check, Maximize2, Minimize2, TriangleAlert, Trash2, X } from '../components/icons'
 import { useFleet } from '../context/FleetContext'
 import { useSearchParams } from 'react-router-dom'
 
@@ -35,6 +35,12 @@ export default function Geofences() {
   const [selectedFenceId, setSelectedFenceId] = useState(null)
   const [customCenter, setCustomCenter] = useState(null)
   const [customZoom, setCustomZoom] = useState(null)
+  // Track which zone's 3-dot menu is open
+  const [openMenuId, setOpenMenuId] = useState(null)
+  const menuRef = useRef(null)
+
+  // Delete Confirmation Warning State
+  const [deletingZone, setDeletingZone] = useState(null)
 
   const selectedFence = geofences.find((g) => g.id === selectedFenceId) || null
 
@@ -71,9 +77,14 @@ export default function Geofences() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Escape exits full screen
+  // Escape exits full screen or closes dialogs
   useEffect(() => {
-    const handleKeyDown = (e) => { if (e.key === 'Escape') setFullScreenMap(false) }
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setFullScreenMap(false)
+        setDeletingZone(null)
+      }
+    }
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [])
@@ -93,13 +104,29 @@ export default function Geofences() {
   const [formAlerts, setFormAlerts] = useState('Entry + exit')
 
   const getVehiclesInGeofence = (zone) => {
-    if (zone.status !== 'Active') return 0
-    return vehicles.filter((v) => {
+    if (zone.status !== 'Active') return { total: 0, online: 0, offline: 0, idle: 0 }
+    const inside = vehicles.filter((v) => {
       if (!v.lat || !v.lon) return false
       const distKm = Math.sqrt(Math.pow(v.lat - zone.lat, 2) + Math.pow(v.lon - zone.lon, 2)) * 111.12
       return distKm <= zone.radius
-    }).length
+    })
+    return {
+      total: inside.length,
+      online: inside.filter((v) => v.status === 'online').length,
+      offline: inside.filter((v) => v.status === 'offline').length,
+      idle: inside.filter((v) => v.status === 'idle').length,
+    }
   }
+
+  // Close 3-dot menu on outside click
+  useEffect(() => {
+    if (!openMenuId) return
+    const handler = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) setOpenMenuId(null)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [openMenuId])
 
   const handleOpenAdd = () => {
     setModalMode('add')
@@ -113,16 +140,17 @@ export default function Geofences() {
     setIsModalOpen(true)
   }
 
-  const handleOpenEdit = () => {
-    if (!selectedFence) return
+  const handleOpenEdit = (zone) => {
+    const target = zone || selectedFence
+    if (!target) return
     setModalMode('edit')
-    setFormName(selectedFence.name)
-    setFormType(selectedFence.type)
-    setFormLat(selectedFence.lat)
-    setFormLon(selectedFence.lon)
-    setFormRadius(selectedFence.radius)
-    setFormStatus(selectedFence.status)
-    setFormAlerts(selectedFence.alerts)
+    setFormName(target.name)
+    setFormType(target.type)
+    setFormLat(target.lat)
+    setFormLon(target.lon)
+    setFormRadius(target.radius)
+    setFormStatus(target.status)
+    setFormAlerts(target.alerts)
     setIsModalOpen(true)
   }
 
@@ -146,7 +174,7 @@ export default function Geofences() {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col md:overflow-hidden">
+    <div data-component="GeofencesPage" data-slot="page-layout" className="flex min-h-0 flex-1 flex-col md:overflow-hidden">
       <Topbar title="Geofences" subtitle="Define zones and trigger alerts on entry or exit" />
       <div className="grid flex-1 grid-cols-1 gap-4 overflow-y-auto px-4 pb-24 py-5 sm:px-6 md:pb-5 lg:min-h-0 lg:grid-cols-[minmax(0,1fr)_300px] lg:overflow-hidden">
         <div className={
@@ -174,7 +202,7 @@ export default function Geofences() {
             {fullScreenMap && (
               <button
                 onClick={() => setFullScreenMap(false)}
-                className="flex items-center gap-1.5 rounded-lg border border-line bg-panel-2 px-3 py-1.5 text-[12px] font-semibold text-hi hover:bg-hover hover:border-accent/40 transition-colors cursor-pointer"
+                data-action="exit-fullscreen-map" className="flex items-center gap-1.5 rounded-lg border border-line bg-panel-2 px-3 py-1.5 text-[12px] font-semibold text-hi hover:bg-hover hover:border-accent/40 transition-colors cursor-pointer"
               >
                 <Minimize2 className="h-4 w-4 text-accent" strokeWidth={2} />
                 <span>Exit Full Screen</span>
@@ -193,7 +221,7 @@ export default function Geofences() {
               {/* Full Screen */}
               <button
                 onClick={() => setFullScreenMap((prev) => !prev)}
-                aria-label={fullScreenMap ? "Exit full screen" : "View geofence map in full screen"}
+                data-action="toggle-fullscreen-map" aria-label={fullScreenMap ? "Exit full screen" : "View geofence map in full screen"}
                 className="group flex h-7 items-center gap-1.5 overflow-hidden rounded-lg border border-line bg-panel/90 px-1.75 text-[11px] font-medium text-hi backdrop-blur-md shadow-md transition-all duration-300 ease-out hover:pr-2.5 hover:border-accent/40 hover:bg-hover cursor-pointer"
                 title={fullScreenMap ? "Exit full screen" : "View full map"}
               >
@@ -210,7 +238,7 @@ export default function Geofences() {
               {/* Refresh */}
               <button
                 onClick={handleRefresh}
-                aria-label="Refresh geofence map"
+                data-action="refresh-geofence-map" aria-label="Refresh geofence map"
                 className="group flex h-7 items-center gap-1.5 overflow-hidden rounded-lg border border-line bg-panel/90 px-1.75 text-[11px] font-medium text-hi backdrop-blur-md shadow-md transition-all duration-300 ease-out hover:pr-2.5 hover:border-accent/40 hover:bg-hover cursor-pointer"
                 title="Refresh map"
               >
@@ -276,133 +304,160 @@ export default function Geofences() {
           </div>
         </div>
 
+        {/* ── Right Sidebar: Geofence Zones ─────────────────────────── */}
         <div className="flex min-h-80 flex-col overflow-hidden rounded-xl border border-line bg-panel lg:min-h-0">
-          <div className="flex items-center justify-between border-b border-line-soft px-4 py-3.25">
+
+          {/* Header */}
+          <div className="flex items-center justify-between border-b border-line-soft px-4 py-3 shrink-0">
             <div>
-              <div className="font-display text-[13.5px] font-semibold">Geofence zones</div>
-              <div className="mt-1 text-[11.5px] text-dim">{visibleVehicles.length} vehicles visible on map</div>
+              <div className="font-display text-[13.5px] font-bold text-hi">Geofence Zones</div>
+              <div className="mt-0.5 text-[11px] text-dim font-mono">{geofences.length} zones configured</div>
             </div>
             <button
               onClick={handleOpenAdd}
-              className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-white transition-colors hover:bg-accent/90"
-              title="Add geofence"
+              title="Add geofence zone"
+              className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent text-black hover:bg-accent/85 transition-colors cursor-pointer shadow-sm"
             >
-              <Plus className="h-4 w-4" strokeWidth={2.4} />
+              <Plus className="h-3.5 w-3.5" strokeWidth={2.6} />
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-3">
+          {/* Zone List */}
+          <div className="flex-1 overflow-y-auto p-2.5 space-y-1.5">
             {isLoading ? (
-              <div className="space-y-2">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="animate-pulse rounded-lg border border-line-soft bg-panel-2 p-3 space-y-3">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-start gap-2.5">
-                        <div className="h-8 w-8 rounded-lg bg-panel" />
-                        <div className="space-y-1.5">
-                          <div className="h-3.5 w-24 rounded-xs bg-panel" />
-                          <div className="h-2.5 w-16 rounded-xs bg-panel/60" />
-                        </div>
-                      </div>
-                      <div className="h-4 w-12 rounded-full bg-panel" />
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="h-10 rounded-md bg-panel/70" />
-                      <div className="h-10 rounded-md bg-panel/70" />
-                    </div>
+              // Skeleton
+              [1, 2, 3, 4].map((i) => (
+                <div key={i} className="animate-pulse rounded-xl border border-line-soft bg-panel-2 p-3.5 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="h-3.5 w-28 rounded bg-panel" />
+                    <div className="h-5 w-5 rounded-md bg-panel" />
                   </div>
-                ))}
+                  <div className="flex items-center gap-2">
+                    <div className="h-5 w-14 rounded-full bg-panel/70" />
+                    <div className="h-5 w-14 rounded-full bg-panel/70" />
+                    <div className="h-5 w-14 rounded-full bg-panel/70" />
+                  </div>
+                </div>
+              ))
+            ) : geofences.length === 0 ? (
+              <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-panel-2 border border-line-soft">
+                  <MapPin className="h-5 w-5 text-dim" strokeWidth={1.8} />
+                </div>
+                <div className="text-[12px] font-semibold text-lo">No zones yet</div>
+                <div className="text-[11px] text-dim">Click + to add your first geofence</div>
               </div>
             ) : (
-              <div className="space-y-2">
-                {geofences.map((zone) => {
-                  const isSelected = selectedFenceId === zone.id
-                  const vehicleCount = getVehiclesInGeofence(zone)
-                  return (
-                    <button
-                      key={zone.id}
-                      onClick={() => {
-                        setSelectedFenceId(zone.id)
-                        setCustomCenter([zone.lat, zone.lon])
-                        setCustomZoom(13)
-                      }}
-                      className={`w-full rounded-lg border p-3 text-left transition-colors ${
-                        isSelected
-                          ? 'border-accent bg-accent/5'
-                          : 'border-line-soft bg-panel-2 hover:border-line hover:bg-hover'
-                      }`}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex min-w-0 items-start gap-2.5">
-                          <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent/15 text-accent">
-                            <MapPin className="h-4 w-4" strokeWidth={2.2} />
-                          </div>
-                          <div className="min-w-0">
-                            <div className="truncate font-display text-[13px] font-semibold">{zone.name}</div>
-                            <div className="mt-1 text-[11.5px] text-dim">{zone.type} zone</div>
-                          </div>
-                        </div>
-                        <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                          zone.status === 'Active' ? 'bg-green/15 text-green' : 'bg-amber/15 text-amber'
-                        }`}>
-                          {zone.status}
+              geofences.map((zone) => {
+                const isSelected = selectedFenceId === zone.id
+                const isMenuOpen = openMenuId === zone.id
+                const counts = getVehiclesInGeofence(zone)
+                const isActive = zone.status === 'Active'
+
+                return (
+                  <div
+                    key={zone.id}
+                    onClick={() => {
+                      setSelectedFenceId(zone.id)
+                      setCustomCenter([zone.lat, zone.lon])
+                      setCustomZoom(13)
+                      setOpenMenuId(null)
+                    }}
+                    className={`group relative rounded-xl border p-3.5 cursor-pointer transition-all duration-150 ${
+                      isSelected
+                        ? 'border-accent/50 bg-accent/5 shadow-sm'
+                        : 'border-line-soft bg-panel-2 hover:border-line hover:bg-hover'
+                    }`}
+                  >
+                    {/* Row 1: Zone name + status dot + 3-dot menu */}
+                    <div className="flex items-start justify-between gap-2 mb-2.5">
+                      <div className="flex items-center gap-2 min-w-0">
+                        {/* Active / Paused indicator dot */}
+                        <span className={`mt-0.5 h-2 w-2 shrink-0 rounded-full ${isActive ? 'bg-green' : 'bg-amber'}`} />
+                        <span className="truncate font-display text-[13px] font-semibold text-hi">
+                          {zone.name}
+                        </span>
+                        <span className="shrink-0 font-mono text-[9.5px] text-dim">
+                          {zone.type}
                         </span>
                       </div>
-                      <div className="mt-3 grid grid-cols-2 gap-2 text-[11.5px]">
-                        <div className="rounded-md border border-line-soft bg-panel px-2 py-1.5">
-                          <div className="text-dim">Vehicles</div>
-                          <div className="mt-0.5 font-mono text-lo">{vehicleCount}</div>
-                        </div>
-                        <div className="rounded-md border border-line-soft bg-panel px-2 py-1.5">
-                          <div className="text-dim">Alerts</div>
-                          <div className="mt-0.5 text-lo">{zone.alerts}</div>
-                        </div>
-                      </div>
-                    </button>
-                  )
-                })}
-              </div>
-            )}
-          </div>
 
-          <div className="border-t border-line-soft p-3 space-y-2">
-            <button
-              onClick={handleOpenEdit}
-              disabled={!selectedFence}
-              className={`flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2 text-[12.5px] font-semibold transition-colors ${
-                selectedFence
-                  ? 'border-line bg-panel-2 text-lo hover:bg-hover hover:text-hi cursor-pointer'
-                  : 'border-line-soft bg-panel-2/50 text-dim cursor-not-allowed'
-              }`}
-            >
-              <Edit2 className="h-3.5 w-3.5" strokeWidth={2.2} />
-              Edit selected zone
-            </button>
-            {selectedFence && (
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  onClick={() => {
-                    updateGeofence(selectedFence.id, {
-                      status: selectedFence.status === 'Active' ? 'Paused' : 'Active',
-                    })
-                  }}
-                  className="rounded-lg border border-line bg-panel-2 py-2 text-[12px] font-medium text-lo hover:bg-hover"
-                >
-                  {selectedFence.status === 'Active' ? 'Pause' : 'Resume'}
-                </button>
-                <button
-                  onClick={() => {
-                    deleteGeofence(selectedFence.id)
-                    setSelectedFenceId(null)
-                  }}
-                  className="rounded-lg border border-red/40 bg-red/10 py-2 text-[12px] font-medium text-red hover:bg-red/20"
-                >
-                  Delete
-                </button>
-              </div>
+                      {/* 3-dot menu button */}
+                      <div
+                        className="relative shrink-0"
+                        ref={isMenuOpen ? menuRef : null}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <button
+                          onClick={() => setOpenMenuId(isMenuOpen ? null : zone.id)}
+                          title="Zone options"
+                          className={`flex h-6 w-6 items-center justify-center rounded-md transition-colors cursor-pointer ${
+                            isMenuOpen
+                              ? 'bg-panel text-hi border border-line'
+                              : 'text-dim hover:text-hi hover:bg-panel opacity-0 group-hover:opacity-100'
+                          }`}
+                        >
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                            <circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/>
+                          </svg>
+                        </button>
+
+                        {/* Dropdown Menu */}
+                        {isMenuOpen && (
+                          <div className="absolute right-0 top-full mt-1 z-30 w-36 rounded-xl border border-line bg-panel shadow-xl overflow-hidden">
+                            <button
+                              onClick={() => { setOpenMenuId(null); setSelectedFenceId(zone.id); handleOpenEdit(zone) }}
+                              className="flex w-full items-center gap-2.5 px-3 py-2.5 text-[12px] font-medium text-lo hover:bg-hover hover:text-hi transition-colors cursor-pointer"
+                            >
+                              <Edit2 className="h-3.5 w-3.5 text-accent" strokeWidth={2.2} />
+                              Edit zone
+                            </button>
+                            <div className="h-px bg-line-soft mx-2" />
+                            <button
+                              onClick={() => {
+                                setOpenMenuId(null)
+                                setDeletingZone(zone)
+                              }}
+                              className="flex w-full items-center gap-2.5 px-3 py-2.5 text-[12px] font-medium text-red hover:bg-red/8 transition-colors cursor-pointer"
+                            >
+                              <Trash2 className="h-3.5 w-3.5 text-red" strokeWidth={2.2} />
+                              Delete zone
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Row 2: Vehicle status pills */}
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {/* Total */}
+                      <span className="flex items-center gap-1 rounded-full border border-line-soft bg-panel px-2 py-0.5 font-mono text-[10px] text-lo">
+                        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                        {counts.total}
+                      </span>
+                      {/* Online */}
+                      <span className="flex items-center gap-1 rounded-full border border-green/20 bg-green/8 px-2 py-0.5 font-mono text-[10px] text-green">
+                        <span className="h-1.5 w-1.5 rounded-full bg-green" />
+                        {counts.online}
+                      </span>
+                      {/* Idle */}
+                      <span className="flex items-center gap-1 rounded-full border border-amber/20 bg-amber/8 px-2 py-0.5 font-mono text-[10px] text-amber">
+                        <span className="h-1.5 w-1.5 rounded-full bg-amber" />
+                        {counts.idle}
+                      </span>
+                      {/* Offline */}
+                      <span className="flex items-center gap-1 rounded-full border border-line-soft bg-panel px-2 py-0.5 font-mono text-[10px] text-dim">
+                        <span className="h-1.5 w-1.5 rounded-full bg-gray" />
+                        {counts.offline}
+                      </span>
+                    </div>
+                  </div>
+                )
+              })
             )}
           </div>
         </div>
+        {/* ── End Right Sidebar ──────────────────────────────────────── */}
       </div>
 
       {isModalOpen && (
@@ -501,6 +556,7 @@ export default function Geofences() {
               <div className="flex justify-end gap-2 pt-2">
                 <button
                   type="button"
+                  data-action="cancel-geofence-modal"
                   onClick={() => setIsModalOpen(false)}
                   className="rounded-lg border border-line bg-panel-2 px-4 py-2 text-[12.5px] font-medium text-lo hover:bg-hover"
                 >
@@ -508,6 +564,7 @@ export default function Geofences() {
                 </button>
                 <button
                   type="submit"
+                  data-action="submit-geofence-modal"
                   className="rounded-lg bg-accent px-4 py-2 text-[12.5px] font-medium text-white hover:bg-accent/90"
                 >
                   {modalMode === 'add' ? 'Create' : 'Save'}
@@ -517,6 +574,58 @@ export default function Geofences() {
           </div>
         </div>
       )}
+      {/* Delete Confirmation Warning Modal */}
+      {deletingZone && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-[2px] p-4 animate-in fade-in duration-200"
+          onClick={() => setDeletingZone(null)}
+        >
+          <div
+            className="w-full max-w-sm rounded-2xl border border-line bg-panel p-5 shadow-2xl space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start gap-3.5">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red/15 text-red border border-red/25">
+                <TriangleAlert className="h-5 w-5" strokeWidth={2.2} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h3 className="font-display text-[15px] font-bold text-hi">
+                  Delete Geofence Zone?
+                </h3>
+                <p className="mt-1 text-[12px] leading-relaxed text-dim">
+                  Are you sure you want to delete <strong className="font-semibold text-hi font-display">"{deletingZone.name}"</strong>? This will permanently remove its boundary and trigger rules.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-1 border-t border-line-soft">
+              <button
+                type="button"
+                data-action="cancel-delete-zone"
+                onClick={() => setDeletingZone(null)}
+                className="rounded-lg border border-line bg-panel-2 px-3.5 py-2 text-[12px] font-medium text-lo hover:bg-hover hover:text-hi transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                data-action="confirm-delete-zone"
+                onClick={() => {
+                  deleteGeofence(deletingZone.id)
+                  if (selectedFenceId === deletingZone.id) setSelectedFenceId(null)
+                  if (showToast) showToast(`Geofence "${deletingZone.name}" deleted`)
+                  setDeletingZone(null)
+                }}
+                className="flex items-center gap-1.5 rounded-lg bg-red px-3.5 py-2 text-[12px] font-semibold text-white hover:bg-red/90 transition-colors cursor-pointer shadow-sm"
+              >
+                <Trash2 className="h-3.5 w-3.5" strokeWidth={2.2} />
+                Delete Zone
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── End Geofences Page ── */}
     </div>
   )

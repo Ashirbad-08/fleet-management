@@ -94,13 +94,13 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col md:overflow-hidden">
+    <div data-component="NotificationsPage" data-slot="page-layout" className="flex min-h-0 flex-1 flex-col md:overflow-hidden">
       <Topbar title="Notifications Center" subtitle="Actionable operator alerts, priority issues, and diagnostic warnings" />
 
       <div className="flex flex-1 flex-col overflow-hidden px-4 pb-24 py-5 sm:px-6 md:pb-5">
         <div className="flex flex-1 flex-col overflow-hidden rounded-xl border border-line bg-panel">
           {/* Header Actions */}
-          <div className="flex flex-col gap-3 border-b border-line-soft px-5 py-3.5 lg:flex-row lg:items-center lg:justify-between">
+          <div data-slot="notifications-header" className="flex flex-col gap-3 border-b border-line-soft px-5 py-3.5 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-wrap items-center gap-3">
               <span className="font-display text-[13.5px] font-semibold">Actionable Alerts</span>
               {unreadCount > 0 && (
@@ -116,7 +116,7 @@ export default function NotificationsPage() {
                 {['all', 'unread', 'read'].map((tab) => (
                   <button
                     key={tab}
-                    onClick={() => setFilter(tab)}
+                    data-action="filter-notification" onClick={() => setFilter(tab)}
                     className={`rounded-md px-3 py-1 text-[11px] font-medium capitalize transition-colors ${
                       filter === tab ? 'bg-panel text-hi shadow-sm' : 'text-dim hover:text-lo'
                     }`}
@@ -128,7 +128,7 @@ export default function NotificationsPage() {
 
               {unreadCount > 0 && (
                 <button
-                  onClick={markAllNotificationsRead}
+                  data-action="mark-all-read" onClick={markAllNotificationsRead}
                   className="flex items-center gap-1.5 rounded-lg border border-line bg-panel px-3 py-1.5 text-[11.5px] text-lo hover:bg-hover hover:text-hi transition-colors"
                 >
                   <CheckCheck className="h-3.5 w-3.5" strokeWidth={2} />
@@ -138,7 +138,7 @@ export default function NotificationsPage() {
 
               {notifications.length > 0 && (
                 <button
-                  onClick={clearAllNotifications}
+                  data-action="clear-all-notifications" onClick={clearAllNotifications}
                   className="flex items-center gap-1.5 rounded-lg border border-line bg-panel px-3 py-1.5 text-[11.5px] text-red hover:bg-red/10 transition-colors"
                 >
                   <Trash2 className="h-3.5 w-3.5" strokeWidth={2} />
@@ -149,7 +149,7 @@ export default function NotificationsPage() {
           </div>
 
           {/* List content */}
-          <div className="flex-1 overflow-y-auto divide-y divide-line-soft">
+          <div data-slot="notifications-list" className="flex-1 overflow-y-auto divide-y divide-line-soft">
             {isLoading ? (
               [1, 2, 3, 4, 5, 6].map((i) => (
                 <div key={i} className="animate-pulse flex items-start justify-between gap-3 px-4 py-4.5 sm:gap-4 sm:px-6">

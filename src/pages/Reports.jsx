@@ -10,8 +10,7 @@ import {
   Clock,
   TrendingUp,
   Truck,
-  Filter,
-  ChevronDown,
+
   X,
 } from '../components/icons'
 
@@ -431,7 +430,7 @@ export default function Reports() {
   }
 
   return (
-    <div className="flex h-full flex-col overflow-hidden">
+    <div data-component="ReportsPage" className="flex h-full flex-col overflow-hidden">
       <Topbar title="Reports & Exports" />
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -446,6 +445,7 @@ export default function Reports() {
               </span>
             </div>
             <button
+              data-action="clear-vehicle-filter"
               onClick={() => setSelectedVehicleId('all')}
               className="flex items-center gap-1 rounded bg-panel px-2 py-1 text-[11px] font-semibold text-lo hover:text-hi transition-colors cursor-pointer"
             >
@@ -456,7 +456,7 @@ export default function Reports() {
         )}
 
         {/* ── KPI Strip ── */}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+        <div data-slot="kpi-strip" className="grid grid-cols-2 gap-3 sm:grid-cols-5">
           <KPICard
             icon={Route}
             label={currentVehicle ? `${currentVehicle.name} Trips` : 'Total Trips'}
@@ -490,7 +490,7 @@ export default function Reports() {
         </div>
 
         {/* ── Controls Row (Vehicle Dropdown + Date Range + Export Buttons) ── */}
-        <div className="flex flex-wrap items-center gap-2.5">
+        <div data-slot="controls-bar" className="flex flex-wrap items-center gap-2.5">
           {/* 1. Vehicle Selector Dropdown */}
           <div className="relative flex items-center">
             <div className="flex items-center gap-2 rounded-xl border border-line bg-panel px-3 py-1.5 shadow-2xs">
@@ -520,6 +520,7 @@ export default function Reports() {
           <div className="flex items-center gap-1 rounded-xl border border-line bg-panel p-1">
             {DATE_PRESETS.map((p) => (
               <button
+                data-action="select-date-preset"
                 key={p.key}
                 onClick={() => setDatePreset(p.key)}
                 className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer ${
@@ -534,6 +535,7 @@ export default function Reports() {
           {/* 3. Export Buttons */}
           <div className="ml-auto flex items-center gap-2">
             <button
+              data-action="export-report-csv"
               onClick={handleDownloadCSV}
               className="flex items-center gap-1.5 rounded-lg border border-line bg-panel px-3 py-1.5 text-xs font-semibold text-hi hover:border-accent hover:text-accent transition-colors cursor-pointer"
             >
@@ -541,6 +543,7 @@ export default function Reports() {
               CSV
             </button>
             <button
+              data-action="export-report-json"
               onClick={handleDownloadJSON}
               className="flex items-center gap-1.5 rounded-lg border border-line bg-panel px-3 py-1.5 text-xs font-semibold text-hi hover:border-accent hover:text-accent transition-colors cursor-pointer"
             >
@@ -563,6 +566,7 @@ export default function Reports() {
               const active = r.id === selectedType
               return (
                 <button
+                  data-action="select-report-type"
                   key={r.id}
                   onClick={() => setSelectedType(r.id)}
                   className={`w-full text-left rounded-xl border p-3.5 transition-all cursor-pointer ${

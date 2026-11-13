@@ -111,3 +111,27 @@ button:focus {
 .animate-pulse-dot {
   animation: pulse-dot 2s infinite;
 }
+
+
+/* ── Leaflet Custom Component Styles ───────────────────────── */
+.leaflet-custom-tooltip {
+  padding: 6px 10px;
+  background: #12151b;
+  color: #e8edf2;
+  border: 1px solid #242a33;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  font-family: var(--font-sans);
+  min-width: 140px;
+}
+
+.leaflet-custom-popup {
+  padding: 10px 12px;
+  background: #12151b;
+  color: #e8edf2;
+  border: 1px solid #242a33;
+  border-radius: 10px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
+  font-family: var(--font-sans);
+  min-width: 190px;
+}

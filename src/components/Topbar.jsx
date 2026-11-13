@@ -32,7 +32,6 @@ const PAGES = [
   { id: 'page-geofences', title: 'Geofence Zones & Boundaries', path: '/geofences', icon: MapPin, hint: 'Zone rules & radius alerts' },
   { id: 'page-firmware', title: 'Firmware & OTA Updates', path: '/firmware', icon: UploadCloud, hint: 'Roll out firmware versions' },
   { id: 'page-admins', title: 'Admins & Team Management', path: '/admins', icon: Users, hint: 'Roles & security access' },
-  { id: 'page-notifs', title: 'Notifications Center', path: '/notifications', icon: Bell, hint: 'System notifications' },
   { id: 'page-settings', title: 'System Settings', path: '/settings', icon: SettingsIcon, hint: 'Preferences & thresholds' },
 ]
 
@@ -356,7 +355,7 @@ export default function Topbar({ title, subtitle }) {
   const hasResults = flatItems.length > 0
 
   return (
-    <header className="relative z-40 flex flex-col gap-2.5 border-b border-line px-4 py-2.5 sm:px-6 lg:flex-row lg:items-center lg:gap-4 lg:py-1">
+    <header data-component="Topbar" className="relative z-40 flex flex-col gap-2.5 border-b border-line px-4 py-2.5 sm:px-6 lg:flex-row lg:items-center lg:gap-4 lg:py-1">
         
         {/* Title & Subtitle + Mobile/Tablet Action Controls Header */}
         <div className="flex items-center justify-between gap-3 lg:justify-start">
@@ -369,6 +368,7 @@ export default function Topbar({ title, subtitle }) {
           <div className="flex items-center gap-2 lg:hidden">
             <div className="relative">
               <button
+                data-action="toggle-notifications-mobile"
                 onClick={() => setNotifOpenMobile((o) => !o)}
                 aria-label="Toggle notifications menu"
                 aria-expanded={notifOpenMobile}
@@ -385,6 +385,7 @@ export default function Topbar({ title, subtitle }) {
             </div>
 
             <button
+              data-action="open-settings-mobile"
               onClick={() => navigate('/settings')}
               aria-label="Open settings"
               className="flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-panel text-lo hover:bg-hover hover:text-hi transition-colors cursor-pointer"
@@ -393,6 +394,7 @@ export default function Topbar({ title, subtitle }) {
             </button>
 
             <button
+              data-action="open-profile-mobile"
               onClick={() => navigate('/profile')}
               aria-label="View user profile"
               title="View profile"
@@ -422,6 +424,7 @@ export default function Topbar({ title, subtitle }) {
             />
             {searchQuery && (
               <button
+                data-action="clear-search"
                 onClick={() => {
                   setSearchQuery('')
                   inputRef.current?.focus()
@@ -773,6 +776,7 @@ export default function Topbar({ title, subtitle }) {
           {/* Bell with dropdown for Laptop View */}
           <div className="relative">
             <button
+              data-action="toggle-notifications-desktop"
               onClick={() => setNotifOpenDesktop((o) => !o)}
               aria-label="Toggle notifications menu"
               aria-expanded={notifOpenDesktop}
@@ -789,6 +793,7 @@ export default function Topbar({ title, subtitle }) {
           </div>
 
           <button
+            data-action="open-settings-desktop"
             onClick={() => navigate('/settings')}
             aria-label="Open settings"
             className="flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-panel text-lo hover:bg-hover hover:text-hi transition-colors cursor-pointer"
@@ -797,6 +802,7 @@ export default function Topbar({ title, subtitle }) {
           </button>
 
           <button
+            data-action="open-profile-desktop"
             onClick={() => navigate('/profile')}
             aria-label="View user profile"
             title="View profile"

@@ -26,6 +26,7 @@ import {
 } from '../../icons'
 import Gauge from '../../Gauge'
 import Sparkline from '../../Sparkline'
+import BatterySohCurve from '../BatterySohCurve'
 import { seedTrips } from '../../../data/tripsData'
 import { useFleet } from '../../../context/FleetContext'
 
@@ -37,23 +38,75 @@ export default function LiveTelemetryTab({
   settings,
   battData,
   onSelectTab,
-  onOpenHistoryModal,
-  onOpenTimelineModal,
-  timelineEvents,
-  timelineLoading,
-  timelineError,
-  onRefreshTimeline,
   openOnMap,
   activePlaybackTrip = null,
   onStartPlayback,
   onStopPlayback,
+  timelineEvents = [],
+  timelineLoading = false,
+  timelineError = null,
+  onRefreshTimeline,
 }) {
   const { refreshTelemetry } = useFleet()
   const [copiedId, setCopiedId] = useState(false)
   const [sharedLocation, setSharedLocation] = useState(false)
   const [showAllTrips, setShowAllTrips] = useState(false)
-  const [showAllTimeline, setShowAllTimeline] = useState(false)
 
+  const recentEvents = (timelineEvents && timelineEvents.length > 0
+    ? timelineEvents
+    : [
+        {
+          id: `evt-1-${selectedVehicle?.id || 'v'}`,
+          timestamp: 'Just now',
+          eventType: 'HEARTBEAT',
+          message: `${selectedVehicle?.deviceId || selectedVehicle?.plate || 'Device'} sent heartbeat telemetry ping via Cellular 4G LTE`,
+          severity: 'info',
+          color: 'var(--color-green)',
+          location: selectedVehicle?.location || 'Pune Depot - Bay 4',
+          metadata: `Signal: 94%, Voltage: ${selectedVehicle?.voltageV || 382}V, Temp: ${selectedVehicle?.batteryTempC || 28}°C`,
+        },
+        {
+          id: `evt-2-${selectedVehicle?.id || 'v'}`,
+          timestamp: '6 min ago',
+          eventType: 'FIRMWARE_CHECK',
+          message: 'OTA Firmware integrity verification completed (v2.4.1)',
+          severity: 'success',
+          color: 'var(--color-accent)',
+          location: 'System Gateway',
+          metadata: 'Checksum matched (SHA256 verified)',
+        },
+        {
+          id: `evt-3-${selectedVehicle?.id || 'v'}`,
+          timestamp: '18 min ago',
+          eventType: 'BATTERY_ALERT',
+          message: `Battery level report: ${selectedVehicle?.battery || 82}% SoC recorded`,
+          severity: Number(selectedVehicle?.battery || 82) < 30 ? 'warning' : 'info',
+          color: Number(selectedVehicle?.battery || 82) < 30 ? 'var(--color-amber)' : 'var(--color-accent)',
+          location: selectedVehicle?.location || 'In Transit - Sector 12',
+          metadata: `Battery temp: ${selectedVehicle?.batteryTempC || 32}°C, Health: ${selectedVehicle?.health || 92}%`,
+        },
+        {
+          id: `evt-4-${selectedVehicle?.id || 'v'}`,
+          timestamp: '41 min ago',
+          eventType: 'IGNITION_CYCLE',
+          message: 'Ignition start cycle recorded by ECU power management',
+          severity: 'info',
+          color: 'var(--color-gray)',
+          location: 'Okhla Yard Charging Bay',
+          metadata: `Odometer: ${(selectedVehicle?.odometerKm || 14820).toLocaleString()} km`,
+        },
+        {
+          id: `evt-5-${selectedVehicle?.id || 'v'}`,
+          timestamp: '1h 10m ago',
+          eventType: 'GEOFENCE_EXIT',
+          message: 'Exited designated geofence zone: Okhla Service Yard',
+          severity: 'info',
+          color: 'var(--color-accent)',
+          location: 'Outer Ring Road North',
+          metadata: `Speed: ${selectedVehicle?.speedKmh || 42} km/h, Heading: North-West`,
+        },
+      ]
+  ).slice(0, 5)
   const handleOpenGoogleMaps = () => {
     const lat = selectedVehicle.lat
     const lon = selectedVehicle.lon
@@ -377,7 +430,7 @@ export default function LiveTelemetryTab({
         )
       })()}
 
-      {/* Monthly Battery Trend */}
+      {/* 24 Hours Battery Trend */}
       {telemetryLoading ? (
         <div className="animate-pulse">
           <div className="flex items-center justify-between border-b border-line-soft bg-panel-2/60 px-5 py-2">
@@ -391,15 +444,15 @@ export default function LiveTelemetryTab({
       ) : (
         <div>
           <div className="flex items-center justify-between border-b border-line-soft bg-panel-2/60 px-5 py-2">
-            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-hi">
+            <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-hi">
               <span className="flex h-4 w-4 items-center justify-center rounded bg-amber/15 text-amber">
                 <Zap className="h-2.5 w-2.5" strokeWidth={2.5} />
               </span>
-              <span>Monthly Battery Trend</span>
+              <span>24 Hours Battery Trend</span>
             </div>
-            <div className="flex items-center gap-1.5 font-mono text-[10.5px]">
-              <span className="rounded bg-panel px-1.5 py-0.5 text-dim border border-line-soft text-[9.5px]">
-                30 Days
+            <div className="flex items-center gap-1.5 font-mono text-[11.5px]">
+              <span className="rounded bg-panel px-1.5 py-0.5 text-dim border border-line-soft text-[10.5px]">
+                24 Hours
               </span>
               <span className="font-bold text-amber tabular-nums">
                 {selectedVehicle.battery}% Current
@@ -411,6 +464,11 @@ export default function LiveTelemetryTab({
           </div>
         </div>
       )}
+
+      {/* Battery SoH & Degradation Curve (Card A) */}
+      <BatterySohCurve selectedVehicle={selectedVehicle} />
+
+     
 
       {/* Trips Section (Inline & Expandable) */}
       {telemetryLoading ? (
@@ -433,7 +491,7 @@ export default function LiveTelemetryTab({
       ) : (
         <div>
           <div className="flex items-center justify-between border-b border-line-soft bg-panel-2/60 px-5 py-2">
-            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-hi">
+            <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-hi">
               <span className="flex h-4 w-4 items-center justify-center rounded bg-accent/15 text-accent">
                 <History className="h-2.5 w-2.5" strokeWidth={2.5} />
               </span>
@@ -539,7 +597,7 @@ export default function LiveTelemetryTab({
             </div>
 
             <div className="flex items-center gap-2 mt-1">
-              <button
+              {/* <button
                 type="button"
                 onClick={() => setShowAllTrips((prev) => !prev)}
                 className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-line bg-panel py-2 text-[11.5px] font-semibold text-lo hover:text-hi hover:bg-hover transition-all cursor-pointer shadow-2xs"
@@ -553,128 +611,111 @@ export default function LiveTelemetryTab({
               >
                 <History className="h-3 w-3" />
                 <span>Full Trips Tab</span>
-              </button>
+              </button> */}
             </div>
           </div>
         </div>
       )}
-
-      {/* Device Timeline Section (Inline & Expandable) */}
-      <div>
+       {/* 5 Recent Timeline Events */}
+      <div data-component="RecentTimelineSection" data-slot="recent-timeline">
         <div className="flex items-center justify-between border-b border-line-soft bg-panel-2/60 px-5 py-2">
-          <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-hi">
+          <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-hi">
             <span className="flex h-4 w-4 items-center justify-center rounded bg-accent/15 text-accent">
-              <Radio className="h-2.5 w-2.5 animate-pulse" strokeWidth={2.5} />
+              <Radio className="h-2.5 w-2.5" strokeWidth={2.5} />
             </span>
-            <span>Device Timeline</span>
+            <span>Recent Timeline</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="font-mono text-[9.5px] text-dim">
-              IMEI: <strong className="text-hi">{selectedVehicle.deviceId || selectedVehicle.id}</strong>
-            </span>
-            <button
-              type="button"
-              onClick={onRefreshTimeline}
-              disabled={timelineLoading}
-              title="Refresh IMEI timeline"
-              aria-label="Refresh IMEI timeline"
-              className="flex h-5.5 w-5.5 items-center justify-center rounded border border-line bg-panel text-lo hover:bg-hover hover:text-hi disabled:opacity-50 cursor-pointer transition-colors"
-            >
-              <RotateCw
-                className={`h-2.5 w-2.5 ${timelineLoading ? 'animate-spin text-accent' : ''}`}
-                strokeWidth={2}
-              />
-            </button>
-            <button
-              type="button"
-              onClick={() => onSelectTab?.('timeline')}
-              className="text-[10px] text-accent font-semibold hover:underline cursor-pointer"
-            >
-              Open Tab →
-            </button>
+            <span className="font-mono text-[9.5px] text-dim uppercase">5 Recent Events</span>
+            {onRefreshTimeline && (
+              <button
+                type="button"
+                data-action="refresh-timeline"
+                onClick={onRefreshTimeline}
+                disabled={timelineLoading}
+                title="Refresh timeline events"
+                className="flex h-5 w-5 items-center justify-center rounded border border-line-soft bg-panel text-dim hover:text-accent hover:border-accent/40 transition-colors cursor-pointer disabled:opacity-50"
+              >
+                <RotateCw className={`h-2.5 w-2.5 ${timelineLoading ? 'animate-spin text-accent' : ''}`} strokeWidth={2} />
+              </button>
+            )}
           </div>
         </div>
 
-        <div className="border-b border-line-soft px-5 py-3 bg-panel-2/15">
-          {timelineLoading && timelineEvents.length === 0 ? (
-            <div className="space-y-2 py-2">
+        <div className="border-b border-line-soft px-5 py-3 bg-panel-2/15 space-y-2">
+          {timelineLoading && (!timelineEvents || timelineEvents.length === 0) ? (
+            <div className="space-y-2 py-1">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="flex gap-2.5 animate-pulse">
+                <div key={i} className="flex gap-2.5 animate-pulse p-2.5 rounded-lg bg-panel border border-line-soft">
                   <div className="mt-1 h-2 w-2 rounded-full bg-line-soft" />
-                  <div className="flex-1 space-y-1">
-                    <div className="h-3.5 w-3/4 rounded bg-line-soft" />
-                    <div className="h-2.5 w-1/2 rounded bg-line-soft/60" />
+                  <div className="flex-1 space-y-1.5">
+                    <div className="h-3.5 w-1/3 rounded bg-line-soft" />
+                    <div className="h-2.5 w-2/3 rounded bg-line-soft/60" />
                   </div>
                 </div>
               ))}
             </div>
-          ) : timelineError ? (
-            <div className="rounded-lg border border-red/30 bg-red/10 p-3 text-[11.5px] text-red">
-              {timelineError}
-              <button
-                type="button"
-                onClick={onRefreshTimeline}
-                className="ml-2 font-semibold underline cursor-pointer"
-              >
-                Retry
-              </button>
-            </div>
           ) : (
-            <div className="space-y-2">
-              {(showAllTimeline ? timelineEvents : timelineEvents.slice(0, 5)).map((evt) => {
-                const sevColor =
-                  evt.severity === 'critical'
-                    ? 'var(--color-red)'
-                    : evt.severity === 'warning'
-                      ? 'var(--color-amber)'
-                      : evt.severity === 'success'
-                        ? 'var(--color-green)'
-                        : 'var(--color-accent)'
+            recentEvents.map((evt, idx) => {
+              const sevBadge =
+                evt.severity === 'critical'
+                  ? 'bg-red/15 text-red border-red/30'
+                  : evt.severity === 'warning'
+                    ? 'bg-amber/15 text-amber border-amber/30'
+                    : evt.severity === 'success'
+                      ? 'bg-green/15 text-green border-green/30'
+                      : 'bg-accent/15 text-accent border-accent/30'
 
-                return (
-                  <div
-                    key={evt.id}
-                    className="group flex gap-2.5 rounded-lg border border-line-soft/60 bg-panel p-2.5 transition-colors hover:border-line shadow-xs"
-                  >
+              const sevColor =
+                evt.severity === 'critical'
+                  ? 'var(--color-red)'
+                  : evt.severity === 'warning'
+                    ? 'var(--color-amber)'
+                    : evt.severity === 'success'
+                      ? 'var(--color-green)'
+                      : 'var(--color-accent)'
+
+              return (
+                <div
+                  key={evt.id || idx}
+                  className="rounded-lg border border-line-soft/80 bg-panel p-2.5 transition-all hover:border-line hover:bg-panel-2/40 shadow-2xs"
+                >
+                  <div className="flex items-start gap-2">
                     <span
-                      className="mt-1 h-2 w-2 shrink-0 rounded-full shadow-xs"
+                      className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full shadow-xs"
                       style={{ background: evt.color || sevColor }}
                     />
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between gap-1 mb-0.5">
-                        <span className="rounded bg-panel-2 px-1.5 py-0.25 font-mono text-[9px] font-bold uppercase tracking-wider text-lo border border-line-soft">
+                      <div className="flex items-center justify-between gap-1 mb-1">
+                        <span className={`rounded px-1.5 py-0.2 font-mono text-[9px] font-bold uppercase tracking-wider border ${sevBadge}`}>
                           {evt.eventType}
                         </span>
-                        <span className="font-mono text-[9.5px] text-dim tabular-nums">{evt.timestamp}</span>
+                        <span className="font-mono text-[10px] text-dim tabular-nums">
+                          {evt.timestamp}
+                        </span>
                       </div>
-                      <div className="text-[11.5px] font-medium leading-snug text-hi">{evt.message}</div>
+                      <div className="text-[11.5px] font-medium leading-snug text-hi">
+                        {evt.message}
+                      </div>
+                      {(evt.location || evt.metadata) && (
+                        <div className="mt-1 font-mono text-[10px] text-dim flex flex-wrap items-center justify-between gap-1 border-t border-line-soft/40 pt-1">
+                          <span className="truncate max-w-[240px]">{evt.metadata}</span>
+                          {evt.location && (
+                            <span className="text-accent font-medium shrink-0 flex items-center gap-0.5">
+                              <MapPin className="h-2.5 w-2.5" />
+                              {evt.location}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
-                )
-              })}
-
-              <div className="flex items-center gap-2 mt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowAllTimeline((prev) => !prev)}
-                  className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-line bg-panel py-2 text-[11.5px] font-semibold text-lo hover:text-hi hover:bg-hover transition-all cursor-pointer shadow-2xs"
-                >
-                  <span>{showAllTimeline ? 'Show Less (5 Events)' : `Show All ${timelineEvents.length} Events Inline`}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onSelectTab?.('timeline')}
-                  className="flex items-center justify-center gap-1.5 rounded-xl border border-accent/30 bg-accent/10 px-3 py-2 text-[11.5px] font-semibold text-accent hover:bg-accent/20 transition-all cursor-pointer shadow-xs"
-                >
-                  <Radio className="h-3 w-3" />
-                  <span>Full Timeline Tab</span>
-                </button>
-              </div>
-            </div>
+                </div>
+              )
+            })
           )}
         </div>
       </div>
-
       {/* Quick Actions */}
       <div>
         <div className="flex items-center justify-between border-b border-line-soft bg-panel-2/60 px-5 py-2">

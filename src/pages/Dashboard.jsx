@@ -67,7 +67,7 @@ export default function Dashboard() {
   const currentFilterObj = FILTER_OPTIONS.find((o) => o.key === statusFilter) || FILTER_OPTIONS[0]
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col xl:overflow-hidden">
+    <div data-component="DashboardPage" data-slot="page-layout" className="flex min-h-0 flex-1 flex-col xl:overflow-hidden">
       <Topbar title="Fleet overview" subtitle="Connected vehicle telemetry & live location tracking" />
 
       <div className="flex-1 overflow-y-auto px-4 pb-5 pt-5 sm:px-6">
@@ -77,9 +77,9 @@ export default function Dashboard() {
         <VehicleQuickRibbon />
 
         {/* Main Grid: Map & Live Event Feed (Identical Heights) */}
-        <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
+        <div data-slot="main-grid" className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
           {/* Aesthetic Fleet Tracking Map Container */}
-          <div className="flex h-[22rem] sm:h-[25rem] flex-col overflow-hidden rounded-xl border border-line bg-panel relative shadow-sm">
+          <div data-slot="map-card" className="flex h-[22rem] sm:h-[25rem] flex-col overflow-hidden rounded-xl border border-line bg-panel relative shadow-sm">
             {/* Professional Header Bar */}
             <div className="flex items-center justify-between border-b border-line-soft px-4 py-2  shrink-0 bg-panel/40">
               <div className="flex items-center gap-2">
@@ -104,11 +104,12 @@ export default function Dashboard() {
             <div className="relative flex-1 h-full w-full">
               {/* Top-Left Floating Controls Toolbar (Icon only by default, expands on hover) */}
               <div
-                className="absolute left-3 top-3 z-20 flex flex-col items-start gap-1.5"
+                data-slot="map-toolbar" className="absolute left-3 top-3 z-20 flex flex-col items-start gap-1.5"
                 onClick={(e) => e.stopPropagation()}
               >
                 {/* 1. View Full Map Button */}
                 <button
+                  data-action="expand-map"
                   onClick={() => setFullScreenMap(true)}
                   aria-label="View map in full screen mode"
                   className="group flex h-7 items-center gap-1.5 overflow-hidden rounded-lg border border-line bg-panel/90 px-2 text-xs font-medium text-hi backdrop-blur-md shadow-md transition-all duration-300 ease-out hover:pr-2.5 hover:border-accent/40 hover:bg-hover cursor-pointer"
@@ -122,6 +123,7 @@ export default function Dashboard() {
 
                 {/* 2. Refresh Button */}
                 <button
+                  data-action="refresh-telemetry"
                   onClick={handleRefresh}
                   aria-label="Refresh map telemetry"
                   className="group flex h-7 items-center gap-1.5 overflow-hidden rounded-lg border border-line bg-panel/90 px-2 text-xs font-medium text-hi backdrop-blur-md shadow-md transition-all duration-300 ease-out hover:pr-2.5 hover:border-accent/40 hover:bg-hover cursor-pointer"
@@ -136,6 +138,7 @@ export default function Dashboard() {
                 {/* 3. Filter Status Dropdown Button */}
                 <div className="relative" ref={filterRef}>
                   <button
+                    data-action="toggle-status-filter"
                     onClick={() => setFilterOpen((prev) => !prev)}
                     aria-label="Filter map by vehicle status"
                     aria-expanded={filterOpen}
@@ -153,12 +156,13 @@ export default function Dashboard() {
                   </button>
 
                   {filterOpen && (
-                    <div className="absolute left-0 top-full mt-1 w-40 rounded-xl border border-line bg-panel-2 py-1 shadow-xl z-30 backdrop-blur">
+                    <div data-slot="status-filter-menu" className="absolute left-0 top-full mt-1 w-40 rounded-xl border border-line bg-panel-2 py-1 shadow-xl z-30 backdrop-blur">
                       <div className="px-3 py-1 font-mono text-xs uppercase tracking-wider text-dim">
                         Filter Status
                       </div>
                       {FILTER_OPTIONS.map((opt) => (
                         <button
+                          data-action="select-status-filter"
                           key={opt.key}
                           onClick={() => {
                             setStatusFilter(opt.key)
@@ -194,7 +198,7 @@ export default function Dashboard() {
           </div>
 
           {/* Right Column: Live Event Feed Widget - Exactly Matching Map Height */}
-          <div className="flex h-[22rem] sm:h-[25rem] flex-col rounded-xl border border-line bg-panel overflow-hidden shadow-sm">
+          <div data-slot="live-event-feed-card" className="flex h-[22rem] sm:h-[25rem] flex-col rounded-xl border border-line bg-panel overflow-hidden shadow-sm">
             <div className="flex items-center gap-2 border-b border-line-soft px-4 py-3 shrink-0">
               <span className="h-2 w-2 rounded-full bg-red-600 animate-pulse" />
               <div className="font-display text-sm font-semibold text-hi">Live event feed</div>
@@ -204,7 +208,7 @@ export default function Dashboard() {
         </div>
 
         {/* Operational Intelligence & Activity Sections */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+        <div data-slot="analytics-grid" className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
           <FleetStatusDonutCard />
           <FleetHourlyTripsCard />
         </div>
@@ -225,6 +229,7 @@ export default function Dashboard() {
               </span>
             </div>
             <button
+              data-action="exit-fullscreen-map"
               onClick={() => setFullScreenMap(false)}
               className="flex items-center gap-1.5 rounded-lg border border-line bg-panel-2 px-3 py-1.5 text-xs font-semibold text-hi hover:bg-hover hover:border-accent/40 transition-colors cursor-pointer"
             >
@@ -240,6 +245,7 @@ export default function Dashboard() {
             >
               {/* Refresh Button */}
               <button
+                data-action="refresh-fullscreen-map"
                 onClick={handleRefresh}
                 className="group flex h-8 items-center gap-1.5 overflow-hidden rounded-lg border border-line bg-panel/90 px-2 text-xs font-medium text-hi backdrop-blur-md shadow-lg transition-all duration-300 ease-out hover:pr-3 hover:border-accent/40 hover:bg-hover cursor-pointer"
                 title="Refresh map telemetry"
@@ -253,6 +259,7 @@ export default function Dashboard() {
               {/* Filter Status Dropdown Button */}
               <div className="relative" ref={fullScreenFilterRef}>
                 <button
+                  data-action="toggle-fullscreen-filter"
                   onClick={() => setFullScreenFilterOpen((prev) => !prev)}
                   className="group flex h-8 items-center gap-1.5 overflow-hidden rounded-lg border border-line bg-panel/90 px-2 text-xs font-medium text-hi backdrop-blur-md shadow-lg transition-all duration-300 ease-out hover:pr-3 hover:border-accent/40 hover:bg-hover cursor-pointer"
                   title="Filter status"

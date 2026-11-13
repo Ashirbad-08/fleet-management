@@ -85,7 +85,7 @@ export default function Devices() {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col md:overflow-hidden">
+    <div data-component="DevicesPage" data-slot="page-layout" className="flex min-h-0 flex-1 flex-col md:overflow-hidden">
       <Topbar
         title="Devices"
         subtitle="IoT telematics hardware, cellular connectivity & OTA firmware management"
@@ -93,7 +93,7 @@ export default function Devices() {
 
       <div className="flex-1 overflow-y-auto px-4 pb-24 py-4 sm:px-6 md:pb-6 space-y-4">
         {/* 1. Top Hardware Telemetry KPI Cards */}
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-5">
+        <div data-slot="kpi-grid" className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-5">
           <div className="rounded-xl border border-line bg-panel p-3.5 space-y-1">
             <div className="text-[10.5px] font-mono uppercase tracking-wider text-dim flex items-center justify-between">
               <span>Total Trackers</span>
@@ -141,6 +141,7 @@ export default function Devices() {
               </div>
               {counts.outdated > 0 && (
                 <button
+                  data-action="flash-all-ota"
                   type="button"
                   onClick={handleUpdateAllOutdated}
                   className="rounded-lg bg-accent/15 px-2 py-1 text-[10.5px] font-bold text-accent hover:bg-accent/25 transition-colors cursor-pointer"
@@ -154,7 +155,7 @@ export default function Devices() {
         </div>
 
         {/* 2. Filter Toolbar & Search */}
-        <div className="flex flex-col gap-3 rounded-xl border border-line bg-panel p-3.5 sm:flex-row sm:items-center sm:justify-between">
+        <div data-slot="filter-search-bar" className="flex flex-col gap-3 rounded-xl border border-line bg-panel p-3.5 sm:flex-row sm:items-center sm:justify-between">
           {/* Status Tabs */}
           <div className="flex items-center gap-1 overflow-x-auto scrollbar-none pb-1 sm:pb-0">
             {[
@@ -165,6 +166,7 @@ export default function Devices() {
               { id: 'outdated', label: 'Update Available', count: counts.outdated },
             ].map((tab) => (
               <button
+                data-action="select-device-filter"
                 key={tab.id}
                 type="button"
                 onClick={() => setFilterTab(tab.id)}
@@ -334,6 +336,7 @@ export default function Devices() {
                     <div className="flex items-center gap-1.5 shrink-0">
                       {!isLatestFw && (
                         <button
+                          data-action="flash-single-ota"
                           type="button"
                           disabled={isUpdating}
                           onClick={() => sendDeviceCommand(v, 'firmware')}
@@ -345,6 +348,7 @@ export default function Devices() {
                       )}
 
                       <button
+                        data-action="open-device-diagnostics"
                         type="button"
                         onClick={() => setSelectedDevice(v)}
                         className="flex items-center gap-1 rounded-lg border border-line bg-panel-2 px-2.5 py-1 text-[11px] font-semibold text-lo hover:border-accent/40 hover:bg-hover hover:text-hi transition-all cursor-pointer shadow-2xs"

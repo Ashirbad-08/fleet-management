@@ -2,7 +2,7 @@ import { CreditCard, ShieldCheck, Users } from '../../icons'
 
 export default function PassportTab({ selectedVehicle }) {
   return (
-    <div className="p-5 space-y-4">
+    <div data-component="PassportTab" data-slot="vehicle-passport" className="p-5 space-y-4">
       {/* ── Vehicle ── */}
       <div className="rounded-xl border border-line-soft bg-panel-2/50 overflow-hidden shadow-xs">
         <div className="flex items-center justify-between border-b border-line-soft bg-panel px-4 py-2.5">

@@ -110,7 +110,7 @@ export default function Login() {
   }
 
   return (
-    <div className="relative flex h-screen w-full items-center justify-center overflow-hidden bg-base text-hi font-sans">
+    <div data-component="LoginPage" data-slot="login-layout" className="relative flex h-screen w-full items-center justify-center overflow-hidden bg-base text-hi font-sans">
       <div className="pointer-events-none absolute inset-0">
         <ParticleCanvas />
         <div className="absolute -top-40 -left-40 h-[600px] w-[600px] rounded-full" style={{ background: 'radial-gradient(circle, rgba(0,255,102,0.08) 0%, transparent 70%)', animation: 'pulse 6s ease-in-out infinite' }} />
@@ -145,12 +145,12 @@ export default function Login() {
             <div className="flex flex-col gap-1">
               <div className="flex items-center justify-between">
                 <label className="text-[11.5px] font-medium text-lo">Password</label>
-                <button type="button" onClick={() => setForgotModalOpen(true)} className="text-[11px] text-accent hover:underline cursor-pointer">Forgot password?</button>
+                <button type="button" data-action="open-forgot-password" onClick={() => setForgotModalOpen(true)} className="text-[11px] text-accent hover:underline cursor-pointer">Forgot password?</button>
               </div>
               <div className="relative flex items-center">
                 <Lock className="absolute left-3 h-4 w-4 text-dim" strokeWidth={2} />
                 <input type={showPassword ? 'text' : 'password'} required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter password" className="w-full rounded-xl border border-line bg-panel-2/60 px-3.5 py-2 pl-10 pr-10 text-[13px] text-hi placeholder:text-dim focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/50 transition-all" />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 text-dim hover:text-hi transition-colors cursor-pointer">
+                <button type="button" data-action="toggle-show-password" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 text-dim hover:text-hi transition-colors cursor-pointer">
                   {showPassword ? <EyeOff className="h-4 w-4" strokeWidth={2} /> : <Eye className="h-4 w-4" strokeWidth={2} />}
                 </button>
               </div>
@@ -175,7 +175,7 @@ export default function Login() {
               </span>
             </label>
 
-            <button type="submit" disabled={isSubmitting} className="flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-accent text-[13.5px] font-semibold text-base transition-all active:scale-[0.99] disabled:opacity-50 cursor-pointer">
+            <button type="submit" data-action="submit-login" disabled={isSubmitting} className="flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-accent text-[13.5px] font-semibold text-base transition-all active:scale-[0.99] disabled:opacity-50 cursor-pointer">
               {isSubmitting ? (
                 <><div className="h-4 w-4 rounded-full border-2 border-base border-t-transparent animate-spin" /><span>Authenticating…</span></>
               ) : (
@@ -198,7 +198,7 @@ export default function Login() {
           <div className="w-full max-w-md rounded-2xl border border-line bg-panel p-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-line-soft pb-3">
               <div className="font-display text-[15px] font-bold text-hi">Reset Password</div>
-              <button onClick={() => setForgotModalOpen(false)} className="rounded-lg p-1 text-dim hover:bg-hover hover:text-hi cursor-pointer">✕</button>
+              <button data-action="close-forgot-password" onClick={() => setForgotModalOpen(false)} className="rounded-lg p-1 text-dim hover:bg-hover hover:text-hi cursor-pointer">✕</button>
             </div>
             {resetSuccess ? (
               <div className="my-6 flex flex-col items-center justify-center text-center">
@@ -214,8 +214,8 @@ export default function Login() {
                   <input type="email" required value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} placeholder="admin@company.com" className="w-full rounded-xl border border-line bg-panel-2 px-3.5 py-2.5 pl-10 text-[13px] text-hi focus:border-accent focus:outline-none" />
                 </div>
                 <div className="flex items-center justify-end gap-2 pt-2">
-                  <button type="button" onClick={() => setForgotModalOpen(false)} className="rounded-xl border border-line px-4 py-2 text-[12px] font-medium text-lo hover:bg-hover cursor-pointer">Cancel</button>
-                  <button type="submit" className="rounded-xl bg-accent px-4 py-2 text-[12px] font-semibold text-base hover:bg-accent/90 cursor-pointer">Send Link</button>
+                  <button type="button" data-action="cancel-forgot-password" onClick={() => setForgotModalOpen(false)} className="rounded-xl border border-line px-4 py-2 text-[12px] font-medium text-lo hover:bg-hover cursor-pointer">Cancel</button>
+                  <button type="submit" data-action="submit-reset-password" className="rounded-xl bg-accent px-4 py-2 text-[12px] font-semibold text-base hover:bg-accent/90 cursor-pointer">Send Link</button>
                 </div>
               </form>
             )}

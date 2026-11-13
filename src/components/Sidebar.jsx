@@ -11,7 +11,6 @@ const NAV_ITEMS = [
   { to: '/alerts', label: 'Alerts', icon: TriangleAlert, countKey: 'critical' },
   { to: '/geofences', label: 'Geofences', icon: MapPin },
   { to: '/admins', label: 'Admins', icon: Users },
-  { to: '/notifications', label: 'Notifications', icon: Bell, countKey: 'unread' },
 ]
 
 export default function Sidebar() {
@@ -19,7 +18,7 @@ export default function Sidebar() {
 
   return (
     <>
-      <aside aria-label="Main Sidebar Navigation" className="hidden md:flex md:sticky md:top-0 md:self-start md:h-dvh w-54 shrink-0 flex-col border-r border-line bg-panel p-3">
+      <aside data-component="Sidebar" aria-label="Main Sidebar Navigation" className="hidden md:flex md:sticky md:top-0 md:self-start md:h-dvh w-54 shrink-0 flex-col border-r border-line bg-panel p-3">
         <div className="px-2 pb-4 pt-1">
           <div className="font-display text-3xl font-bold leading-none tracking-tight">
             Electri<span className="text-green-400 [filter:drop-shadow(0_0_2px_rgba(0,255,102,0.95))_drop-shadow(0_0_20px_rgba(0,255,102,0.6))]">E</span>
@@ -27,7 +26,7 @@ export default function Sidebar() {
           <div className="mt-1 font-mono text-xs uppercase tracking-wider text-dim">Fleet Monitor</div>
         </div>
 
-        <nav aria-label="Sidebar Links" className="mt-2 flex flex-col gap-0.5">
+        <nav aria-label="Sidebar Links" data-slot="sidebar-nav" className="mt-2 flex flex-col gap-0.5">
           {NAV_ITEMS.map(({ to, label, icon: Icon, end, countKey }) => (
             <NavLink
               key={to}
@@ -66,7 +65,7 @@ export default function Sidebar() {
             Settings
           </NavLink>
           <button
-            onClick={logout}
+            data-action="logout" onClick={logout}
             className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-lo hover:bg-red/10 hover:text-red transition-colors cursor-pointer"
           >
             <Power className="h-4 w-4" strokeWidth={2} />
@@ -75,7 +74,7 @@ export default function Sidebar() {
         </div>
 
         <div className="mt-auto pt-3.5">
-          <div className="flex items-center gap-2 rounded-lg border border-line-soft bg-panel-2 px-2.5 py-2.5">
+          <div data-slot="sidebar-live-status" className="flex items-center gap-2 rounded-lg border border-line-soft bg-panel-2 px-2.5 py-2.5">
             <span className="h-1.5 w-1.5 shrink-0 animate-pulse-dot rounded-full bg-green shadow-[0_0_0_3px_rgba(61,220,132,0.13)]" />
             <p className="text-xs leading-snug text-lo">
               <b className="font-semibold text-hi tabular-nums">{stats.online}</b> devices reporting live

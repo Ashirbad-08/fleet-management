@@ -18,7 +18,7 @@ export default function BatterySpecsTab({ selectedVehicle, onStartEdit }) {
             </span>
             <button
               type="button"
-              onClick={onStartEdit}
+              data-action="edit-battery-specs" onClick={onStartEdit}
               title="Edit battery specifications"
               className="flex items-center gap-1 rounded border border-line bg-panel-2 px-2 py-0.5 text-[10px] font-medium text-lo hover:border-accent/40 hover:text-accent transition-colors cursor-pointer"
             >

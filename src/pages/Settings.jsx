@@ -216,7 +216,7 @@ export default function Settings() {
     'rounded-lg border border-line bg-panel-2 px-3.5 py-2 text-[12.5px] text-hi focus:border-accent focus:outline-hidden transition-colors'
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col md:overflow-hidden">
+    <div data-component="SettingsPage" data-slot="page-layout" className="flex min-h-0 flex-1 flex-col md:overflow-hidden">
       <Topbar title="Settings" subtitle="Manage organization settings, fleet policies, and security preferences" />
 
       {/* Tabs Selector */}
@@ -231,6 +231,7 @@ export default function Settings() {
             return (
               <button
                 key={tab.id}
+                data-action="switch-settings-tab"
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 border-b-2 px-1 py-3 text-[13px] font-medium transition-all cursor-pointer ${
                   activeTab === tab.id
@@ -364,7 +365,7 @@ export default function Settings() {
                     <label className="text-[12px] font-medium text-lo">Measurement System</label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div
-                        onClick={() => handleUnitSystemChange('Metric')}
+                        data-action="set-unit-metric" onClick={() => handleUnitSystemChange('Metric')}
                         className={`cursor-pointer rounded-lg border p-3.5 transition-all ${
                           unitSystem === 'Metric'
                             ? 'border-accent bg-accent/5'
@@ -385,7 +386,7 @@ export default function Settings() {
                       </div>
 
                       <div
-                        onClick={() => handleUnitSystemChange('Imperial')}
+                        data-action="set-unit-imperial" onClick={() => handleUnitSystemChange('Imperial')}
                         className={`cursor-pointer rounded-lg border p-3.5 transition-all ${
                           unitSystem === 'Imperial'
                             ? 'border-accent bg-accent/5'
@@ -663,6 +664,7 @@ export default function Settings() {
                     </div>
                     <button
                       type="button"
+                      data-action="navigate-to-profile"
                       onClick={() => navigate('/profile')}
                       className="inline-flex items-center gap-1.5 rounded-lg border border-accent/30 bg-accent/10 px-3 py-1.5 text-[11.5px] font-semibold text-accent hover:bg-accent/20 transition-colors cursor-pointer self-start sm:self-auto"
                     >

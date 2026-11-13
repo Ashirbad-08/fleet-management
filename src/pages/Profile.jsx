@@ -90,7 +90,7 @@ export default function Profile() {
     'w-full rounded-md border border-line bg-panel-2 px-3 py-2 text-[12.5px] text-hi outline-none focus:border-accent transition-colors'
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col md:overflow-hidden">
+    <div data-component="ProfilePage" data-slot="page-layout" className="flex min-h-0 flex-1 flex-col md:overflow-hidden">
       <Topbar title="Admin Profile" subtitle="Manage your personal contact details, role permissions, and organization profile" />
 
       <div className="flex-1 overflow-y-auto px-4 pb-24 py-5 sm:px-6 md:pb-5">
@@ -120,7 +120,7 @@ export default function Profile() {
               <div className="h-32 bg-gradient-to-r from-accent/25 via-emerald-500/10 to-accent/5 relative">
                 <div className="absolute right-4 top-4 flex items-center gap-2">
                   <button
-                    onClick={() => navigate('/settings')}
+                    data-action="navigate-to-settings" onClick={() => navigate('/settings')}
                     className="inline-flex items-center gap-1.5 rounded-lg border border-line/60 bg-panel/80 backdrop-blur px-3 py-1.5 text-[11.5px] font-medium text-hi hover:bg-hover transition-colors cursor-pointer shadow-xs"
                   >
                     <SettingsIcon className="h-3.5 w-3.5 text-accent" strokeWidth={2} />
@@ -149,14 +149,14 @@ export default function Profile() {
 
                   <div className="flex flex-wrap items-center gap-2.5 self-start sm:self-center">
                     <button
-                      onClick={() => setIsEditModalOpen(true)}
+                      data-action="open-edit-profile" onClick={() => setIsEditModalOpen(true)}
                       className="inline-flex items-center gap-1.5 rounded-lg bg-accent/15 border border-accent/30 px-3 py-1.5 text-[12px] font-medium text-accent hover:bg-accent/25 transition-colors cursor-pointer"
                     >
                       <Edit2 className="h-3.5 w-3.5" strokeWidth={2} />
                       Edit Profile
                     </button>
                     <button
-                      onClick={logout}
+                      data-action="logout" onClick={logout}
                       className="inline-flex items-center gap-1.5 rounded-lg bg-red/10 border border-red/20 px-3 py-1.5 text-[12px] font-medium text-red hover:bg-red/20 transition-colors cursor-pointer"
                     >
                       <Power className="h-3.5 w-3.5" strokeWidth={2} />
@@ -327,6 +327,7 @@ export default function Profile() {
                 <span className="font-display text-[14px] font-bold text-hi">Edit Personal & Contact Profile</span>
               </div>
               <button
+                data-action="close-edit-profile"
                 onClick={() => setIsEditModalOpen(false)}
                 className="flex h-6 w-6 items-center justify-center rounded-md border border-line bg-panel-2 text-lo hover:bg-hover hover:text-hi cursor-pointer"
               >
@@ -409,6 +410,7 @@ export default function Profile() {
               <div className="flex gap-3 pt-3 border-t border-line-soft">
                 <button
                   type="button"
+                  data-action="cancel-edit-profile"
                   onClick={() => setIsEditModalOpen(false)}
                   className="flex-1 rounded-lg border border-line bg-panel-2 py-2 text-[12.5px] font-medium text-lo hover:bg-hover cursor-pointer"
                 >
@@ -416,6 +418,7 @@ export default function Profile() {
                 </button>
                 <button
                   type="submit"
+                  data-action="save-profile"
                   className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-accent/20 border border-accent/30 py-2 text-[12.5px] font-medium text-accent hover:bg-accent/30 cursor-pointer"
                 >
                   <Save className="h-4 w-4" strokeWidth={2} />

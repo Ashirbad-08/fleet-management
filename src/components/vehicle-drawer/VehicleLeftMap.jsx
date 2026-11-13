@@ -86,7 +86,8 @@ export default function VehicleLeftMap({
     }
   }, [selectedVehicle?.id, selectedVehicle?.lat, selectedVehicle?.lon, activePlaybackTrip])
 
-  // Fire resize events on mount and after short delays to ensure Leaflet calculates tiles immediately
+  // Fire resize/invalidateSize events when vehicle changes or map becomes visible
+  // after being hidden (keep-alive pattern). Without this Leaflet tiles render blank.
   useEffect(() => {
     const fireResize = () => {
       window.dispatchEvent(new Event('resize'))
@@ -229,7 +230,7 @@ export default function VehicleLeftMap({
           {activePlaybackTrip && (
             <button
               type="button"
-              onClick={onStopPlayback}
+              data-action="stop-playback" onClick={onStopPlayback}
               title="Stop route playback and return to live tracking"
               className="flex h-8 items-center gap-1.5 rounded-lg border border-red/40 bg-red/10 px-2.5 text-xs font-bold text-red hover:bg-red/20 transition-all cursor-pointer shadow-xs"
             >
@@ -287,7 +288,7 @@ export default function VehicleLeftMap({
             center={mapCenter}
             zoom={mapZoom}
             height="100%"
-            hideLegend={false}
+            hideLegend={true}
             playbackData={playbackData}
           />
         </div>
@@ -348,7 +349,7 @@ export default function VehicleLeftMap({
                 {/* Play / Pause Toggle */}
                 <button
                   type="button"
-                  onClick={() => setIsPlaying((p) => !p)}
+                  data-action="toggle-playback-play" onClick={() => setIsPlaying((p) => !p)}
                   title={isPlaying ? 'Pause playback' : 'Resume playback'}
                   className="flex h-8 w-8 items-center justify-center rounded-xl bg-accent text-black font-bold hover:bg-green active:scale-95 transition-all cursor-pointer shadow-xs"
                 >
@@ -366,7 +367,7 @@ export default function VehicleLeftMap({
                     setCurrentIndex(0)
                     setIsPlaying(true)
                   }}
-                  title="Restart from beginning"
+                  data-action="restart-playback" title="Restart from beginning"
                   className="flex h-8 w-8 items-center justify-center rounded-xl border border-line bg-panel-2 text-lo hover:border-line hover:bg-hover hover:text-hi active:scale-95 transition-all cursor-pointer"
                 >
                   <RotateCcw className="h-3.5 w-3.5" />
@@ -378,7 +379,7 @@ export default function VehicleLeftMap({
                     <button
                       key={spd}
                       type="button"
-                      onClick={() => setPlaybackSpeed(spd)}
+                      data-action="set-playback-speed" onClick={() => setPlaybackSpeed(spd)}
                       className={`rounded px-2 py-1 transition-all cursor-pointer ${
                         playbackSpeed === spd
                           ? 'bg-accent text-black shadow-2xs'

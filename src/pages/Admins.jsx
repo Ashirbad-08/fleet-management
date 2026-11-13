@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import Topbar from '../components/Topbar'
 import { useFleet } from '../context/FleetContext'
 import { ROLES, DEPOT_OPTIONS, PERMISSION_MATRIX } from '../data/admins'
-import { Plus, Edit2, Trash2, ShieldCheck, X, Save, Users, Check, Info, MapPin, Mail, Phone } from '../components/icons'
+import { Plus, Edit2, Trash2, ShieldCheck, X, Save, Users, Check, Info, MapPin } from '../components/icons'
 
 export default function Admins() {
   const { admins, addAdmin, updateAdmin, deleteAdmin } = useFleet()
@@ -90,7 +90,7 @@ export default function Admins() {
     'w-full rounded-md border border-line bg-panel-2 px-3 py-1.75 text-[12.5px] text-hi outline-none focus:border-line focus:outline-none transition-colors'
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col md:overflow-hidden">
+    <div data-component="AdminsPage" data-slot="page-layout" className="flex min-h-0 flex-1 flex-col md:overflow-hidden">
       <Topbar title="Admin Management" subtitle="Manage organization members, roles, and resource access policies" />
 
       <div className="flex flex-1 flex-col gap-5 overflow-y-auto px-4 pb-24 py-5 sm:px-6 md:pb-5 xl:flex-row xl:overflow-hidden">
@@ -102,6 +102,7 @@ export default function Admins() {
               <span className="font-display text-[13.5px] font-semibold">Active Members</span>
             </div>
             <button
+              data-action="open-add-admin"
               onClick={startAdd}
               className="flex items-center gap-1 rounded-lg bg-accent/15 px-2.5 py-1 text-[11px] font-medium text-accent hover:bg-accent/25 transition-colors cursor-pointer"
             >
@@ -204,6 +205,7 @@ export default function Admins() {
                             <div className="flex items-center justify-end gap-1.5">
                               <span className="text-[10px] font-medium text-red">Confirm?</span>
                               <button
+                                data-action="confirm-delete-admin"
                                 onClick={() => {
                                   deleteAdmin(admin.id)
                                   setConfirmDeleteId(null)
@@ -213,6 +215,7 @@ export default function Admins() {
                                 Yes
                               </button>
                               <button
+                                data-action="cancel-delete-admin"
                                 onClick={() => setConfirmDeleteId(null)}
                                 className="rounded border border-line bg-panel-2 px-1.5 py-0.5 text-[10.5px] text-lo hover:bg-hover cursor-pointer"
                               >
@@ -222,6 +225,7 @@ export default function Admins() {
                           ) : (
                             <div className="flex items-center justify-end gap-2 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100">
                               <button
+                                data-action="edit-admin"
                                 onClick={() => startEdit(admin)}
                                 className="flex h-6 w-6 items-center justify-center rounded-md border border-line bg-panel-2 text-dim hover:text-accent hover:border-accent/30 cursor-pointer"
                                 title="Edit Member"
@@ -229,6 +233,7 @@ export default function Admins() {
                                 <Edit2 className="h-3 w-3" strokeWidth={2} />
                               </button>
                               <button
+                                data-action="initiate-delete-admin"
                                 onClick={() => setConfirmDeleteId(admin.id)}
                                 className="flex h-6 w-6 items-center justify-center rounded-md border border-line bg-panel-2 text-dim hover:text-red hover:border-red/30 cursor-pointer"
                                 title="Delete Admin"
@@ -258,6 +263,7 @@ export default function Admins() {
                 </span>
               </div>
               <button
+                data-action="close-admin-form"
                 onClick={() => {
                   setIsAdding(false)
                   setIsEditing(false)
@@ -420,6 +426,7 @@ export default function Admins() {
               <div className="flex gap-3 pt-3 border-t border-line-soft sticky bottom-0 bg-panel">
                 <button
                   type="button"
+                  data-action="cancel-admin-form"
                   onClick={() => {
                     setIsAdding(false)
                     setIsEditing(false)
@@ -431,6 +438,7 @@ export default function Admins() {
                 </button>
                 <button
                   type="submit"
+                  data-action="save-admin"
                   className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-accent/20 py-2 text-[12.5px] font-medium text-accent hover:bg-accent/30 cursor-pointer"
                 >
                   <Save className="h-4 w-4" strokeWidth={2} />
@@ -466,6 +474,7 @@ export default function Admins() {
               </div>
               <button
                 type="button"
+                data-action="close-matrix-modal"
                 onClick={() => setShowMatrixModal(false)}
                 aria-label="Close modal"
                 className="flex h-7 w-7 items-center justify-center rounded-md border border-line bg-panel-2 text-lo hover:bg-hover hover:text-hi cursor-pointer"
@@ -538,6 +547,7 @@ export default function Admins() {
               </span>
               <button
                 type="button"
+                data-action="close-matrix-modal"
                 onClick={() => setShowMatrixModal(false)}
                 className="rounded-lg bg-accent/20 px-4 py-1.5 text-[12px] font-medium text-accent hover:bg-accent/30 cursor-pointer transition-colors"
               >

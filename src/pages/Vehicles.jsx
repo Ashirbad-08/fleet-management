@@ -58,15 +58,16 @@ export default function Vehicles() {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col md:overflow-hidden">
+    <div data-component="VehiclesPage" data-slot="page-layout" className="flex min-h-0 flex-1 flex-col md:overflow-hidden">
       <Topbar title="Vehicles" subtitle="Full fleet roster and live device status" />
 
       <div className="flex flex-1 flex-col overflow-y-auto px-4 pb-24 py-5 sm:px-6 md:overflow-hidden md:pb-5">
-        <div className="flex flex-1 flex-col md:overflow-hidden rounded-xl border border-line bg-panel">
-          <div className="flex flex-col gap-3 border-b border-line-soft px-4 py-3.25 sm:flex-row sm:items-center sm:justify-between">
+        <div data-slot="roster-card" className="flex flex-1 flex-col md:overflow-hidden rounded-xl border border-line bg-panel">
+          <div data-slot="roster-toolbar" className="flex flex-col gap-3 border-b border-line-soft px-4 py-3.25 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-wrap items-center gap-3">
               <span className="font-display text-[13.5px] font-semibold">All vehicles</span>
               <button
+                data-action="open-add-vehicle"
                 onClick={() => setIsAddVehicleOpen(true)}
                 className="flex items-center gap-1 rounded-lg bg-accent/15 px-2.5 py-1 text-[11px] font-medium text-accent hover:bg-accent/25 transition-colors cursor-pointer"
               >
@@ -75,14 +76,16 @@ export default function Vehicles() {
               </button>
               <div className="relative">
                 <button
+                  data-action="toggle-export-menu"
                   onClick={() => setShowExportMenu(!showExportMenu)}
                   className="flex items-center gap-1 rounded-lg border border-line bg-panel-2 px-2.5 py-1 text-[11px] font-medium text-lo hover:bg-hover hover:text-hi transition-colors cursor-pointer"
                 >
                   Export Data
                 </button>
                 {showExportMenu && (
-                  <div className="absolute left-0 mt-1 z-20 w-32 rounded-lg border border-line bg-panel shadow-md py-1">
+                  <div data-slot="export-menu-dropdown" className="absolute left-0 mt-1 z-20 w-32 rounded-lg border border-line bg-panel shadow-md py-1">
                     <button
+                      data-action="export-csv"
                       onClick={() => {
                         exportToCSV(vehicles)
                         setShowExportMenu(false)
@@ -92,6 +95,7 @@ export default function Vehicles() {
                       Export CSV
                     </button>
                     <button
+                      data-action="export-json"
                       onClick={() => {
                         exportToJSON(vehicles)
                         setShowExportMenu(false)

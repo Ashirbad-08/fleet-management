@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { BarChart3, Clock, Zap } from './icons'
+import { BarChart3 } from './icons'
 
 export default function FleetHourlyTripsCard() {
   const [timeFilter, setTimeFilter] = useState('today') // 'today' | 'yesterday' | 'week'

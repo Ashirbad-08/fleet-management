@@ -19,11 +19,12 @@ export default function VehicleDrawerHeader({
         : null
 
   return (
-    <div className="flex items-center justify-between border-b border-line-soft bg-panel px-4 py-3 sm:px-5 sm:py-3.5">
+    <header data-component="VehicleDrawerHeader" data-slot="drawer-header" className="flex items-center justify-between border-b border-line-soft bg-panel px-4 py-3 sm:px-5 sm:py-3.5">
       <div className="flex items-center gap-2.5 min-w-0">
         {/* Mobile-only page Back button */}
         <button
           type="button"
+          data-action="close-drawer-mobile"
           onClick={onClose}
           aria-label="Back to fleet"
           title="Back"
@@ -61,6 +62,7 @@ export default function VehicleDrawerHeader({
         {onToggleMap && (
           <button
             type="button"
+            data-action="toggle-left-map"
             onClick={onToggleMap}
             aria-label={showMap ? 'Close map pane' : 'Open map pane'}
             title={showMap ? 'Close map (view drawer only)' : 'Show map on left side'}
@@ -78,6 +80,7 @@ export default function VehicleDrawerHeader({
         {/* Desktop-only Close button */}
         <button
           type="button"
+          data-action="close-drawer"
           onClick={onClose}
           aria-label="Close vehicle drawer"
           title="Close all"
@@ -86,6 +89,6 @@ export default function VehicleDrawerHeader({
           <X className="h-3.5 w-3.5" strokeWidth={2.2} />
         </button>
       </div>
-    </div>
+    </header>
   )
 }

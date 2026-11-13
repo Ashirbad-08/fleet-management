@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useFleet } from '../context/FleetContext'
-import { PieChart, Truck, Zap, Activity } from './icons'
+import { PieChart } from './icons'
 
 export default function FleetStatusDonutCard() {
   const { vehicles } = useFleet()

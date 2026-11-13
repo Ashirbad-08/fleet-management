@@ -13,7 +13,6 @@ import EditVehicleForm from './vehicle-drawer/EditVehicleForm'
 import VehicleLeftMap from './vehicle-drawer/VehicleLeftMap'
 import LiveTelemetryTab from './vehicle-drawer/tabs/LiveTelemetryTab'
 import TripsTab from './vehicle-drawer/tabs/TripsTab'
-import TimelineTab from './vehicle-drawer/tabs/TimelineTab'
 import BatterySpecsTab from './vehicle-drawer/tabs/BatterySpecsTab'
 import PassportTab from './vehicle-drawer/tabs/PassportTab'
 import ChargingTab from './vehicle-drawer/tabs/ChargingTab'
@@ -22,7 +21,7 @@ import ParkingTab from './vehicle-drawer/tabs/ParkingTab'
 import DriverContactsTab from './vehicle-drawer/tabs/DriverContactsTab'
 import ManageTab from './vehicle-drawer/tabs/ManageTab'
 
-function genMonthlySeries(vehicle, n = 30) {
+function gen24hBatterySeries(vehicle, n = 24) {
   if (!vehicle) return { points: [], labels: [] }
   const currentBatt = Number(vehicle.battery) || 80
   const points = []
@@ -35,19 +34,20 @@ function genMonthlySeries(vehicle, n = 30) {
   }
 
   const now = new Date()
+  const currentHour = now.getHours()
+
   for (let i = n - 1; i >= 0; i--) {
-    const d = new Date(now)
-    d.setDate(d.getDate() - i)
-    const monthName = d.toLocaleString('en-US', { month: 'short' })
-    const dayNum = d.getDate()
-    const label = i === 0 ? 'Today' : `${monthName} ${dayNum}`
+    const targetHour = (currentHour - i + 48) % 24
+    const hour12 = targetHour === 0 ? 12 : targetHour > 12 ? targetHour - 12 : targetHour
+    const ampm = targetHour >= 12 ? 'pm' : 'am'
+    const label = i === 0 ? 'Now' : `${i}h ago (${hour12}${ampm})`
     labels.push(label)
 
     if (i === 0) {
       points.push(currentBatt)
     } else {
-      const cycleWave = Math.sin((seed + i * 5.3) * 0.4) * 14 + Math.cos(i * 0.75) * 6
-      const val = Math.max(18, Math.min(100, Math.round(currentBatt + cycleWave)))
+      const cycleWave = Math.sin((seed + i * 2.1) * 0.45) * 12 + Math.cos(i * 0.8) * 5
+      const val = Math.max(15, Math.min(100, Math.round(currentBatt + cycleWave)))
       points.push(val)
     }
   }
@@ -67,6 +67,13 @@ export default function VehicleDrawer() {
   } = useFleet()
   const navigate = useNavigate()
   const open = Boolean(selectedVehicle)
+
+  // Keep the last-rendered vehicle alive in the DOM so the Leaflet map instance
+  // is never destroyed when the drawer closes or the user switches vehicles.
+  // The map simply receives updated props and re-centers; no re-init occurs.
+  const lastVehicleRef = useRef(null)
+  if (selectedVehicle) lastVehicleRef.current = selectedVehicle
+  const mountedVehicle = lastVehicleRef.current
 
   // Drawer Tabs: 'telemetry' | 'trips' | 'timeline' | 'specs' | 'passport' | 'charging' | 'compliance' | 'contacts' | 'parking' | 'manage'
   const [drawerTab, setDrawerTab] = useState('telemetry')
@@ -183,7 +190,7 @@ export default function VehicleDrawer() {
 
   const battData = useMemo(() => {
     if (!selectedVehicle) return { points: [], labels: [] }
-    return genMonthlySeries(selectedVehicle, 30)
+    return gen24hBatterySeries(selectedVehicle, 24)
   }, [selectedVehicle?.id, selectedVehicle?.battery, selectedVehicle?.plate])
 
   const startEdit = () => {
@@ -246,28 +253,35 @@ export default function VehicleDrawer() {
 
   return (
     <>
-      {/* 1. Fullscreen Live Map on the Left Side of the Vehicle Drawer */}
-      {open && selectedVehicle && showMap && (
-        <div
-          style={{
-            position: 'fixed',
-            top: '10px',
-            bottom: '10px',
-            left: '10px',
-            right: 'calc(462px + 10px)',
-            zIndex: 110,
-          }}
-          className="hidden sm:flex flex-col bg-base overflow-hidden border border-line rounded-xl shadow-2xl"
-        >
+      {/* 1. Fullscreen Live Map on the Left Side of the Vehicle Drawer
+          ─────────────────────────────────────────────────────────────
+          KEEP-ALIVE strategy: render once `mountedVehicle` is set (first open)
+          and never unmount again. Visibility is toggled with CSS so the
+          Leaflet instance stays alive across vehicle switches and re-opens.
+          This means 20 vehicle opens = 1 L.map() init, not 20.             */}
+      <div
+        style={{
+          position: 'fixed',
+          top: '10px',
+          bottom: '10px',
+          left: '10px',
+          right: 'calc(462px + 10px)',
+          zIndex: 110,
+          // Visible only on desktop when drawer is open and map toggle is on
+          display: open && showMap && mountedVehicle ? undefined : 'none',
+        }}
+        className="hidden sm:flex flex-col bg-base overflow-hidden border border-line rounded-xl shadow-2xl"
+      >
+        {mountedVehicle && (
           <VehicleLeftMap
-            selectedVehicle={selectedVehicle}
+            selectedVehicle={mountedVehicle}
             onClose={handleCloseMap}
             onRefresh={refreshTelemetry}
             activePlaybackTrip={activePlaybackTrip}
             onStopPlayback={handleStopPlayback}
           />
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Backdrop overlay behind drawer and map */}
       {open && (
@@ -281,31 +295,34 @@ export default function VehicleDrawer() {
         />
       )}
 
-      {/* Mobile Map View when mobileTab === 'map' */}
-      {open && selectedVehicle && mobileTab === 'map' && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            bottom: 0,
-            left: 0,
-            right: 0,
-            zIndex: 125,
-          }}
-          className="flex sm:hidden flex-col bg-base overflow-hidden"
-        >
+      {/* Mobile Map View when mobileTab === 'map'
+          Same keep-alive: render once and hide/show with CSS.               */}
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 125,
+          display: open && mobileTab === 'map' && mountedVehicle ? undefined : 'none',
+        }}
+        className="flex sm:hidden flex-col bg-base overflow-hidden"
+      >
+        {mountedVehicle && (
           <VehicleLeftMap
-            selectedVehicle={selectedVehicle}
+            selectedVehicle={mountedVehicle}
             onClose={handleCloseMap}
             onRefresh={refreshTelemetry}
             activePlaybackTrip={activePlaybackTrip}
             onStopPlayback={handleStopPlayback}
           />
-        </div>
-      )}
+        )}
+      </div>
 
       {/* 2. Main Vehicle Drawer on the Right */}
       <aside
+        data-component="VehicleDrawer"
         role="dialog"
         aria-label="Vehicle Details & Controls"
         onClick={(e) => e.stopPropagation()}
@@ -325,32 +342,32 @@ export default function VehicleDrawer() {
       >
         {selectedVehicle && (
           <>
-            {/* Drawer Top Header */}
-            <VehicleDrawerHeader
-              selectedVehicle={selectedVehicle}
-              editing={editing}
-              showMap={showMap}
-              onToggleMap={handleToggleMap}
-              onToggleEdit={() => {
-                if (editing) {
-                  setEditing(false)
-                } else {
-                  startEdit()
-                }
-              }}
-              onClose={close}
-            />
+            {/* Sticky Header & Tabs Bar */}
+            <div className="sticky top-0 z-30 bg-panel shadow-sm">
+              <VehicleDrawerHeader
+                selectedVehicle={selectedVehicle}
+                editing={editing}
+                showMap={showMap}
+                onToggleMap={handleToggleMap}
+                onToggleEdit={() => {
+                  if (editing) {
+                    setEditing(false)
+                  } else {
+                    startEdit()
+                  }
+                }}
+                onClose={close}
+              />
 
-            {/* Sub-Tabs Selector */}
-            <VehicleDrawerTabs
-              activeTab={drawerTab}
-              onSelectTab={(tabId) => {
-                setDrawerTab(tabId)
-                setEditing(false)
-              }}
-              tripsCount={seedTrips.length}
-              timelineCount={timelineEvents.length || 10}
-            />
+              <VehicleDrawerTabs
+                activeTab={drawerTab}
+                onSelectTab={(tabId) => {
+                  setDrawerTab(tabId)
+                  setEditing(false)
+                }}
+                tripsCount={seedTrips.length}
+              />
+            </div>
 
             {/* Firmware Updating Progress Banner */}
             {updatingVehicles[selectedVehicle.id] !== undefined && (
@@ -409,16 +426,6 @@ export default function VehicleDrawer() {
                     activePlaybackTrip={activePlaybackTrip}
                     onStartPlayback={handleStartPlayback}
                     onStopPlayback={handleStopPlayback}
-                  />
-                )}
-
-                {drawerTab === 'timeline' && (
-                  <TimelineTab
-                    vehicle={selectedVehicle}
-                    events={timelineEvents}
-                    onRefresh={loadTimeline}
-                    loading={timelineLoading}
-                    error={timelineError}
                   />
                 )}
 

@@ -208,7 +208,7 @@ export default function ParkingTab({ selectedVehicle }) {
   }
 
   return (
-    <div className="flex flex-col min-h-full">
+    <div data-component="ParkingTab" data-slot="parking-sessions" className="flex flex-col min-h-full">
       {/* 1. Header Summary KPI Strip */}
       <div className="flex items-center justify-between border-b border-line-soft bg-panel px-5 py-3">
         <div className="flex items-center gap-2">
@@ -246,7 +246,7 @@ export default function ParkingTab({ selectedVehicle }) {
               <button
                 key={tab.id}
                 type="button"
-                onClick={() => setFilterPeriod(tab.id)}
+                data-action="filter-parking-period" onClick={() => setFilterPeriod(tab.id)}
                 className={`rounded-md px-2.5 py-1 transition-colors cursor-pointer ${
                   filterPeriod === tab.id
                     ? 'bg-accent/15 text-accent font-semibold shadow-xs'
@@ -261,7 +261,7 @@ export default function ParkingTab({ selectedVehicle }) {
           {/* CSV Export Button */}
           <button
             type="button"
-            onClick={handleExportCSV}
+            data-action="export-parking-csv" onClick={handleExportCSV}
             title="Export Parking CSV"
             className="flex items-center gap-1 rounded-lg border border-line bg-panel px-2.5 py-1 text-[11px] font-medium text-lo hover:text-hi hover:bg-hover transition-colors cursor-pointer shrink-0 shadow-2xs"
           >
@@ -311,7 +311,7 @@ export default function ParkingTab({ selectedVehicle }) {
               >
                 {/* Session Card Header (Clickable) */}
                 <div
-                  onClick={() => toggleSession(session.id)}
+                  data-action="toggle-parking-session" onClick={() => toggleSession(session.id)}
                   className="p-3.5 cursor-pointer hover:bg-panel-2/40 transition-colors select-none"
                 >
                   {/* Row 1: Bay / Location & Status Badge */}

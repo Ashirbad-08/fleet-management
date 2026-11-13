@@ -4,6 +4,41 @@ import { useFleet } from '../context/FleetContext'
 
 const DEFAULT_CENTER = [20.5937, 78.9629]
 
+// Inline SVG golf cart – top-down view, front faces UP (north at 0 deg heading)
+function getCartSvg(bodyColor) {
+  // Derive slightly lighter hood/roof tint from body color for depth
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 160" width="100" height="160">
+  <!-- soft ground shadow -->
+  <ellipse cx="50" cy="86" rx="42" ry="70" fill="#000" opacity="0.15"/>
+  <!-- wheels -->
+  <g fill="#1f2638" stroke="#0f1422" stroke-width="1.5">
+    <rect x="9"  y="26"  width="15" height="26" rx="5"/>
+    <rect x="76" y="26"  width="15" height="26" rx="5"/>
+    <rect x="9"  y="108" width="15" height="26" rx="5"/>
+    <rect x="76" y="108" width="15" height="26" rx="5"/>
+  </g>
+  <!-- body -->
+  <rect x="20" y="10" width="60" height="140" rx="20" fill="${bodyColor}" stroke="#2a3350" stroke-width="3"/>
+  <!-- hood highlight -->
+  <rect x="27" y="17" width="46" height="30" rx="12" fill="${bodyColor}" opacity="0.75"/>
+  <!-- headlights -->
+  <circle cx="33" cy="19" r="3.5" fill="#ffe27a" stroke="#2a3350" stroke-width="1"/>
+  <circle cx="67" cy="19" r="3.5" fill="#ffe27a" stroke="#2a3350" stroke-width="1"/>
+  <!-- windshield -->
+  <path d="M28 50 L72 50 L69 63 L31 63 Z" fill="#bcd6ee" stroke="#2a3350" stroke-width="2" stroke-linejoin="round"/>
+  <!-- roof canopy -->
+  <rect x="22" y="60" width="56" height="76" rx="10" fill="${bodyColor}" stroke="#2a3350" stroke-width="3" opacity="0.85"/>
+  <!-- roof grooves -->
+  <g stroke="#2a3350" stroke-width="2.5" stroke-linecap="round" opacity="0.5">
+    <line x1="40" y1="70" x2="40" y2="126"/>
+    <line x1="60" y1="70" x2="60" y2="126"/>
+  </g>
+  <!-- tail lights -->
+  <rect x="27" y="141" width="12" height="4" rx="2" fill="#e5484d"/>
+  <rect x="61" y="141" width="12" height="4" rx="2" fill="#e5484d"/>
+</svg>`
+}
+
 // Dynamically loads Leaflet from CDN
 function useLeaflet() {
   const [ready, setReady] = useState(!!window.L)
@@ -37,13 +72,35 @@ function useLeaflet() {
   return ready
 }
 
-function makeMarkerHtml(color) {
+function makeCartMarkerHtml({ color, heading = 0, name = '', mapStyle = 'Dark Mode' }) {
+  const deg = Math.round(heading)
+
+  // Map mode text coloring:
+  // Standard Vector -> black text (#000000) with white halo for contrast against streets & parks
+  // Dark Mode & Satellite Mode -> white text (#ffffff) with dark shadow for contrast
+  const isStandardVector =
+    String(mapStyle).toLowerCase().includes('standard') ||
+    String(mapStyle).toLowerCase().includes('vector')
+
+  const textColor = isStandardVector ? '#000000' : '#ffffff'
+  const textShadow = isStandardVector
+    ? '0 0 2px #ffffff, 0 0 4px #ffffff, 0 1px 2px rgba(255,255,255,0.95)'
+    : '0 1px 3px rgba(0,0,0,0.95), 0 0 2px #000'
+
+  // SVG encoded as a data URI so it can be used as an img src (avoids inline SVG z-index quirks)
+  const svgString = getCartSvg(color)
+  const svgDataUri = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgString)
+
   return `
-    <div style="position:relative;display:flex;align-items:center;justify-content:center;width:32px;height:32px;cursor:pointer;">
-      <div style="position:absolute;width:32px;height:32px;border-radius:50%;background:${color};opacity:0.22;animation:leaflet-ping 2s cubic-bezier(0,0,.2,1) infinite;"></div>
-      <div style="position:relative;width:16px;height:16px;border-radius:50%;background:${color};border:2px solid #0a0c0f;box-shadow:0 0 10px ${color}70, 0 2px 8px rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;">
-        <div style="width:4px;height:4px;border-radius:50%;background:#ffffff;opacity:0.95;"></div>
+    <div class="golf-cart-marker" style="position:relative;display:flex;flex-direction:column;align-items:center;width:30px;height:54px;cursor:pointer;">
+      <div style="width:25px;height:40px;display:flex;align-items:center;justify-content:center;transform:rotate(${deg}deg);transition:transform 0.28s cubic-bezier(0.25, 1, 0.5, 1);transform-origin:center;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.6));">
+        <img src="${svgDataUri}" style="width:25px;height:40px;object-fit:contain;display:block;user-select:none;pointer-events:none;" alt="Golf Cart" />
       </div>
+      ${name ? `
+        <div style="position:absolute;top:42px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:600;font-family:Inter,sans-serif;color:${textColor};text-shadow:${textShadow};letter-spacing:-0.1px;white-space:nowrap;pointer-events:none;z-index:2;line-height:11px;">
+          ${name}
+        </div>
+      ` : ''}
     </div>
   `
 }
@@ -265,18 +322,27 @@ export default function MapLeaflet({
         ? { online: '#00ff66', idle: '#f5a623', alert: '#ff5c5c', offline: '#5b6572' }[v.status] || '#5b6572'
         : meta.color
 
+      const heading = v.heading !== undefined
+        ? v.heading
+        : ((parseInt(String(v.id || '').replace(/\D/g, '') || '1', 10) * 67 + 35) % 360)
+
       const icon = L.divIcon({
-        html: makeMarkerHtml(color),
+        html: makeCartMarkerHtml({
+          color,
+          heading,
+          name: v.name,
+          mapStyle: activeMapStyle,
+        }),
         className: '',
-        iconSize: [32, 32],
-        iconAnchor: [16, 16],
+        iconSize: [30, 54],
+        iconAnchor: [15, 20],
       })
 
       const battColorHex = v.battery > 50 ? '#00ff66' : v.battery > 20 ? '#f5a623' : '#ff5c5c'
       const battIconSvg = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="${battColorHex}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="10" x="2" y="7" rx="2" ry="2"/><line x1="22" x2="22" y1="11" y2="13"/></svg>`
 
       const tooltipContent = `
-        <div style="padding:6px 10px;background:#12151b;color:#e8edf2;border:1px solid #242a33;border-radius:8px;box-shadow:0 10px 25px rgba(0,0,0,0.5);font-family:Inter,sans-serif;min-width:140px;">
+        <div class="leaflet-custom-tooltip">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;font-weight:700;">
             <span>${v.name}</span>
             <span style="font-size:10px;font-family:JetBrains Mono,monospace;color:${color};background:${color}15;padding:1px 5px;border-radius:4px;border:1px solid ${color}30;text-transform:uppercase;">
@@ -296,7 +362,7 @@ export default function MapLeaflet({
       `
 
       const popupContent = `
-        <div style="padding:10px 12px;background:#12151b;color:#e8edf2;border:1px solid #242a33;border-radius:10px;box-shadow:0 12px 30px rgba(0,0,0,0.7);font-family:Inter,sans-serif;min-width:190px;">
+        <div class="leaflet-custom-popup">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
             <span style="font-size:13px;font-weight:700;color:#f0f4f8;">${v.name}</span>
             <span style="font-size:10px;font-family:JetBrains Mono,monospace;color:${color};background:${color}20;padding:2px 6px;border-radius:4px;border:1px solid ${color}40;text-transform:uppercase;font-weight:700;">
@@ -329,18 +395,18 @@ export default function MapLeaflet({
         .addTo(map)
         .bindTooltip(tooltipContent, {
           direction: 'top',
-          offset: [0, -10],
+          offset: [0, -22],
           opacity: 1,
           className: '',
         })
         .bindPopup(popupContent, {
-          offset: [0, -10],
+          offset: [0, -22],
           className: '',
         })
 
       markersRef.current.push(marker)
     })
-  }, [leafletReady, vehicles, playbackData?.route])
+  }, [leafletReady, vehicles, playbackData?.route, activeMapStyle])
 
   // Route Playback on Map Layer Handler
   useEffect(() => {
@@ -361,6 +427,21 @@ export default function MapLeaflet({
     const { route, currentIndex = 0 } = playbackData
     const currentPoint = route.points[currentIndex] || route.points[0]
     const tripId = route.trip.id || route.trip.tripNumber
+
+    // Resolve active vehicle to preserve original status color and name during route play
+    const activeVehicle =
+      route.vehicle ||
+      vehicles.find((v) => v.id === route.trip?.vehicleId) ||
+      vehicles[0]
+
+    let vehicleColor = '#00ff66'
+    if (activeVehicle) {
+      const meta = STATUS_META[activeVehicle.status] || STATUS_META.offline
+      vehicleColor = meta.color?.startsWith('var')
+        ? { online: '#00ff66', idle: '#f5a623', alert: '#ff5c5c', offline: '#5b6572' }[activeVehicle.status] || '#5b6572'
+        : meta.color || '#00ff66'
+    }
+    const playbackName = activeVehicle?.name || route.trip.tripNumber || ''
 
     // If new playback route is loaded
     if (!playbackLayerGroupRef.current || lastPlaybackTripIdRef.current !== tripId) {
@@ -401,63 +482,25 @@ export default function MapLeaflet({
       }).addTo(layerGroup)
       layerGroup._traveledLine = traveledLine
 
-      // 4. Start Pin (A)
-      const startIcon = L.divIcon({
-        html: `
-          <div style="display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#00ff66;color:#080a0d;font-weight:900;font-family:Inter,sans-serif;font-size:12px;border:2.5px solid #080a0d;box-shadow:0 0 14px rgba(0,255,102,0.85);">
-            A
-          </div>
-        `,
-        iconSize: [28, 28],
-        iconAnchor: [14, 14],
-      })
-      L.marker(route.waypoints[0], { icon: startIcon })
-        .addTo(layerGroup)
-        .bindTooltip(`<strong>Start:</strong> ${route.trip.from}`, {
-          direction: 'top',
-          offset: [0, -10],
-          opacity: 0.95,
-        })
-
-      // 5. Destination Pin (B)
-      const endIcon = L.divIcon({
-        html: `
-          <div style="display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#ff5c5c;color:#ffffff;font-weight:900;font-family:Inter,sans-serif;font-size:12px;border:2.5px solid #080a0d;box-shadow:0 0 14px rgba(255,92,92,0.85);">
-            B
-          </div>
-        `,
-        iconSize: [28, 28],
-        iconAnchor: [14, 14],
-      })
-      L.marker(route.waypoints[route.waypoints.length - 1], { icon: endIcon })
-        .addTo(layerGroup)
-        .bindTooltip(`<strong>Destination:</strong> ${route.trip.to}`, {
-          direction: 'top',
-          offset: [0, -10],
-          opacity: 0.95,
-        })
-
-      // 6. Playback Vehicle Marker
+      // 4. Playback Vehicle Marker (Point A and Point B removed per request)
+      const playbackHeading = currentPoint.heading ?? 0
       const vehicleIcon = L.divIcon({
-        html: `
-          <div style="position:relative;display:flex;align-items:center;justify-content:center;width:40px;height:40px;">
-            <div style="position:absolute;width:40px;height:40px;border-radius:50%;background:#00ff66;opacity:0.3;animation:leaflet-ping 1.5s infinite;"></div>
-            <div style="position:relative;width:26px;height:26px;border-radius:50%;background:#00ff66;border:2.5px solid #080a0d;box-shadow:0 0 16px rgba(0,255,102,0.9);display:flex;align-items:center;justify-content:center;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#080a0d" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="3 11 22 2 13 21 11 13 3 11"/>
-              </svg>
-            </div>
-          </div>
-        `,
-        iconSize: [40, 40],
-        iconAnchor: [20, 20],
+        html: makeCartMarkerHtml({
+          color: vehicleColor,
+          heading: playbackHeading,
+          name: playbackName,
+          mapStyle: activeMapStyle,
+        }),
+        className: '',
+        iconSize: [30, 54],
+        iconAnchor: [15, 20],
       })
       const vehicleMarker = L.marker([currentPoint.lat, currentPoint.lon], { icon: vehicleIcon })
         .addTo(layerGroup)
-        .bindTooltip(`<strong>${route.trip.tripNumber}</strong>: ${currentPoint.speed} km/h · ${currentPoint.battery}%`, {
+        .bindTooltip(`<strong>${playbackName}</strong>: ${currentPoint.speed} km/h · ${currentPoint.battery}%`, {
           permanent: true,
           direction: 'top',
-          offset: [0, -16],
+          offset: [0, -22],
           opacity: 0.95,
         })
       layerGroup._vehicleMarker = vehicleMarker
@@ -476,12 +519,26 @@ export default function MapLeaflet({
       }
       if (layerGroup._vehicleMarker) {
         layerGroup._vehicleMarker.setLatLng([currentPoint.lat, currentPoint.lon])
+        const playbackHeading = currentPoint.heading ?? 0
+        layerGroup._vehicleMarker.setIcon(
+          L.divIcon({
+            html: makeCartMarkerHtml({
+              color: vehicleColor,
+              heading: playbackHeading,
+              name: playbackName,
+              mapStyle: activeMapStyle,
+            }),
+            className: '',
+            iconSize: [30, 54],
+            iconAnchor: [15, 20],
+          })
+        )
         layerGroup._vehicleMarker.setTooltipContent(
-          `<strong>${route.trip.tripNumber}</strong>: ${currentPoint.speed} km/h · ${currentPoint.battery}%`
+          `<strong>${playbackName}</strong>: ${currentPoint.speed} km/h · ${currentPoint.battery}%`
         )
       }
     }
-  }, [leafletReady, playbackData])
+  }, [leafletReady, playbackData, activeMapStyle, vehicles])
 
   useEffect(() => {
     const handler = (e) => {

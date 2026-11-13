@@ -1,9 +1,8 @@
-import { Cpu, Zap, BookOpen, Plug, ShieldCheck, Users, MapPin, Settings2, History, Radio } from '../icons'
+import { Cpu, Zap, BookOpen, Plug, ShieldCheck, Users, MapPin, Settings2, History } from '../icons'
 
 const TABS = [
   { id: 'telemetry', label: 'Live', icon: Cpu },
   { id: 'trips', label: 'Trips', icon: History, countKey: 'trips' },
-  { id: 'timeline', label: 'Timeline', icon: Radio, countKey: 'timeline' },
   { id: 'specs', label: 'Battery', icon: Zap },
   { id: 'charging', label: 'Charging', icon: Plug },
   { id: 'parking', label: 'Parking', icon: MapPin },
@@ -13,17 +12,17 @@ const TABS = [
   { id: 'manage', label: 'Manage', icon: Settings2 },
 ]
 
-export default function VehicleDrawerTabs({ activeTab, onSelectTab, tripsCount = 50, timelineCount = 10 }) {
+export default function VehicleDrawerTabs({ activeTab, onSelectTab, tripsCount = 50 }) {
   return (
     <div
-      className="sticky top-0 z-10 flex overflow-x-auto scroll-smooth border-b border-line bg-panel-2/90 text-[11px] font-semibold text-lo backdrop-blur-md scrollbar-none no-scrollbar"
-      role="tablist"
+      className="flex overflow-x-auto scroll-smooth border-b border-line bg-panel-2 text-[11px] font-semibold text-lo backdrop-blur-md scrollbar-none no-scrollbar"
+      data-component="VehicleDrawerTabs" data-slot="tabs-container" role="tablist"
       aria-label="Vehicle Drawer Navigation Tabs"
     >
       {TABS.map((tab) => {
         const Icon = tab.icon
         const isActive = activeTab === tab.id
-        const badgeCount = tab.countKey === 'trips' ? tripsCount : tab.countKey === 'timeline' ? timelineCount : null
+        const badgeCount = tab.countKey === 'trips' ? tripsCount : null
 
         return (
           <button
@@ -31,7 +30,7 @@ export default function VehicleDrawerTabs({ activeTab, onSelectTab, tripsCount =
             type="button"
             role="tab"
             aria-selected={isActive}
-            onClick={() => onSelectTab(tab.id)}
+            data-action="select-drawer-tab" onClick={() => onSelectTab(tab.id)}
             className={`flex shrink-0 min-w-[70px] items-center justify-center gap-1.5 px-3 py-2.5 border-b-2 transition-all cursor-pointer snap-start ${
               isActive
                 ? 'border-accent text-accent bg-accent/10 font-bold'

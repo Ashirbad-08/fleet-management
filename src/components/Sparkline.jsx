@@ -54,7 +54,7 @@ export default function Sparkline({ data, labels, color = 'var(--color-accent)' 
 
   const handleMouseLeave = () => setHovered(null)
 
-  const tooltipW = 90
+  const tooltipW = 100
   const tooltipXPercent = hovered ? (hovered.x / w) * 100 : 50
   const tooltipLeftClamped = `clamp(4px, calc(${tooltipXPercent}% - ${tooltipW / 2}px), calc(100% - ${tooltipW + 4}px))`
 
@@ -145,11 +145,11 @@ export default function Sparkline({ data, labels, color = 'var(--color-accent)' 
           >
             <div className="flex items-center gap-1">
               <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: color }} />
-              <span className="font-mono text-[12.5px] font-bold tabular-nums" style={{ color }}>
+              <span className="font-mono text-[14px] font-bold tabular-nums" style={{ color }}>
                 {hovered.value}%
               </span>
             </div>
-            <span className="font-mono text-[9px] text-dim tabular-nums leading-none">
+            <span className="font-mono text-[10.5px] text-dim tabular-nums leading-none">
               {hovered.time}
             </span>
           </div>
@@ -165,19 +165,19 @@ export default function Sparkline({ data, labels, color = 'var(--color-accent)' 
       {/* Timeline markers & monthly stats */}
       <div className="mt-2 flex items-center justify-between border-t border-line-soft/60 pt-1.5 px-0.5">
         <div className="flex items-center gap-2">
-          <span className="font-mono text-[9.5px] text-dim">
+          <span className="font-mono text-[11px] text-dim">
             Min: <span className="text-hi font-semibold">{min}%</span>
           </span>
           <span className="text-line-soft">•</span>
-          <span className="font-mono text-[9.5px] text-dim">
+          <span className="font-mono text-[11px] text-dim">
             Avg: <span className="text-accent font-semibold">{avg}%</span>
           </span>
           <span className="text-line-soft">•</span>
-          <span className="font-mono text-[9.5px] text-dim">
+          <span className="font-mono text-[11px] text-dim">
             Max: <span className="text-hi font-semibold">{max}%</span>
           </span>
         </div>
-        <div className="flex items-center gap-2 font-mono text-[9px] text-dim">
+        <div className="flex items-center gap-2 font-mono text-[11px] text-dim">
           <span>{startLabel}</span>
           <span>→</span>
           <span className="text-lo font-medium">{endLabel}</span>

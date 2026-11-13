@@ -113,6 +113,8 @@ export default function NotificationDropdown({ open, onClose }) {
   return (
     <div
       ref={ref}
+      data-component="NotificationDropdown"
+      data-slot="notifications-dropdown"
       role="dialog"
       aria-label="Notifications menu"
       className={`fixed left-4 right-4 top-24 z-[3000] overflow-hidden rounded-xl border border-line bg-panel/98 shadow-[0_20px_50px_rgba(0,0,0,0.7),0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-xl transition-all duration-200 sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-96 sm:origin-top-right ${
@@ -134,7 +136,7 @@ export default function NotificationDropdown({ open, onClose }) {
           {unreadCount > 0 && (
             <button
               type="button"
-              onClick={markAllNotificationsRead}
+              data-action="mark-all-notifications-read" onClick={markAllNotificationsRead}
               aria-label="Mark all notifications as read"
               className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-dim hover:bg-hover hover:text-hi transition-colors cursor-pointer"
               title="Mark all read"
@@ -145,7 +147,7 @@ export default function NotificationDropdown({ open, onClose }) {
           )}
           <button
             type="button"
-            onClick={onClose}
+            data-action="close-notifications-dropdown" onClick={onClose}
             aria-label="Close notifications menu"
             className="flex h-6 w-6 items-center justify-center rounded-md text-dim hover:bg-hover hover:text-hi transition-colors cursor-pointer"
           >
@@ -167,7 +169,7 @@ export default function NotificationDropdown({ open, onClose }) {
                 key={n.id}
                 role="button"
                 tabIndex={0}
-                onClick={() => handleNotificationClick(n)}
+                data-action="view-notification" onClick={() => handleNotificationClick(n)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault()
@@ -194,6 +196,7 @@ export default function NotificationDropdown({ open, onClose }) {
                 <button
                   type="button"
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); deleteNotification(n.id) }}
+                  data-action="delete-notification"
                   aria-label={`Delete notification: ${n.title}`}
                   className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded text-dim opacity-0 hover:text-red group-hover:opacity-100 hover:opacity-100 transition-opacity cursor-pointer"
                 >
@@ -209,11 +212,12 @@ export default function NotificationDropdown({ open, onClose }) {
       {notifications.length > 0 && (
         <div className="flex items-center justify-between border-t border-line bg-panel-2 p-0">
           <Link
-            to="/notifications"
+            to="/alerts"
+            data-action="view-all-alerts"
             onClick={handleViewAll}
             className="flex w-full items-center justify-between px-4 py-2.5 text-xs font-semibold text-accent hover:bg-hover hover:underline transition-colors cursor-pointer tabular-nums"
           >
-            <span>View all notifications ({notifications.length})</span>
+            <span>View all fleet alerts ({notifications.length})</span>
             <ChevronRight className="h-4 w-4 text-accent" strokeWidth={2.2} />
           </Link>
         </div>

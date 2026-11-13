@@ -29,7 +29,7 @@ export default function VehicleTable({ limit }) {
   const headers = ['Vehicle', 'Type', 'Model', 'Status', 'Battery', 'Speed', 'Location', 'Last seen']
 
   return (
-    <div className="flex-1 overflow-auto">
+    <div data-component="VehicleTable" data-slot="vehicle-table" className="flex-1 overflow-auto">
       <table className="w-full min-w-[840px] border-collapse">
         <thead>
           <tr>
@@ -87,6 +87,7 @@ export default function VehicleTable({ limit }) {
               return (
                 <tr
                   key={v.id}
+                  data-action="select-vehicle"
                   onClick={() => setSelectedVehicleId(v.id)}
                   tabIndex={0}
                   aria-label={`Vehicle ${v.name}, status ${v.status}`}

@@ -126,12 +126,13 @@ export default function ChargingTab({
   const peakPowerStr = activePeriodSessions.length > 0 ? activePeriodSessions[0].peak : '—'
 
   return (
-    <div className="p-5 space-y-4">
+    <div data-component="ChargingTab" data-slot="charging-details" className="p-5 space-y-4">
       {/* 1. LIGHT GREEN & AESTHETIC DATE FILTER BAR */}
       <div className="flex items-center gap-1 rounded-xl border border-line-soft bg-panel-2/40 p-1 shadow-xs">
         <button
           type="button"
-          onClick={() => setChargingFilter('today')}
+          data-action="filter-charging-period"
+        onClick={() => setChargingFilter('today')}
           className={`flex-1 rounded-lg py-1.5 px-3 text-[11px] font-medium transition-all cursor-pointer text-center ${
             chargingFilter === 'today'
               ? 'bg-green/15 text-green border border-green/30 shadow-xs font-semibold'
@@ -143,7 +144,8 @@ export default function ChargingTab({
 
         <button
           type="button"
-          onClick={() => setChargingFilter('yesterday')}
+          data-action="filter-charging-period"
+        onClick={() => setChargingFilter('yesterday')}
           className={`flex-1 rounded-lg py-1.5 px-3 text-[11px] font-medium transition-all cursor-pointer text-center ${
             chargingFilter === 'yesterday'
               ? 'bg-green/15 text-green border border-green/30 shadow-xs font-semibold'
@@ -246,7 +248,8 @@ export default function ChargingTab({
             <div className="text-[11px] text-dim">No charging activity recorded for {activePeriodLabel}.</div>
             <button
               type="button"
-              onClick={() => setChargingFilter('today')}
+              data-action="filter-charging-period"
+        onClick={() => setChargingFilter('today')}
               className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-line bg-panel-2 px-3 py-1.5 text-[11px] font-medium text-accent hover:bg-hover cursor-pointer"
             >
               Return to Today's Sessions

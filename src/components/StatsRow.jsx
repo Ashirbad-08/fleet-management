@@ -63,7 +63,7 @@ export default function StatsRow() {
 
   if (isLoading) {
     return (
-      <div className="mb-4.5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div data-component="StatsRow" data-slot="stats-row" className="mb-4.5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <div
             key={`skel-card-${i}`}
@@ -86,10 +86,12 @@ export default function StatsRow() {
 
   return (
     <>
-      <div className="mb-4.5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div data-component="StatsRow" data-slot="stats-row" className="mb-4.5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {cards.map((c) => (
           <div
             key={c.label}
+            data-slot="stat-card"
+            data-action="filter-stats-status"
             onClick={() => handleCardClick(c.filterKey)}
             role="button"
             tabIndex={0}
