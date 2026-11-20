@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import Topbar from '../components/Topbar'
 import { useFleet } from '../context/FleetContext'
 import { STATUS_META } from '../data/statusMeta'
@@ -22,6 +23,7 @@ import {
 const LATEST_FIRMWARE = '2.4.1'
 
 export default function Devices() {
+  const navigate = useNavigate()
   const { vehicles, setSelectedVehicleId, sendDeviceCommand, updatingVehicles } = useFleet()
   const [isLoading, setIsLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -92,6 +94,21 @@ export default function Devices() {
       />
 
       <div className="flex-1 overflow-y-auto px-4 pb-24 py-4 sm:px-6 md:pb-6 space-y-4">
+        {/* Navigation Breadcrumb / Origin link */}
+        <div className="flex items-center justify-between pb-1">
+          <button
+            type="button"
+            data-action="back-to-settings"
+            onClick={() => navigate('/settings')}
+            className="inline-flex items-center gap-1.5 text-[12px] font-medium text-dim hover:text-accent transition-colors cursor-pointer"
+          >
+            <span>← Back to System Settings</span>
+          </button>
+          <span className="text-[11px] font-mono text-dim">
+            IoT Hardware & Gateway Console
+          </span>
+        </div>
+
         {/* 1. Top Hardware Telemetry KPI Cards */}
         <div data-slot="kpi-grid" className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-5">
           <div className="rounded-xl border border-line bg-panel p-3.5 space-y-1">

@@ -13,6 +13,7 @@ import EditVehicleForm from './vehicle-drawer/EditVehicleForm'
 import VehicleLeftMap from './vehicle-drawer/VehicleLeftMap'
 import LiveTelemetryTab from './vehicle-drawer/tabs/LiveTelemetryTab'
 import TripsTab from './vehicle-drawer/tabs/TripsTab'
+import HardwareTab from './vehicle-drawer/tabs/HardwareTab'
 import BatterySpecsTab from './vehicle-drawer/tabs/BatterySpecsTab'
 import PassportTab from './vehicle-drawer/tabs/PassportTab'
 import ChargingTab from './vehicle-drawer/tabs/ChargingTab'
@@ -75,7 +76,7 @@ export default function VehicleDrawer() {
   if (selectedVehicle) lastVehicleRef.current = selectedVehicle
   const mountedVehicle = lastVehicleRef.current
 
-  // Drawer Tabs: 'telemetry' | 'trips' | 'timeline' | 'specs' | 'passport' | 'charging' | 'compliance' | 'contacts' | 'parking' | 'manage'
+  // Drawer Tabs: 'telemetry' | 'trips' | 'hardware' | 'specs' | 'passport' | 'charging' | 'compliance' | 'contacts' | 'parking' | 'manage'
   const [drawerTab, setDrawerTab] = useState('telemetry')
   const [editing, setEditing] = useState(false)
   const [editForm, setEditForm] = useState({})
@@ -427,6 +428,10 @@ export default function VehicleDrawer() {
                     onStartPlayback={handleStartPlayback}
                     onStopPlayback={handleStopPlayback}
                   />
+                )}
+
+                {drawerTab === 'hardware' && (
+                  <HardwareTab selectedVehicle={selectedVehicle} />
                 )}
 
                 {drawerTab === 'specs' && (

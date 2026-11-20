@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react'
 import Topbar from '../components/Topbar'
 import { useFleet } from '../context/FleetContext'
 import { ROLES, DEPOT_OPTIONS, PERMISSION_MATRIX } from '../data/admins'
-import { Plus, Edit2, Trash2, ShieldCheck, X, Save, Users, Check, Info, MapPin } from '../components/icons'
+import { Plus, Edit2, Trash2, ShieldCheck, X, Save, Users, Check, Info, MapPin, Eye, EyeOff } from '../components/icons'
 
 export default function Admins() {
-  const { admins, addAdmin, updateAdmin, deleteAdmin } = useFleet()
+  const { admins, addAdmin, updateAdmin, deleteAdmin, showToast } = useFleet()
   const [isLoading, setIsLoading] = useState(true)
   const [selectedAdmin, setSelectedAdmin] = useState(null)
   const [isEditing, setIsEditing] = useState(false)
@@ -26,6 +26,10 @@ export default function Admins() {
   const [formJobTitle, setFormJobTitle] = useState('')
   const [formRole, setFormRole] = useState('operator')
   const [formDepot, setFormDepot] = useState('All Depots (Global)')
+  const [formPassword, setFormPassword] = useState('')
+  const [formConfirmPassword, setFormConfirmPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [formSendInvite, setFormSendInvite] = useState(true)
 
   const startAdd = () => {
@@ -35,6 +39,10 @@ export default function Admins() {
     setFormJobTitle('')
     setFormRole('operator')
     setFormDepot('All Depots (Global)')
+    setFormPassword('')
+    setFormConfirmPassword('')
+    setShowPassword(false)
+    setShowConfirmPassword(false)
     setFormSendInvite(true)
     setIsAdding(true)
     setIsEditing(false)
@@ -49,6 +57,10 @@ export default function Admins() {
     setFormJobTitle(admin.jobTitle || '')
     setFormRole(admin.role || 'operator')
     setFormDepot(admin.depot || 'All Depots (Global)')
+    setFormPassword('')
+    setFormConfirmPassword('')
+    setShowPassword(false)
+    setShowConfirmPassword(false)
     setFormSendInvite(false)
     setIsEditing(true)
     setIsAdding(false)
@@ -57,6 +69,30 @@ export default function Admins() {
   const handleSave = (e) => {
     e.preventDefault()
     if (!formName || !formEmail) return
+
+    if (isAdding) {
+      if (!formPassword) {
+        showToast?.('Please enter a password')
+        return
+      }
+      if (formPassword.length < 6) {
+        showToast?.('Password must be at least 6 characters')
+        return
+      }
+      if (formPassword !== formConfirmPassword) {
+        showToast?.('Passwords do not match')
+        return
+      }
+    } else if (isEditing && formPassword) {
+      if (formPassword.length < 6) {
+        showToast?.('Password must be at least 6 characters')
+        return
+      }
+      if (formPassword !== formConfirmPassword) {
+        showToast?.('Passwords do not match')
+        return
+      }
+    }
 
     const roleObj = ROLES.find((r) => r.value === formRole) || ROLES[2]
 
@@ -69,15 +105,20 @@ export default function Admins() {
       depot: formDepot,
       sendInvite: formSendInvite,
       permissions: roleObj.permissions,
+      ...(formPassword ? { password: formPassword } : {}),
     }
 
     if (isAdding) {
       addAdmin(data)
       setIsAdding(false)
+      setFormPassword('')
+      setFormConfirmPassword('')
     } else if (isEditing && selectedAdmin) {
       updateAdmin(selectedAdmin.id, data)
       setIsEditing(false)
       setSelectedAdmin(null)
+      setFormPassword('')
+      setFormConfirmPassword('')
     }
   }
 
@@ -268,6 +309,8 @@ export default function Admins() {
                   setIsAdding(false)
                   setIsEditing(false)
                   setSelectedAdmin(null)
+                  setFormPassword('')
+                  setFormConfirmPassword('')
                 }}
                 className="flex h-6 w-6 items-center justify-center rounded-md border border-line bg-panel-2 text-lo hover:bg-hover hover:text-hi cursor-pointer"
               >
@@ -370,7 +413,65 @@ export default function Admins() {
                 </select>
               </div>
 
-              {/* 7. Send email invitation with magic login link */}
+              {/* 7. Password */}
+              <div>
+                <label className="mb-1 block text-[10.5px] font-semibold uppercase tracking-wide text-dim">
+                  Password {isAdding ? <span className="text-red-400">*</span> : <span className="font-normal normal-case text-dim">(Leave blank to keep unchanged)</span>}
+                </label>
+                <div className="relative">
+                  <input
+                    required={isAdding}
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder={isAdding ? 'Enter password (min. 6 characters)' : 'Enter new password'}
+                    value={formPassword}
+                    onChange={(e) => setFormPassword(e.target.value)}
+                    className={`${inputCls} pr-9`}
+                    minLength={isAdding ? 6 : undefined}
+                    autoComplete="new-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-dim hover:text-hi transition-colors cursor-pointer"
+                    tabIndex={-1}
+                    title={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* 8. Confirm Password */}
+              <div>
+                <label className="mb-1 block text-[10.5px] font-semibold uppercase tracking-wide text-dim">
+                  Confirm Password {(isAdding || formPassword) && <span className="text-red-400">*</span>}
+                </label>
+                <div className="relative">
+                  <input
+                    required={isAdding || Boolean(formPassword)}
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    placeholder={isAdding ? 'Confirm password' : 'Confirm new password'}
+                    value={formConfirmPassword}
+                    onChange={(e) => setFormConfirmPassword(e.target.value)}
+                    className={`${inputCls} pr-9`}
+                    autoComplete="new-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-dim hover:text-hi transition-colors cursor-pointer"
+                    tabIndex={-1}
+                    title={showConfirmPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showConfirmPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                  </button>
+                </div>
+                {formConfirmPassword && formPassword !== formConfirmPassword && (
+                  <p className="mt-1 text-[11px] text-red">Passwords do not match</p>
+                )}
+              </div>
+
+              {/* 9. Send email invitation with magic login link */}
               <div className="rounded-lg border border-line-soft bg-panel-2/40 p-3">
                 <label className="flex items-start gap-2.5 text-[12px] text-hi cursor-pointer select-none">
                   <input
@@ -431,6 +532,8 @@ export default function Admins() {
                     setIsAdding(false)
                     setIsEditing(false)
                     setSelectedAdmin(null)
+                    setFormPassword('')
+                    setFormConfirmPassword('')
                   }}
                   className="flex-1 rounded-lg border border-line bg-panel-2 py-2 text-[12.5px] font-medium text-lo hover:bg-hover cursor-pointer"
                 >

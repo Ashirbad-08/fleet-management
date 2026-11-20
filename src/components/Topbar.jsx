@@ -26,11 +26,11 @@ import { STATUS_META, SEV_META } from '../data/statusMeta'
 const PAGES = [
   { id: 'page-dash', title: 'Fleet Overview & Dashboard', path: '/', icon: LayoutGrid, hint: 'Live telemetry & map' },
   { id: 'page-vehicles', title: 'Vehicles & Fleet Roster', path: '/vehicles', icon: Truck, hint: 'Manage connected fleet' },
-  { id: 'page-devices', title: 'IoT Devices & Hardware', path: '/devices', icon: Cpu, hint: 'IMEI & sensor telemetry' },
+  { id: 'page-devices', title: 'IoT Devices & Hardware Registry', path: '/devices', icon: Cpu, hint: 'IMEI, SIM & telematics' },
   { id: 'page-esg', title: 'ESG Savings & Carbon Analytics', path: '/esg', icon: Leaf, hint: 'CO₂ reduction & fuel saved' },
   { id: 'page-alerts', title: 'Alerts & Incident Log', path: '/alerts', icon: TriangleAlert, hint: 'Active & historical alerts' },
   { id: 'page-geofences', title: 'Geofence Zones & Boundaries', path: '/geofences', icon: MapPin, hint: 'Zone rules & radius alerts' },
-  { id: 'page-firmware', title: 'Firmware & OTA Updates', path: '/firmware', icon: UploadCloud, hint: 'Roll out firmware versions' },
+
   { id: 'page-admins', title: 'Admins & Team Management', path: '/admins', icon: Users, hint: 'Roles & security access' },
   { id: 'page-settings', title: 'System Settings', path: '/settings', icon: SettingsIcon, hint: 'Preferences & thresholds' },
 ]

@@ -1,8 +1,9 @@
-import { Cpu, Zap, BookOpen, Plug, ShieldCheck, Users, MapPin, Settings2, History } from '../icons'
+import { Radio, Cpu, Zap, BookOpen, Plug, ShieldCheck, Users, MapPin, Settings2, History } from '../icons'
 
 const TABS = [
-  { id: 'telemetry', label: 'Live', icon: Cpu },
+  { id: 'telemetry', label: 'Live', icon: Radio },
   { id: 'trips', label: 'Trips', icon: History, countKey: 'trips' },
+  { id: 'hardware', label: 'Hardware', icon: Cpu },
   { id: 'specs', label: 'Battery', icon: Zap },
   { id: 'charging', label: 'Charging', icon: Plug },
   { id: 'parking', label: 'Parking', icon: MapPin },

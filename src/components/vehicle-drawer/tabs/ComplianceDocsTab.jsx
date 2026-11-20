@@ -66,6 +66,20 @@ export default function ComplianceDocsTab({ selectedVehicle }) {
             <span className="font-mono font-medium text-hi">{selectedVehicle.warrantyCycles || '2500'}</span>
           </div>
           <div className="flex justify-between items-center py-1 border-b border-line-soft/60">
+            <span className="text-dim">Warranty Kilometers:</span>
+            <span className="font-mono font-medium text-hi">
+              {selectedVehicle.warrantyKm
+                ? (typeof selectedVehicle.warrantyKm === 'number'
+                    ? `${selectedVehicle.warrantyKm.toLocaleString('en-IN')} km`
+                    : selectedVehicle.warrantyKm)
+                : selectedVehicle.warrantyKilometers
+                  ? (typeof selectedVehicle.warrantyKilometers === 'number'
+                      ? `${selectedVehicle.warrantyKilometers.toLocaleString('en-IN')} km`
+                      : selectedVehicle.warrantyKilometers)
+                  : '1,50,000 km'}
+            </span>
+          </div>
+          <div className="flex justify-between items-center py-1 border-b border-line-soft/60">
             <span className="text-dim">AMC Period:</span>
             <span className="font-mono font-medium text-hi">
               {selectedVehicle.amcStartDate || '—'} to {selectedVehicle.amcEndDate || '—'}

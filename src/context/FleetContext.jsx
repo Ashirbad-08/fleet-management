@@ -125,7 +125,7 @@ export function FleetProvider({ children }) {
 
   const [alerts, setAlerts] = useState(() => {
     try {
-      const val = localStorage.getItem('fc_alerts_v3')
+      const val = localStorage.getItem('fc_alerts_v4')
       if (val) {
         const parsed = JSON.parse(val)
         if (Array.isArray(parsed) && parsed.length > 0) return parsed
@@ -135,7 +135,7 @@ export function FleetProvider({ children }) {
   })
   const [notifications, setNotifications] = useState(() => {
     try {
-      const val = localStorage.getItem('fc_notifications_v3')
+      const val = localStorage.getItem('fc_notifications_v4')
       if (val) {
         const parsed = JSON.parse(val)
         if (Array.isArray(parsed)) return parsed
@@ -235,11 +235,11 @@ export function FleetProvider({ children }) {
   }, [vehicles])
 
   useEffect(() => {
-    localStorage.setItem('fc_alerts_v3', JSON.stringify(alerts))
+    localStorage.setItem('fc_alerts_v4', JSON.stringify(alerts))
   }, [alerts])
 
   useEffect(() => {
-    localStorage.setItem('fc_notifications_v3', JSON.stringify(notifications))
+    localStorage.setItem('fc_notifications_v4', JSON.stringify(notifications))
   }, [notifications])
 
   useEffect(() => {
@@ -764,8 +764,8 @@ export function FleetProvider({ children }) {
     formatDateTime,
     resetDemoData: () => {
       localStorage.removeItem('fc_vehicles')
-      localStorage.removeItem('fc_alerts_v3')
-      localStorage.removeItem('fc_notifications_v3')
+      localStorage.removeItem('fc_alerts_v4')
+      localStorage.removeItem('fc_notifications_v4')
       localStorage.removeItem('fc_admins')
       localStorage.removeItem('fc_geofences')
       localStorage.removeItem('fc_settings')
