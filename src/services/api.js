@@ -12,9 +12,9 @@ export async function fetchGraphQL(query, variables = {}) {
   try {
     const response = await fetch(API_BASE, {
       method: 'POST',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('fc_auth_token') || ''}`
       },
       body: JSON.stringify({ query, variables })
     })
