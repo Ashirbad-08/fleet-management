@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import { LayoutGrid, Truck, FileText, TriangleAlert, MapPin, Settings, Users, Bell, Leaf, Power } from './icons'
 import { useFleet } from '../context/FleetContext'
+import electrieLogo from '../assets/ELECTRIE_LOGO.png'
 
 const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: LayoutGrid, end: true },
@@ -19,10 +20,19 @@ export default function Sidebar() {
     <>
       <aside data-component="Sidebar" aria-label="Main Sidebar Navigation" className="hidden md:flex md:sticky md:top-0 md:self-start md:h-dvh w-54 shrink-0 flex-col border-r border-line bg-panel p-3">
         <div className="px-2 pb-4 pt-1">
-          <div className="font-display text-3xl font-bold leading-none tracking-tight">
-            Electri<span className="text-green-400 [filter:drop-shadow(0_0_2px_rgba(0,255,102,0.95))_drop-shadow(0_0_20px_rgba(0,255,102,0.6))]">E</span>
+          <div className="flex items-center gap-2.5">
+            <img
+              src={electrieLogo}
+              alt="ElectriE Logo"
+              className="h-9 w-9 shrink-0 object-contain drop-shadow-[0_2px_8px_rgba(0,255,102,0.2)]"
+            />
+            <div>
+              <div className="font-display text-2xl font-bold leading-none tracking-tight">
+                Electri<span className="text-green-400 [filter:drop-shadow(0_0_2px_rgba(0,255,102,0.95))_drop-shadow(0_0_20px_rgba(0,255,102,0.6))]">E</span>
+              </div>
+              <div className="mt-1 font-mono text-[10px] uppercase tracking-wider text-dim">Fleet Monitor</div>
+            </div>
           </div>
-          <div className="mt-1 font-mono text-xs uppercase tracking-wider text-dim">Fleet Monitor</div>
         </div>
 
         <nav aria-label="Sidebar Links" data-slot="sidebar-nav" className="mt-2 flex flex-col gap-0.5">
