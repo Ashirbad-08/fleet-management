@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useFleet } from '../context/FleetContext'
 import { Lock, Mail, Eye, EyeOff, ArrowRight, Check } from '../components/icons'
+import electrieLogo from '../assets/ELECTRIE_LOGO.png'
 
 function ParticleCanvas() {
   const canvasRef = useRef(null)
@@ -121,10 +122,17 @@ export default function Login() {
       <div className="relative z-10 mx-4 w-full max-w-sm">
         <div className="rounded-2xl border border-white/[0.08] bg-panel/80 px-8 py-10 shadow-[0_30px_80px_rgba(0,0,0,0.7)] backdrop-blur-2xl">
           <div className="mb-5 text-center">
-            <div className="font-display text-[32px] font-bold leading-none tracking-tight">
-              Electri<span className="text-green-400" style={{ filter: 'drop-shadow(0 0 2px rgba(0,255,102,0.95)) drop-shadow(0 0 22px rgba(0,255,102,0.55))' }}>E</span>
+            <div className="flex items-center justify-center gap-3">
+              <img
+                src={electrieLogo}
+                alt="ElectriE Logo"
+                className="h-10 w-10 shrink-0 object-contain drop-shadow-[0_2px_12px_rgba(0,255,102,0.3)]"
+              />
+              <div className="font-display text-[32px] font-bold leading-none tracking-tight">
+                Electri<span className="text-green-400" style={{ filter: 'drop-shadow(0 0 2px rgba(0,255,102,0.95)) drop-shadow(0 0 22px rgba(0,255,102,0.55))' }}>E</span>
+              </div>
             </div>
-            <p className="mt-1 text-[12px] text-dim tracking-wide">Fleet Telemetry & Operations</p>
+            <p className="mt-2 text-[12px] text-dim tracking-wide">Fleet Telemetry & Operations</p>
           </div>
 
           <div className="mb-4 flex items-center gap-3">
