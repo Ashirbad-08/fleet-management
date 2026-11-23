@@ -524,7 +524,7 @@ export default function Admins() {
                 )
               })()}
 
-              <div className="flex gap-3 pt-3 border-t border-line-soft sticky bottom-0 bg-panel">
+              <div className="flex gap-3 pt-3 border-t border-line-soft">
                 <button
                   type="button"
                   data-action="cancel-admin-form"
