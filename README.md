@@ -21,13 +21,6 @@ npm run dev
 
 Then open the printed local URL (default `http://localhost:5173`).
 
-## Deploying to Cloudflare Workers
-
-Wrangler serves the Vite build from `dist/` and routes unknown paths to
-`index.html` for React Router. Run `npm run wrangler:dev` to build and preview
-with the Workers runtime, or `npm run deploy` to build and deploy. Authenticate
-with Cloudflare first using `npx wrangler login`.
-
 ## Project structure
 
 ```
@@ -59,5 +52,3 @@ All data currently lives in `src/data/*.js` and is loaded into
 - `npm run build` — production build to `dist/`
 - `npm run preview` — preview the production build locally
 - `npm run lint` — run oxlint
-- `npm run wrangler:dev` — build and run the app with Wrangler
-- `npm run deploy` — build and deploy to Cloudflare Workers
