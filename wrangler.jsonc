@@ -1,12 +1,16 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "fleet-admin",
+  "name": "fleet-management-system",
   "compatibility_date": "2026-11-24",
   "assets": {
     "directory": "./dist",
     "not_found_handling": "single-page-application"
   },
   "routes": [
-    { "pattern": "fleet.electrie.in", "custom_domain": true }
+    {
+      "pattern": "fleet.electrie.in",
+      "zone_name": "electrie.in",
+      "custom_domain": true
+    }
   ]
 }
