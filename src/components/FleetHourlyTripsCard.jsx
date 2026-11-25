@@ -62,7 +62,7 @@ export default function FleetHourlyTripsCard() {
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
           {/* Time Filter Pills */}
           <div className="inline-flex items-center gap-1 rounded-lg border border-line bg-panel-2 p-0.5 text-[11px] font-medium shadow-2xs">
             {[
@@ -110,7 +110,7 @@ export default function FleetHourlyTripsCard() {
             )}
 
             {/* Grid Bar Columns */}
-            <div className="grid grid-cols-9 gap-2 sm:gap-3 h-36 items-end pb-1 relative z-10 border-b border-line-soft">
+            <div className="grid grid-cols-9 gap-1 sm:gap-3 h-36 items-end pb-1 relative z-10 border-b border-line-soft">
               {barChartData.list.map((item, idx) => {
                 const heightPct = Math.round((item.trips / barChartData.maxVal) * 100)
                 const isHovered = hoveredBarIndex === idx
@@ -140,7 +140,7 @@ export default function FleetHourlyTripsCard() {
             </div>
 
             {/* Time X-Axis */}
-            <div className="mt-2.5 grid grid-cols-9 gap-2 sm:gap-3 text-center text-[10.5px] font-mono text-dim">
+            <div className="mt-2.5 grid grid-cols-9 gap-1 sm:gap-3 text-center text-[9px] sm:text-[10.5px] font-mono text-dim">
               {barChartData.list.map((item, idx) => (
                 <span
                   key={item.time}

@@ -70,7 +70,7 @@ export default function Dashboard() {
     <div data-component="DashboardPage" data-slot="page-layout" className="flex min-h-0 flex-1 flex-col xl:overflow-hidden">
       <Topbar title="Fleet overview" subtitle="Connected vehicle telemetry & live location tracking" />
 
-      <div className="flex-1 overflow-y-auto px-4 pb-5 pt-5 sm:px-6">
+      <div className="flex-1 overflow-y-auto px-4 pb-24 pt-5 sm:px-6 md:pb-6">
         <StatsRow />
 
         {/* 1. Quick-Focus Vehicle Ribbon */}
@@ -81,11 +81,11 @@ export default function Dashboard() {
           {/* Aesthetic Fleet Tracking Map Container */}
           <div data-slot="map-card" className="flex h-[22rem] sm:h-[25rem] flex-col overflow-hidden rounded-xl border border-line bg-panel relative shadow-sm">
             {/* Professional Header Bar */}
-            <div className="flex items-center justify-between border-b border-line-soft px-4 py-2  shrink-0 bg-panel/40">
-              <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-accent animate-pulse" />
-                <div className="font-display text-sm font-semibold text-hi">Fleet tracking map</div>
-                <span className="ml-1.5 rounded-full border border-line-soft bg-panel-2 px-2 py-0.5 font-mono text-xs text-dim tabular-nums">
+            <div className="flex items-center justify-between border-b border-line-soft px-3.5 sm:px-4 py-2 shrink-0 bg-panel/40 gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+                <span className="h-2 w-2 rounded-full bg-accent animate-pulse shrink-0" />
+                <div className="font-display text-xs sm:text-sm font-semibold text-hi truncate">Fleet tracking map</div>
+                <span className="shrink-0 rounded-full border border-line-soft bg-panel-2 px-1.5 sm:px-2 py-0.5 font-mono text-[10.5px] sm:text-xs text-dim tabular-nums">
                   {filteredVehicles.length} / {vehicles.length} Active
                 </span>
               </div>
@@ -93,7 +93,7 @@ export default function Dashboard() {
               <Link
                 to="/vehicles"
                 aria-label="View full fleet roster"
-                className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-panel-2 px-3 py-1.5 text-xs font-medium text-lo transition-colors hover:bg-hover hover:text-hi shadow-xs"
+                className="shrink-0 inline-flex items-center gap-1 sm:gap-1.5 rounded-lg border border-line bg-panel-2 px-2.5 sm:px-3 py-1.5 text-xs font-medium text-lo transition-colors hover:bg-hover hover:text-hi shadow-xs"
               >
                 <span>View roster</span>
                 <ChevronRight className="h-3.5 w-3.5" strokeWidth={2.4} />
@@ -220,21 +220,24 @@ export default function Dashboard() {
       {/* Full Screen Map Modal Overlay */}
       {fullScreenMap && (
         <div className="fixed inset-0 z-[2000] flex flex-col bg-base backdrop-blur-lg">
-          <div className="flex items-center justify-between border-b border-line bg-panel px-6 py-3.5">
-            <div className="flex items-center gap-2.5">
-              <span className="h-2 w-2 rounded-full bg-accent animate-pulse" />
-              <span className="font-display text-sm font-bold text-hi">Fleet Tracking Map — Full View</span>
-              <span className="rounded-full border border-line bg-panel-2 px-2.5 py-0.5 font-mono text-xs text-dim">
-                {filteredVehicles.length} Vehicles Displayed
+          <div className="flex items-center justify-between border-b border-line bg-panel px-4 py-2.5 sm:px-6 sm:py-3.5 gap-2">
+            <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+              <span className="h-2 w-2 rounded-full bg-accent animate-pulse shrink-0" />
+              <span className="font-display text-xs sm:text-sm font-bold text-hi truncate">
+                Fleet Tracking Map <span className="hidden sm:inline">— Full View</span>
+              </span>
+              <span className="shrink-0 rounded-full border border-line bg-panel-2 px-2 sm:px-2.5 py-0.5 font-mono text-[10.5px] sm:text-xs text-dim">
+                {filteredVehicles.length} Vehicles
               </span>
             </div>
             <button
               data-action="exit-fullscreen-map"
               onClick={() => setFullScreenMap(false)}
-              className="flex items-center gap-1.5 rounded-lg border border-line bg-panel-2 px-3 py-1.5 text-xs font-semibold text-hi hover:bg-hover hover:border-accent/40 transition-colors cursor-pointer"
+              className="shrink-0 flex items-center gap-1 sm:gap-1.5 rounded-lg border border-line bg-panel-2 px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-hi hover:bg-hover hover:border-accent/40 transition-colors cursor-pointer"
             >
-              <Minimize2 className="h-4 w-4 text-accent" strokeWidth={2} />
-              <span>Exit Full Screen</span>
+              <Minimize2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-accent" strokeWidth={2} />
+              <span className="hidden sm:inline">Exit Full Screen</span>
+              <span className="sm:hidden">Exit</span>
             </button>
           </div>
           <div className="relative flex-1 w-full h-full">
