@@ -596,21 +596,21 @@ export default function MapLeaflet({
 
       {/* Floating Bottom Fleet Status Legend Overlay (hidden during active playback to give room for player) */}
       {!hideLegend && !playbackData?.route && (
-        <div className="absolute bottom-3 left-3 z-10 flex flex-wrap items-center gap-3 rounded-xl border border-line/80 bg-panel-2/85 px-3.5 py-2 backdrop-blur-md shadow-lg">
-          <div className="flex items-center gap-1.5 text-xs font-medium text-hi">
-            <span className="h-2 w-2 rounded-full bg-accent" />
+        <div className="absolute bottom-3 left-3 right-3 sm:right-auto z-10 flex flex-wrap items-center gap-2 sm:gap-3 rounded-xl border border-line/80 bg-panel-2/85 px-2.5 py-1.5 sm:px-3.5 sm:py-2 backdrop-blur-md shadow-lg max-w-[calc(100%-1.5rem)]">
+          <div className="flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-medium text-hi">
+            <span className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-accent" />
             <span>Online (<strong className="font-mono tabular-nums">{statusCounts.online}</strong>)</span>
           </div>
-          <div className="flex items-center gap-1.5 text-xs font-medium text-hi">
-            <span className="h-2 w-2 rounded-full bg-amber" />
+          <div className="flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-medium text-hi">
+            <span className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-amber" />
             <span>Idle (<strong className="font-mono tabular-nums">{statusCounts.idle}</strong>)</span>
           </div>
-          <div className="flex items-center gap-1.5 text-xs font-medium text-hi">
-            <span className="h-2 w-2 rounded-full bg-red" />
+          <div className="flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-medium text-hi">
+            <span className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-red" />
             <span>Alert (<strong className="font-mono tabular-nums">{statusCounts.alert}</strong>)</span>
           </div>
-          <div className="flex items-center gap-1.5 text-xs font-medium text-hi">
-            <span className="h-2 w-2 rounded-full bg-gray" />
+          <div className="flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-medium text-hi">
+            <span className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-gray" />
             <span>Offline (<strong className="font-mono tabular-nums">{statusCounts.offline}</strong>)</span>
           </div>
         </div>
